@@ -14,7 +14,7 @@ class CourseController extends Controller
      */
     public function index()
     {
-        $courses = Course::latest()->get();
+        $courses = Course::with('batch','student')->get();
         return Inertia::render('course/index', compact('courses'));
     }
 

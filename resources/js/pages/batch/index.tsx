@@ -10,7 +10,6 @@ import { Batch } from '@/types/Batch';
 
 export default function Index({ batches }: { batches: Batch[] }) {
   const data = usePage().props.batches;
-
   const breadcrumbs: BreadcrumbItem[] = [
     {
       title: 'Batches',

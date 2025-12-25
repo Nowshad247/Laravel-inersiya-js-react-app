@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use App\Models\Course;
 use App\Models\Batch;
+use App\Models\Student;
 use Illuminate\Support\Facades\DB;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -40,9 +41,11 @@ class DatabaseSeeder extends Seeder
 
         Course::factory()->count(10)->create();
         Batch::factory()->count(10)->create();
+        Student::factory()->count(20)->create();
 
         $courses = Course::all();
         $batches = Batch::all();
+        $students = Student::all();
 
         $count = min($courses->count(), $batches->count());
 
@@ -51,6 +54,10 @@ class DatabaseSeeder extends Seeder
             $batch = $batches[$i];
 
             $course->batch_id = $batch->id;
+            // assign a student to the course (round-robin)
+            if ($students->count() > 0) {
+                $course->student_id = $students[$i % $students->count()]->id;
+            }
             $course->save();
 
             $batch->course_id = $course->id;

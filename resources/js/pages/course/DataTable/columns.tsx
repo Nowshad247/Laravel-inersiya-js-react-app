@@ -18,6 +18,14 @@ export const columns: ColumnDef<Course>[] = [
     accessorKey: "description",
     header: "Description",
   },
+    {
+    accessorKey: "standard_count",
+    header: "Standard Count",
+  },
+  {
+    accessorKey: "batch_count",
+    header: "Batch Count",
+  },
   {
     id: "actions",
     header: "Actions",

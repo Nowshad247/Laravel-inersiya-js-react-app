@@ -9,7 +9,9 @@ class Course extends Model
 {
     use HasFactory;
     public $fillable = ['name','description'];
-    
+    public function standard(){
+        return $this->hasMany(Student::class, 'course_id', 'id');
+    }   
     public function batch(){
         return $this->hasMany(Batch::class, 'course_id', 'id');
     }
