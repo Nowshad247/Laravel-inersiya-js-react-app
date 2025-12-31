@@ -8,8 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Course extends Model
 {
     use HasFactory;
-    public $fillable = ['name','description'];  
-    public function batch(){
+    public $fillable = ['name', 'description'];
+    public function students()
+    {
+        return $this->belongsToMany(Student::class);
+    }
+    public function batch()
+    {
         return $this->hasMany(Batch::class, 'course_id', 'id');
     }
 }

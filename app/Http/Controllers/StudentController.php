@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Batch;
 use App\Models\Student;
+use App\Models\Course;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -13,7 +15,8 @@ class StudentController extends Controller
      */
     public function index()
     {
-        return Inertia::render('student/index');
+        $students = Student::with(['batch', 'batch.course', 'courses'])->latest()->get();
+        return Inertia('student/index',compact('students'));
     }
 
     /**
@@ -21,7 +24,9 @@ class StudentController extends Controller
      */
     public function create()
     {
-        //
+        $batch = Batch::all();
+        $course = Course::all();
+        return Inertia('student/create',compact('batch','course'));
     }
 
     /**
