@@ -1,33 +1,33 @@
 export const studetnEditConfig = {
     ButtonLabel: "Edit ",
-    title: "Edit Course",
-    description: "Make changes to your course here. Click save when you're done.",
+    title: "Add New Student",
+    description: "Add new Student",
     Button: {
-        id: "edit-course-button",
+        id: "add-new-student-button",
         variant: "outline",
         text: "Edit",
         className: "",
     },
     Fields: [
         {
-            id: 'course-name',
+            id: 'student-name',
             key: 'name',
             name: 'name',
-            label: 'Course Name',
+            label: 'Student Name',
             type: 'text',
-            placeholder: 'Course Name',
+            placeholder: 'Student Name',
             autocomplete: 'name',
             tabIndex: 1,
             autoFocus: true
         },
         {
-            id: 'course-description',
-            key: 'description',
-            name: 'description',
-            label: 'Course description',
-            type: 'text',
-            placeholder: 'Course description',
-            autocomplete: 'description',
+            id: 'student-email',
+            key: 'email',
+            name: 'email',
+            label: 'student email',
+            type: 'email',
+            placeholder: 'Student email',
+            autocomplete: 'email',
             tabIndex: 2,
             autoFocus: false
         }

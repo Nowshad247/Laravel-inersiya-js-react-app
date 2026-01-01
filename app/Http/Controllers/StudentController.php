@@ -16,7 +16,7 @@ class StudentController extends Controller
     public function index()
     {
         $students = Student::with(['batch', 'batch.course', 'courses'])->latest()->get();
-        return Inertia('student/index',compact('students'));
+        return Inertia('student/index', compact('students'));
     }
 
     /**
@@ -24,9 +24,12 @@ class StudentController extends Controller
      */
     public function create()
     {
-        $batch = Batch::all();
-        $course = Course::all();
-        return Inertia('student/create',compact('batch','course'));
+        $batchs = Batch::all();
+        $courses = Course::all();
+        return Inertia('student/create', [
+            'batchs' => $batchs,
+            'courses' => $courses,
+        ]);
     }
 
     /**
@@ -34,7 +37,30 @@ class StudentController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        // dd request to check
+        // dd($request->all());
+
+        $validated = $request->validate([
+            'name'       => 'required|string|max:255',
+            'email'      => 'required|email|unique:students,email',
+            'batch_id'   => 'required|exists:batches,id',
+            'course_ids' => 'required|array',        // <-- match frontend
+            'course_ids.*' => 'exists:courses,id',  // <-- each course must exist
+        ]);
+
+        // create student (batch_id → one to many)
+        $student = Student::create([
+            'name'     => $validated['name'],
+            'email'    => $validated['email'],
+            'batch_id' => $validated['batch_id'],
+        ]);
+
+        // attach courses (many to many)
+        $student->courses()->attach($validated['course_ids']);
+
+        return redirect()
+            ->route('student.index')
+            ->with('success', 'Student created successfully');
     }
 
     /**
