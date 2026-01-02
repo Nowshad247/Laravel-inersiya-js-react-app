@@ -74,9 +74,24 @@ class StudentController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Student $student)
+    public function edit(Student $id)
     {
-        //
+        $student = Student::with(['batch','courses'])->findOrFail($id->id);
+        $batchs = Batch::select('id','name')->get();
+        $courses = Course::select('id','name')->get();
+
+        return Inertia::render('student/update',[
+            'student' =>[
+                'id'=>$student->id,
+                'name'=>$student->name,
+                'email'=>$student->email,
+                'batch_id'=>$student->batch_id,
+                'course_ids'=>$student->courses->pluck('id')
+
+            ],
+            'batches'=>$batchs,
+            'courses'=>$courses,
+        ]);
     }
 
     /**

@@ -57,7 +57,7 @@ export const columns: ColumnDef<Student>[] = [
                     <Button
                         size="icon"
                         variant="outline"
-                        onClick={() => router.get(`/students/${student.id}/edit`)}
+                        onClick={() => router.get(`/student/edit/${student.id}`)}
                     >
                         <Pencil className="h-4 w-4" />
                     </Button>

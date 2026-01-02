@@ -89,7 +89,7 @@ export default function Index({ batchs, courses }: Props) {
                         <select
                             multiple
                             className="border rounded px-3 py-2 w-full"
-                            value={data.course_ids.map(String)} // convert numbers to strings for HTML
+                            value={data.course_ids.map(String)} 
                             onChange={(e) => {
                                 const selectedOptions = Array.from(e.target.selectedOptions, option =>
                                     Number(option.value)
