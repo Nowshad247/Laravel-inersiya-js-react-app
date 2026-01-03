@@ -68,7 +68,7 @@ export const columns: ColumnDef<Student>[] = [
                         variant="destructive"
                         onClick={() => {
                             if (confirm("Are you sure you want to delete this student?")) {
-                                router.delete(`/students/${student.id}`)
+                                router.delete(`/student/${student.id}`)
                             }
                         }}
                     >

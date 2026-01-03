@@ -45,6 +45,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/students/create', [StudentController::class, 'store'])->name('student.store');
     Route::get('/student/edit/{id}',[StudentController::class,'edit'])->name('student.edit');
     Route::put('/students/edit/{id}',[StudentController::class,'update'])->name('student.update');
+    Route::delete('/student/{id}',[StudentController::class,'destroy'])->name('student.delete');
 });
 
 require __DIR__ . '/settings.php';

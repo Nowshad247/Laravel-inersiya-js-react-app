@@ -128,15 +128,18 @@ class StudentController extends Controller
             $student->courses()->sync($validated['course_ids'] ?? []);
         }
 
-         return redirect()
+        return redirect()
             ->route('student.index')
             ->with('success', 'Student Update successfully');
     }
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Student $student)
+    public function destroy(Student $id)
     {
-        //
+        $id->courses()->detach();
+        $id->delete();
+
+        return redirect()->route('student.index')->with('sucess', 'Student Update Successfully');
     }
 }
