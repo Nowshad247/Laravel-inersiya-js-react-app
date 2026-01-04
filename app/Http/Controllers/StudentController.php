@@ -25,7 +25,11 @@ class StudentController extends Controller
 
         $studentData = Student::with(['batch','courses'])->findOrFail($id->id);
 
-        return Inertia::render('student/studentProfile',$studentData);
+        
+
+        return Inertia::render('student/studentProfile',[
+            'studentData' => $studentData,
+        ]);
     }
 
     /**
