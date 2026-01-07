@@ -38,9 +38,15 @@ const RenderAny: React.FC<RenderAnyProps> = ({ data }) => {
         return value;
     };
 
+    // 3. Helper to check if a value is an image URL
+    const isImageUrl = (value: any): boolean => {
+        if (typeof value !== 'string') return false;
+        return /\.(jpeg|jpg|gif|png|webp|svg)$/.test(value);
+    };
+
     if (data === null || data === undefined) return null;
 
-    // 3. Handle Arrays (e.g. Courses)
+    // 4. Handle Arrays (e.g. Courses)
     if (Array.isArray(data)) {
         return (
             <div className="space-y-4 w-full mt-2">
@@ -57,9 +63,8 @@ const RenderAny: React.FC<RenderAnyProps> = ({ data }) => {
         );
     }
 
-    // 4. Handle Objects (Student info, Batch info)
+    // 5. Handle Objects (Student info, Batch info)
     if (typeof data === 'object') {
-        // Safe check for Inertia wrapper
         const sourceData = (data as Record<string, JSONValue>).studentData 
             ? (data as Record<string, JSONValue>).studentData 
             : data;
@@ -86,9 +91,14 @@ const RenderAny: React.FC<RenderAnyProps> = ({ data }) => {
                                                 <div className="text-[10px] font-bold text-emerald-700 uppercase mb-2">
                                                     {key} Details
                                                 </div>
-                                                {/* Casting to JSONValue fixes the type error */}
                                                 <RenderAny data={value as JSONValue} />
                                             </div>
+                                        ) : isImageUrl(value) ? (
+                                            <img 
+                                                src= {`/storage/${ value as string}`}
+                                                alt={key} 
+                                                className="h-20 w-20 object-cover rounded-md border" 
+                                            />
                                         ) : (
                                             <span className={`break-all ${isNameField ? "text-blue-700 font-extrabold text-lg" : "text-gray-600 font-medium"}`}>
                                                 {formatDate(key, value)}
@@ -104,8 +114,8 @@ const RenderAny: React.FC<RenderAnyProps> = ({ data }) => {
         );
     }
 
-    // 5. Primitives
+    // 6. Primitives
     return <span className="px-2 font-medium">{String(data)}</span>;
 };
 
-export default RenderAny
+export default RenderAny;

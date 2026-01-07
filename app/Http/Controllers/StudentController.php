@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
 
 class StudentController extends Controller
 {
@@ -157,52 +158,92 @@ class StudentController extends Controller
         $courses = Course::select('id', 'name')->get();
         $studentCourseIds = $student->courses->pluck('id')->toArray();
 
+
         return Inertia::render('student/update', [
             'student' => $student,
             'batches' => $batchs,
             'courses' => $courses,
             'student_course_ids' => $studentCourseIds
         ]);
-
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Student $id)
+    public function update(Request $request, Student $id )
     {
+        try {
+            // Email validation: only if email is provided
+            $emailRule = ['sometimes', 'required', 'email'];
+            if ($request->filled('email')) {
+                $emailRule[] = Rule::unique('students', 'email')->ignore($id->id);
+            }
 
-        // Validate input
-        $validated = $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            'email' => [
-                'sometimes',
-                'required',
-                'email',
-                Rule::unique('students', 'email')->ignore($id->id),
-            ],
-            'batch_id' => 'sometimes|required|exists:batches,id',
-            'course_ids' => 'nullable|array',
-            'course_ids.*' => 'exists:courses,id',
-        ]);
+            // Validate request
+            $validated = $request->validate([
+                'name' => 'sometimes|required|string|max:255',
+                'father_name' => 'sometimes|required|string|max:255',
+                'mother_name' => 'sometimes|required|string|max:255',
+                'student_uid' => 'sometimes|nullable|string|max:255',
+                'phone' => 'sometimes|nullable|string|max:20',
+                'email' => $emailRule,
+                'address' => 'sometimes|nullable|string',
+                'guardian_name' => 'sometimes|nullable|string|max:255',
+                'guardian_phone' => 'sometimes|nullable|string|max:20',
+                'guardian_relation' => 'sometimes|nullable|string|max:100',
+                'status' => 'sometimes|required|in:active,inactive',
+                'batch_id' => 'sometimes|required|exists:batches,id',
+                'course_ids' => 'nullable|array',
+                'course_ids.*' => 'exists:courses,id',
+                'photo' => 'sometimes|nullable|file|image|max:2048', // only validate if file uploaded
+            ]);
 
-        $student = Student::findOrFail($id->id);
+            // Handle photo upload if present
+            if ($request->hasFile('photo')) {
+                // Delete old photo
+                if ($id->photo && Storage::disk('public')->exists($id->photo)) {
+                    Storage::disk('public')->delete($id->photo);
+                }
+                $validated['photo'] = $request->file('photo')->store('students', 'public');
+            }
 
-        // Only update fields that are in the request
-        $fieldsToUpdate = array_intersect_key($validated, array_flip(['name', 'email', 'batch_id']));
-        if (!empty($fieldsToUpdate)) {
-            $student->update($fieldsToUpdate);
+            // Filter only fields that are actually different from DB
+            $fieldsToUpdate = [];
+            foreach ($validated as $key => $value) {
+                if ($key === 'course_ids') continue; // handle separately
+                // Check for changed values
+                if ($key === 'photo' || $id->$key !== $value) {
+                    $fieldsToUpdate[$key] = $value;
+                }
+            }
+
+            // Update only changed fields
+            if (!empty($fieldsToUpdate)) {
+                $id->update($fieldsToUpdate);
+            }
+
+            // Sync courses if provided
+            if (array_key_exists('course_ids', $validated)) {
+                $id->courses()->sync($validated['course_ids'] ?? []);
+            }
+
+            return redirect()
+                ->route('student.index')
+                ->with('success', 'Student updated successfully');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()
+                ->back()
+                ->withErrors($e->errors())
+                ->withInput();
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', 'Failed to update student. Please try again.')
+                ->withInput();
         }
-
-        // Sync courses if provided
-        if (array_key_exists('course_ids', $validated)) {
-            $student->courses()->sync($validated['course_ids'] ?? []);
-        }
-
-        return redirect()
-            ->route('student.index')
-            ->with('success', 'Student Update successfully');
     }
+
+
     /**
      * Remove the specified resource from storage.
      */

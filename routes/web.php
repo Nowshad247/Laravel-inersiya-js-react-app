@@ -25,6 +25,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/batch', [BatchController::class, 'index'])->name('batch.index');
     Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
 
+
     Route::get('/batch/create', [BatchController::class, 'create'])->name('batch.create');
     Route::post('/batch/create', [BatchController::class, 'store'])->name('batches.store');
     route::get('/batch/{id}/edit', [BatchController::class, 'edit'])->name('batch.edit');
