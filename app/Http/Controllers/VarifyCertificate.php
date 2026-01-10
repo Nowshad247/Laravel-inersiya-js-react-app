@@ -12,11 +12,7 @@ class VarifyCertificate extends Controller
 {
     public function index()
     {
-        return Inertia::render('welcome', [
-            'status' => null,
-            'message' => null,
-            'data' => null,
-        ]);
+        return Inertia::render('welcome');
     }
     public function show(Request $request)
     {
@@ -29,40 +25,49 @@ class VarifyCertificate extends Controller
                 ],
             ]);
 
+            if(!$validated){
+                 return Inertia::render('welcome', [
+                    'status' => false,
+                    'message' => 'Validation error',
+                    'data' => null,
+                ]);
+            }
             $student = Student::query()
-                ->where('student_uid', $validated['uid'])
+                ->where('student_uid', $validated['uid'])->with('courses')
                 ->first();
 
             if (!$student) {
-                return response()->json([
+                // Not found
+                return Inertia::render('welcome', [
                     'status' => false,
                     'message' => 'Certificate not found',
                     'data' => null,
-                ], 404);
+                ]);
             }
-
-            return response()->json([
+            // Found
+            return Inertia::render('welcome', [
                 'status' => true,
                 'message' => 'Certificate found',
                 'data' => [
                     'name'        => $student->name,
-                    'course'      => $student->course->title ?? null,
                     'issued_at'   => $student->created_at->toDateString(),
                     'certificate' => $student->student_uid,
                 ],
             ]);
         } catch (ValidationException $e) {
-            return response()->json([
+            // Validation error
+            return Inertia::render('Welcome', [
                 'status' => false,
                 'message' => $e->validator->errors()->first('uid'),
                 'data' => null,
-            ], 422);
+            ]);
         } catch (Exception $e) {
-            return response()->json([
+            // Any unexpected error
+            return Inertia::render('welcome', [
                 'status' => false,
                 'message' => 'Something went wrong. Please try again.',
                 'data' => null,
-            ], 500);
+            ]);
         }
     }
 }
