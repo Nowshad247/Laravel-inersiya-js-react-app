@@ -10,11 +10,12 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: dashboard().url,
     },
 ];
-export default function Dashboard() {
+export default function Dashboard(totalStudent:any) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />  
-            <h1>Dashboard</h1>            
+            <PlaceholderPattern className='m-5 p-5' data={totalStudent}></PlaceholderPattern>
+            
         </AppLayout>
     );
 }

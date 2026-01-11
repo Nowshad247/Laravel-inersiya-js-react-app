@@ -41,13 +41,17 @@ const mainNavItems: NavItem[] = [
 
 const footerNavItems: NavItem[] = [
       {
-        title: 'Dashboard',
-        href: dashboard(),
+        title: 'Website',
+        href: '/',
         icon: LayoutGrid,
     },
       {
-        title: 'Dashboard',
-        href: dashboard(),
+        title: 'Website User',
+        href: '/',
+        icon: LayoutGrid,
+    }, {
+        title: 'Website Config',
+        href: '/',
         icon: LayoutGrid,
     },
 

@@ -5,6 +5,7 @@ use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use App\Http\Controllers\BatchController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\VarifyCertificate;
 use Symfony\Component\Routing\Router;
@@ -16,10 +17,7 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
-
+    Route::get('dashboard',[DashboardController::class,'index'])->name('dashboard');
     // Profile picture upload
     Route::post('user/profile-picture', [\App\Http\Controllers\ProfilePictureController::class, '__invoke'])->name('user.profile-picture.upload');
 

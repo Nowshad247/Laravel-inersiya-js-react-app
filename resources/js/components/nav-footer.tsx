@@ -32,7 +32,7 @@ export function NavFooter({
                             >
                                 <a
                                     href={resolveUrl(item.href)}
-                                    target="_blank"
+                                    target=""
                                     rel="noopener noreferrer"
                                 >
                                     {item.icon && (
