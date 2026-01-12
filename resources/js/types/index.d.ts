@@ -29,7 +29,9 @@ export interface SharedData {
     sidebarOpen: boolean;
     [key: string]: unknown;
 }
-
+export interface uploadProfile{
+    name:string
+}
 export interface User {
     id: number;
     name: string;

@@ -60,4 +60,7 @@ class ProfileController extends Controller
 
         return redirect('/');
     }
+    public function uploadProfile(){
+        dd("data");
+    }
 }
