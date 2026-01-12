@@ -67,7 +67,7 @@ export default function CreateStudent({ batchs, courses }: Props) {
 
                     {/* Student Name */}
                     <div>
-                        <Label>Name</Label>
+                        <Label className='my-4'>Name</Label>
                         <Input
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
@@ -79,7 +79,7 @@ export default function CreateStudent({ batchs, courses }: Props) {
                     {/* Father & Mother */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <Label>Father Name</Label>
+                            <Label className='my-4'>Father Name</Label>
                             <Input
                                 value={data.father_name}
                                 onChange={(e) => setData('father_name', e.target.value)}
@@ -87,7 +87,7 @@ export default function CreateStudent({ batchs, courses }: Props) {
                         </div>
 
                         <div>
-                            <Label>Mother Name</Label>
+                            <Label className='my-4'>Mother Name</Label>
                             <Input
                                 value={data.mother_name}
                                 onChange={(e) => setData('mother_name', e.target.value)}
@@ -98,7 +98,7 @@ export default function CreateStudent({ batchs, courses }: Props) {
                     {/* Email & Phone */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <Label>Email</Label>
+                            <Label className='my-4'>Email</Label>
                             <Input
                                 type="email"
                                 value={data.email}
@@ -108,7 +108,7 @@ export default function CreateStudent({ batchs, courses }: Props) {
                         </div>
 
                         <div>
-                            <Label>Phone</Label>
+                            <Label className='my-4'>Phone</Label>
                             <Input
                                 value={data.phone}
                                 onChange={(e) => setData('phone', e.target.value)}
@@ -118,7 +118,7 @@ export default function CreateStudent({ batchs, courses }: Props) {
 
                     {/* Address */}
                     <div>
-                        <Label>Address</Label>
+                        <Label className='my-4'>Address</Label>
                         <textarea
                             className="w-full border rounded px-3 py-2"
                             value={data.address}
@@ -129,7 +129,7 @@ export default function CreateStudent({ batchs, courses }: Props) {
                     {/* Guardian Info */}
                     <div className="grid grid-cols-3 gap-4">
                         <div>
-                            <Label>Guardian Name</Label>
+                            <Label className='my-4'>Guardian Name</Label>
                             <Input
                                 value={data.guardian_name}
                                 onChange={(e) => setData('guardian_name', e.target.value)}
@@ -137,7 +137,7 @@ export default function CreateStudent({ batchs, courses }: Props) {
                         </div>
 
                         <div>
-                            <Label>Guardian Phone</Label>
+                            <Label className='my-4'>Guardian Phone</Label>
                             <Input
                                 value={data.guardian_phone}
                                 onChange={(e) => setData('guardian_phone', e.target.value)}
@@ -145,7 +145,7 @@ export default function CreateStudent({ batchs, courses }: Props) {
                         </div>
 
                         <div>
-                            <Label>Relation</Label>
+                            <Label className='my-4'>Relation</Label>
                             <Input
                                 value={data.guardian_relation}
                                 onChange={(e) =>
@@ -157,7 +157,7 @@ export default function CreateStudent({ batchs, courses }: Props) {
 
                     {/* Batch */}
                     <div>
-                        <Label>Batch</Label>
+                        <Label className='my-4'>Batch</Label>
                         <select
                             className="border rounded px-3 py-2 w-full"
                             value={data.batch_id ?? ''}
@@ -182,7 +182,7 @@ export default function CreateStudent({ batchs, courses }: Props) {
 
                     {/* Courses */}
                     <div>
-                        <Label>Courses</Label>
+                        <Label className='my-4'>Courses</Label>
                         <select
                             multiple
                             className="border rounded px-3 py-2 w-full"
@@ -204,7 +204,7 @@ export default function CreateStudent({ batchs, courses }: Props) {
 
                     {/* Photo */}
                     <div>
-                        <Label>Student Photo</Label>
+                        <Label className='my-4'>Student Photo</Label>
                         <Input
                             type="file"
                             accept="image/*"

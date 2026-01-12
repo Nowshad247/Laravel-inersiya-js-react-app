@@ -39,12 +39,13 @@ class BatchController extends Controller
             'course_id' => 'required|exists:courses,id',
             'start_date' => 'required|date',
             'end_date' => 'required|date|after_or_equal:start_date',
-            'TotalClass' => 'required|integer|min:1',
+            'total_class' => 'required|integer|min:1',
         ]);
-
-        Batch::create($validated);
+        $data = Batch::create($validated);
         return redirect()->route('batch.index')->with('success', 'Batch created successfully.');
     }
+
+
     /**
      * Display the specified resource.
      */
