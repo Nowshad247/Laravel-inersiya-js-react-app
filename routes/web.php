@@ -9,7 +9,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\VarifyCertificate;
-use Symfony\Component\Routing\Router;
+use App\Http\Middleware\HandleInertiaRequests;
 
 Route::get('/', function () {
     return Inertia::render('welcome', [
@@ -21,7 +21,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard',[DashboardController::class,'index'])->name('dashboard');
     // Profile picture upload
     Route::post('user/profile-picture', [\App\Http\Controllers\ProfilePictureController::class, '__invoke'])->name('user.profile-picture.upload');
-
     //Deshboard options
     Route::get('/batch', [BatchController::class, 'index'])->name('batch.index');
     Route::get('/courses', [CourseController::class, 'index'])->name('courses.index');
@@ -53,15 +52,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //Student Profile View Route 
     Route::get('/student/profile/{id}', [StudentController::class, 'studentDetails'])->name('student.profile');
 
-
     // Certificate Varificattion 
     Route::get('/certificate', [VarifyCertificate::class, 'index'])
         ->middleware('throttle:10,1');
     Route::post('/certificate', [VarifyCertificate::class, 'show'])
         ->middleware('throttle:10,1');
-
     Route::get('/student/pdf',[PdfController::class,'student'])->name('student.pdf')->withoutMiddleware([
-        \App\Http\Middleware\HandleInertiaRequests::class,
+        HandleInertiaRequests::class,
     ]);
 
 });
