@@ -9,33 +9,39 @@ use Spatie\Permission\Models\Role;
 
 class RolePermissionSeeder extends Seeder
 {
-    public function run(): void
+    /**
+     * Run the database seeds.
+     */
+    public function run()
     {
-        // role create or get
-        $role = Role::firstOrCreate([
-            'name' => 'admin'
-        ]);
-
         $permissions = [
-            'Create Student',
-            'Edit Student',
-            'Delete Student',
+            'view students',
+            'create students',
+            'edit students',
+            'delete students',
+            'view courses',
+            'manage courses',
+            'manage batches',
         ];
 
-        // permission create
         foreach ($permissions as $permission) {
-            Permission::firstOrCreate([
-                'name' => $permission
-            ]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
 
-        // sync permissions to role
-        $role->syncPermissions($permissions);
+        $admin = Role::firstOrCreate(['name' => 'Admin']);
+        $teacher = Role::firstOrCreate(['name' => 'Teacher']);
+        $student = Role::firstOrCreate(['name' => 'Student']);
 
-        // assign role to first user
-        $user = User::first();
-        if ($user) {
-            $user->assignRole('admin');
-        }
+        $admin->givePermissionTo(Permission::all());
+
+        $teacher->givePermissionTo([
+            'view students',
+            'view courses',
+            'manage batches',
+        ]);
+
+        $student->givePermissionTo([
+            'view courses',
+        ]);
     }
 }
