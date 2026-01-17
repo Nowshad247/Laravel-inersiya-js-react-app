@@ -9,6 +9,7 @@ use App\Models\Student;
 use Illuminate\Support\Facades\DB;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Database\Seeders\RolePermissionSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -17,8 +18,6 @@ class DatabaseSeeder extends Seeder
      */
    public function run(): void
 {
-    $this->call(RolePermissionSeeder::class);
-    
     User::factory(10)->create();
 
     User::firstOrCreate(
@@ -35,7 +34,6 @@ class DatabaseSeeder extends Seeder
         ->count(10)
         ->create()
         ->each(function ($course) {
-
             // each course has 2 batches
             Batch::factory()
                 ->count(2)
