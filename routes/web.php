@@ -10,6 +10,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\VarifyCertificate;
 use App\Http\Middleware\HandleInertiaRequests;
 use \App\Http\Controllers\ProfilePictureController;
+use App\Http\Controllers\UserController;
 
 Route::get('/', [HomePageController::class, 'index'])->name('home');
 //public routes
@@ -52,6 +53,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //Website settings routes
     Route::get('/userspermissions', [DashboardController::class, 'usersPermissions'])->name('users.permissions');
+
+    //Website user Routes
+
+    Route::get('/users',[UserController::class,'index'])->name('users.index');
+
 
 });
 

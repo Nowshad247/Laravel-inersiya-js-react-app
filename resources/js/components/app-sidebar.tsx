@@ -13,7 +13,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { LayoutGrid ,UserPlus, BookCheck, SwatchBook,ReceiptText} from 'lucide-react';
+import { LayoutGrid, UserPlus, BookCheck, SwatchBook, ReceiptText, UsersRound } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -22,17 +22,17 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
-      {
+    {
         title: 'Students',
         href: '/students',
         icon: UserPlus,
     },
-      {
+    {
         title: 'Courses',
         href: '/courses',
         icon: BookCheck,
     },
-      {
+    {
         title: 'Batches',
         href: '/batch',
         icon: SwatchBook,
@@ -40,12 +40,12 @@ const mainNavItems: NavItem[] = [
 ];
 
 const footerNavItems: NavItem[] = [
-      {
+    {
         title: 'Users & Permissions',
         href: '/userspermissions',
         icon: LayoutGrid,
     },
-      {
+    {
         title: 'Billings ',
         href: '/',
         icon: ReceiptText,
@@ -53,6 +53,11 @@ const footerNavItems: NavItem[] = [
         title: 'Website Config',
         href: '/',
         icon: LayoutGrid,
+    },
+    {
+        title: 'Website User',
+        href: '/users',
+        icon: UsersRound,
     },
 
 ];
