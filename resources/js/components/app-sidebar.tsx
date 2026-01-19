@@ -13,7 +13,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { LayoutGrid, UserPlus, BookCheck, SwatchBook, ReceiptText, UsersRound } from 'lucide-react';
+import { LayoutGrid, UserPlus, BookCheck, ReceiptText, UsersRound,ScanSearch,ContactRound } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -35,34 +35,39 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Batches',
         href: '/batch',
-        icon: SwatchBook,
+        icon: ScanSearch,
     },
 ];
 
 const footerNavItems: NavItem[] = [
-    {
-        title: 'Users & Permissions',
-        href: '/userspermissions',
-        icon: LayoutGrid,
-    },
+    
     {
         title: 'Billings ',
-        href: '/',
+        href: '/billings',
         icon: ReceiptText,
-    }, {
-        title: 'Website Config',
-        href: '/',
-        icon: LayoutGrid,
+    },
+     {
+        title: 'Lead Management', 
+        href: '/leads',
+        icon: ContactRound,
     },
     {
         title: 'Website User',
         href: '/users',
         icon: UsersRound,
-    },
-
+    },{
+        title: 'Users & Permissions',
+        href: '/userspermissions',
+        icon: LayoutGrid,
+    }, {
+        title: 'Verify Certificate',
+        href: '/',
+        icon: ScanSearch,
+    }
 ];
 
 export function AppSidebar() {
+    
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>

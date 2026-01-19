@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BatchController;
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomePageController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\VarifyCertificate;
 use App\Http\Middleware\HandleInertiaRequests;
 use \App\Http\Controllers\ProfilePictureController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 
 Route::get('/', [HomePageController::class, 'index'])->name('home');
@@ -50,14 +52,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/student/pdf', [PdfController::class, 'student'])->name('student.pdf')->withoutMiddleware([
         HandleInertiaRequests::class,
     ]);
-
     //Website settings routes
-    Route::get('/userspermissions', [DashboardController::class, 'usersPermissions'])->name('users.permissions');
-
+    Route::get('/userspermissions', [RoleController::class, 'index'])->name('users.permissions');
+    Route::get('/role/create',[RoleController::class,'create'])->name('role.create');
+    Route::post('/role/store',[RoleController::class,'store'])->name('role.store');
+    Route::get('/role/edit/{id}',[RoleController::class,'edit'])->name('role.edit');
+    Route::put('/role/update/{id}',[RoleController::class,'update'])->name('role.update');
+    Route::delete('/role/delete/{id}',[RoleController::class,'destroy'])->name('role.delete');
     //Website user Routes
-
     Route::get('/users',[UserController::class,'index'])->name('users.index');
-
+    Route::get('/users/create',[UserController::class,'create'])->name('users.create');
+    Route::post('/users/create',[UserController::class,'store'])->name('users.store');
+    Route::get('/users/edit/{id}',[UserController::class,'edit'])->name('users.edit');
+    Route::put('/users/edit/{id}',[UserController::class,'update'])->name('users.update');
+    Route::delete('/users/delete/{id}',[UserController::class,'destroy'])->name('users.delete');
+    //Billing Routes
+    Route::get('/billings',[BillingController::class,'index'])->name('billings.index');
 
 });
 

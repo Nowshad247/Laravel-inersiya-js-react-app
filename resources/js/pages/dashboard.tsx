@@ -29,7 +29,7 @@ export default function Dashboard({ totalStudent, totalBatchs, totalCourses }: D
                 <DashboardCard title='Total Courses' value={totalCourses} icon={<Blend className="h-4 w-4" />}></DashboardCard>
                 <DashboardCard title='Total Batchs' value={totalBatchs} icon={<LibraryBig className="h-4 w-4" />}></DashboardCard>
             </div>
-            <div>
+            <div className='m-6'>
                 <ChartAreaInteractive/>
             </div>
 

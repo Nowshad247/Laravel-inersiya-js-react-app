@@ -20,6 +20,7 @@ export interface NavItem {
     href: NonNullable<InertiaLinkProps['href']>;
     icon?: LucideIcon | null;
     isActive?: boolean;
+    permission?: string; 
 }
 
 export interface SharedData {
@@ -51,6 +52,8 @@ export interface Role{
     guard_name: string;
     created_at: string;
     updated_at: string;
+     permissions?: Permission[];
+
 }
 export interface Permission{
     id: number;
