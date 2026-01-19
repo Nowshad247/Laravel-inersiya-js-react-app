@@ -3,7 +3,6 @@ import { useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { CertificateResult } from '@/types/CertificateResult';
-import { PdfButton } from '@/components/ui/pdfbtn';
 
 // Regex for UID validation
 const UID_REGEX = /^SDC-[A-Z]{2,5}-\d{4}-\d{4}-[A-Z]-\d+$/;
@@ -15,7 +14,7 @@ interface Course {
 }
 
 // Page props
-interface MyPageProps extends Record<string, any> {
+interface MyPageProps extends Record<string, unknown> {
   status: boolean | null;
   message: string | null;
   data: CertificateResult | null;
@@ -30,7 +29,7 @@ function isCourse(value: unknown): value is Course {
   );
 }
 
-export default function Welcome({ canRegister = false }: { canRegister?: boolean }) {
+export default function Welcome() {
   const { data, setData, post, processing, errors, reset } = useForm<{ uid: string }>({
     uid: '',
   });

@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BatchController;
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomePageController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\VarifyCertificate;
 use App\Http\Middleware\HandleInertiaRequests;
 use \App\Http\Controllers\ProfilePictureController;
+use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 
 Route::get('/', [HomePageController::class, 'index'])->name('home');
@@ -52,11 +54,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     ]);
 
     //Website settings routes
-    Route::get('/userspermissions', [DashboardController::class, 'usersPermissions'])->name('users.permissions');
+    Route::get('/userspermissions', [RoleController::class, 'index'])->name('users.permissions');
 
     //Website user Routes
 
     Route::get('/users',[UserController::class,'index'])->name('users.index');
+
+    //Billing Routes
+    Route::get('/billings',[BillingController::class,'index'])->name('billings.index');
 
 
 });

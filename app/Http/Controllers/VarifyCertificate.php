@@ -72,4 +72,8 @@ class VarifyCertificate extends Controller
             ]);
         }
     }
+    public function dashboardView()
+    {
+        return Inertia::render('dashboard');
+    }
 }
