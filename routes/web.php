@@ -52,17 +52,19 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/student/pdf', [PdfController::class, 'student'])->name('student.pdf')->withoutMiddleware([
         HandleInertiaRequests::class,
     ]);
-
     //Website settings routes
     Route::get('/userspermissions', [RoleController::class, 'index'])->name('users.permissions');
-
+    Route::get('/role/create',[RoleController::class,'create'])->name('role.create');
+    Route::post('/role/store',[RoleController::class,'store'])->name('role.store');
+    Route::get('/role/edit/{id}',[RoleController::class,'edit'])->name('role.edit');
+    Route::put('/role/update/{id}',[RoleController::class,'update'])->name('role.update');
+    Route::delete('/role/delete/{id}',[RoleController::class,'destroy'])->name('role.delete');
     //Website user Routes
-
     Route::get('/users',[UserController::class,'index'])->name('users.index');
-
     //Billing Routes
-    Route::get('/billings',[BillingController::class,'index'])->name('billings.index');
-
+    Route::middleware(['permission:'])->group(function () {
+        Route::get('/billings',[BillingController::class,'index'])->name('billings.index');
+    });
 
 });
 

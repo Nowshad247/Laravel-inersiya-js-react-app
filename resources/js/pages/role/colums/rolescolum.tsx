@@ -40,7 +40,7 @@ export const rolescolum: ColumnDef<Role>[] = [
                     <Button
                         size="icon"
                         variant="outline"
-                        onClick={() => router.get(`/batch/${role.id}/edit`)}
+                        onClick={() => router.get(`/role/edit/${role.id}`)}
                     >
                         <Pencil className="h-4 w-4" />
                     </Button>
