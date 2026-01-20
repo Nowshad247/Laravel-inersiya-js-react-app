@@ -72,7 +72,6 @@ class UserController extends Controller
             'roles' => 'array',
             'roles.*' => 'exists:roles,id',
         ]);
-
         $user->update([
             'name' => $request['name'],
             'email' => $request['email'],
@@ -80,10 +79,9 @@ class UserController extends Controller
 
         // Sync roles
         $user->roles()->sync($request['roles'] ?? []);
-        
+
         return redirect()->route('users.index')->with('success', 'User updated successfully.');
     }
-
     /**
      * Remove the specified resource from storage.
      */
