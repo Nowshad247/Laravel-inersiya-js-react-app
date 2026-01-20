@@ -69,6 +69,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //Billing Routes
     Route::get('/billings',[BillingController::class,'index'])->name('billings.index');
 
+    //Lead Routes
+    Route::get('/leads', [App\Http\Controllers\LeadController::class, 'index'])->name('leads.index');
+
 });
 
 require __DIR__ . '/settings.php';
