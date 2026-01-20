@@ -6,6 +6,7 @@ use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomePageController;
+use App\Http\Controllers\LeadController;
 use App\Http\Controllers\PdfController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\VarifyCertificate;
@@ -70,12 +71,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/billings',[BillingController::class,'index'])->name('billings.index');
 
     //Lead Routes
-    Route::get('/leads', [App\Http\Controllers\LeadController::class, 'index'])->name('leads.index');
-    Route::get('/leads/create', [App\Http\Controllers\LeadController::class, 'create'])->name('leads.create');
-    Route::post('/leads/create', [App\Http\Controllers\LeadController::class, 'store'])->name('leads.store');
-    Route::get('/leads/edit/{id}', [App\Http\Controllers\LeadController::class, 'edit'])->name('leads.edit');
-    Route::put('/leads/edit/{id}', [App\Http\Controllers\LeadController::class, 'update'])->name('leads.update');
-    Route::delete('/leads/delete/{id}', [App\Http\Controllers\LeadController::class, 'destroy'])->name('leads.delete');
+    Route::get('/leads', [LeadController::class, 'index'])->name('leads.index');
+    Route::get('/leads/create', [LeadController::class, 'create'])->name('leads.create');
+    Route::get('/leads/upload', [LeadController::class, 'upload'])->name('leads.upload');
+    Route::post('/leads/import', [LeadController::class, 'import'])->name('leads.import');
+    Route::post('/leads/create', [LeadController::class, 'store'])->name('leads.store');
+    Route::get('/leads/edit/{id}', [LeadController::class, 'edit'])->name('leads.edit');
+    Route::put('/leads/edit/{id}', [LeadController::class, 'update'])->name('leads.update');
+    Route::delete('/leads/delete/{id}', [LeadController::class, 'destroy'])->name('leads.delete');
 
 });
 
