@@ -14,7 +14,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Create({ permissions }: { permissions: Permission[] }) {
     const form = useForm({
         name: " ",
-        guard_name: " ",
+        guard_name: "web",
         permissions: [] as number[],
     });
 
@@ -55,12 +55,12 @@ export default function Create({ permissions }: { permissions: Permission[] }) {
                     {/* Guard Name */}
                     <div>
                         <label className="block text-sm font-medium">Guard Name</label>
-                        <input
+                        <select name="web" id="" className="mt-1 block w-full border rounded p-2"
                             value={form.data.guard_name}
-                            required
                             onChange={(e) => form.setData("guard_name", e.target.value)}
-                            className="mt-1 block w-full border rounded p-2"
-                        />
+                        >
+                            <option selected value="web">Web</option>
+                        </select>
                         {form.errors.guard_name && (
                             <p className="text-red-600 text-sm">{form.errors.guard_name}</p>
                         )}
