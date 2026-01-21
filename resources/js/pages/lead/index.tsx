@@ -29,7 +29,6 @@ export default function Index({ leads }: { leads: { data: Lead[] } }) {
             </div>
             <div className='m-6'>
                 <h1 className='text-2xl font-bold'>Lead Dashboard</h1>
-                {/* <DataTable columns={leadColumns} data={leads.data} searchKey='name' key={leads.data}></DataTable> */}
                 <LeadsTable></LeadsTable>
             </div>
         </AppLayout>
