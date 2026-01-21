@@ -19,14 +19,11 @@ class LeadController extends Controller
     {
         $data = Lead::with(['status', 'source'])->paginate(15);
         return Inertia::render('lead/index',[
-            'data' => $data,
+            'leads' => $data,
         ]);
-
-        
     }
     public function upload()
     {
-
         return Inertia::render('lead/upload');
     }
     public function import(Request $request)

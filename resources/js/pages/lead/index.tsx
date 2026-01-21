@@ -1,9 +1,13 @@
 
+import { DataTable } from '@/components/DataTable/DataTable';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
-import { Head, router, usePage } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
+import { leadColumns } from './leadColums/leadColums';
+import { Lead } from '@/types/lead';
+import { LeadsTable } from '@/components/leads-table';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -11,11 +15,8 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: dashboard().url,
     },
 ];
-export default function Index({ data }: { data: any }) {
-
-    const { flash } = usePage().props;
-
-    console.log(flash);
+export default function Index({ leads }: { leads: { data: Lead[] } }) {
+    console.log(leads, 'data lead');
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Lead Dashboard" />
@@ -28,7 +29,8 @@ export default function Index({ data }: { data: any }) {
             </div>
             <div className='m-6'>
                 <h1 className='text-2xl font-bold'>Lead Dashboard</h1>
-                <p className='mt-4'>Lead part will update soon</p>
+                {/* <DataTable columns={leadColumns} data={leads.data} searchKey='name' key={leads.data}></DataTable> */}
+                <LeadsTable></LeadsTable>
             </div>
         </AppLayout>
     );
