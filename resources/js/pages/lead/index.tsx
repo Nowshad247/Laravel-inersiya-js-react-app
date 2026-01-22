@@ -2,20 +2,20 @@
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
-import { type BreadcrumbItem } from '@/types';
-import { Head, router, usePage } from '@inertiajs/react';
-
+import { User, type BreadcrumbItem } from '@/types';
+import { Head, router } from '@inertiajs/react';
+import { LeadsTable } from '@/components/leads-table';
+import { Lead, LeadSource, LeadStatus } from '@/lib/data';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Lead Dashboard',
         href: dashboard().url,
     },
 ];
-export default function Index({ data }: { data: any }) {
 
-    const { flash } = usePage().props;
 
-    console.log(flash);
+
+export default function Index({leads ,users ,lead_statuses,leadSources ,leadStatus}: { leads: { data: Lead[] } , users: User[] , lead_statuses: LeadStatus[] , leadSources: LeadSource[] , leadStatus: LeadStatus[]}) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Lead Dashboard" />
@@ -28,7 +28,8 @@ export default function Index({ data }: { data: any }) {
             </div>
             <div className='m-6'>
                 <h1 className='text-2xl font-bold'>Lead Dashboard</h1>
-                <p className='mt-4'>Lead part will update soon</p>
+
+                <LeadsTable leads={leads.data} users={users} lead_statuses={lead_statuses} leadSources={leadSources} leadStatus={leadStatus[0]} ></LeadsTable>
             </div>
         </AppLayout>
     );
