@@ -37,7 +37,18 @@ class LeadController extends Controller
 
     public function upload()
     {
-        return Inertia::render('lead/upload');
+        $leadSources = LeadSource::all();
+        $leadStatuses = LeadStatus::all();
+        $assignedTos = DB::table('users')->get();
+        $townNames = DB::table('leads')->distinct()->pluck('town');
+
+        $leadSources = LeadSource::all();
+        return Inertia::render('lead/upload', [
+            'leadSources' => $leadSources,
+            'leadStatuses' => $leadStatuses,
+            'assignedTos' => $assignedTos,
+            'townNames' => $townNames,
+        ]);
     }
 
     public function import(Request $request)
@@ -74,7 +85,7 @@ class LeadController extends Controller
 
             if (! empty($missingHeaders)) {
                 return back()->withErrors([
-                    'file' => 'Missing required columns: '.implode(', ', $missingHeaders).'. Required columns: name, status. Optional columns: email, phone, whatsapp, town, source.',
+                    'file' => 'Missing required columns: ' . implode(', ', $missingHeaders) . '. Required columns: name, status. Optional columns: email, phone, whatsapp, town, source.',
                 ]);
             }
 
@@ -125,7 +136,7 @@ class LeadController extends Controller
 
                     // Validate row has same number of columns as header
                     if (count($row) !== count($header)) {
-                        $errors[] = "Row {$rowNumber}: Column count mismatch. Expected ".count($header).' columns, found '.count($row).'.';
+                        $errors[] = "Row {$rowNumber}: Column count mismatch. Expected " . count($header) . ' columns, found ' . count($row) . '.';
                         $rowNumber++;
 
                         continue;
@@ -224,7 +235,7 @@ class LeadController extends Controller
                     DB::rollBack();
 
                     return back()->withErrors([
-                        'file' => 'Validation errors found: '.implode(' ', array_slice($errors, 0, 10)).(count($errors) > 10 ? ' (and '.(count($errors) - 10).' more errors)' : ''),
+                        'file' => 'Validation errors found: ' . implode(' ', array_slice($errors, 0, 10)) . (count($errors) > 10 ? ' (and ' . (count($errors) - 10) . ' more errors)' : ''),
                     ]);
                 }
 
@@ -242,35 +253,33 @@ class LeadController extends Controller
                 DB::commit();
 
                 // Build success message
-                $message = 'Leads imported successfully! '.count($insert).' lead(s) imported.';
+                $message = 'Leads imported successfully! ' . count($insert) . ' lead(s) imported.';
                 if (! empty($createdStatuses)) {
                     $uniqueStatuses = array_unique($createdStatuses);
-                    $message .= ' Created '.count($uniqueStatuses).' new status(es): '.implode(', ', $uniqueStatuses).'.';
+                    $message .= ' Created ' . count($uniqueStatuses) . ' new status(es): ' . implode(', ', $uniqueStatuses) . '.';
                 }
                 if (! empty($createdSources)) {
                     $uniqueSources = array_unique($createdSources);
-                    $message .= ' Created '.count($uniqueSources).' new source(s): '.implode(', ', $uniqueSources).'.';
+                    $message .= ' Created ' . count($uniqueSources) . ' new source(s): ' . implode(', ', $uniqueSources) . '.';
                 }
 
                 return redirect()->route('leads.index')->with('success', $message);
-
             } catch (\Exception $e) {
                 DB::rollBack();
                 throw $e;
             }
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return back()->withErrors($e->errors());
         } catch (\Throwable $e) {
             return back()->withErrors([
-                'file' => 'Import failed: '.$e->getMessage().' (Line: '.($e->getLine() ?? 'unknown').')',
+                'file' => 'Import failed: ' . $e->getMessage() . ' (Line: ' . ($e->getLine() ?? 'unknown') . ')',
             ]);
         }
     }
 
     public function create()
     {
-        
+
         $lead_statuses = LeadStatus::all();
         $lead_sources = LeadSource::all();
 
@@ -282,17 +291,15 @@ class LeadController extends Controller
 
     public function store(Request $request)
     {
-        
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20'],
             'whatsapp_number' => ['nullable', 'string', 'max:20'],
-            'town' => ['nullable', 'string', 'max:100'],
             'status_id' => ['required', 'exists:lead_statuses,id'],
             'source_id' => ['nullable', 'exists:lead_sources,id'],
+            'town' => ['nullable', 'string', 'max:100'],
             'lead_notes' => ['nullable', 'string', 'max:255'],
-        
         ]);
 
         Lead::create($validated);
