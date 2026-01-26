@@ -6,6 +6,8 @@ import { User, type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/react';
 import { LeadsTable } from '@/components/leads-table';
 import { Lead, LeadSource, LeadStatus } from '@/lib/data';
+import { DataTable } from '@/components/DataTable/DataTable';
+import { columns } from './leadColums/columns';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Lead Dashboard',
@@ -31,6 +33,8 @@ export default function Index({leads ,users ,lead_statuses,leadSources ,leadStat
                 <h1 className='text-2xl font-bold'>Lead Dashboard</h1>
                 
                 <LeadsTable leadsdata={leads} users={users} lead_statuses={lead_statuses} leadSources={leadSources} leadStatus={leadStatus[0]} ></LeadsTable>
+                {/* <DataTable columns={columns} data={leads.data} ></DataTable> */}
+
 
                 
             </div>
