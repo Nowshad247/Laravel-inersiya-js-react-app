@@ -334,4 +334,23 @@ class LeadController extends Controller
 
         return redirect()->route('leads.index')->with('success', 'Lead created successfully');
     }
+
+    public function callCenter()
+    {
+        $data = Lead::with(['status', 'source', 'notes', 'calls', 'reminders', 'profile'])->latest()->get();
+        $users = DB::table('users')->get();
+        $lead_statuses = LeadStatus::all();
+        $LeadSources = LeadSource::all();
+        $LeadStatus = LeadStatus::all();
+        $leadProfile = LeadProfile::all();
+
+        return Inertia::render('lead/callCenter', [
+            'leads' => $data,
+            'users' => $users,
+            'lead_statuses' => $lead_statuses,
+            'leadSources' => $LeadSources,
+            'leadStatus' => $LeadStatus,
+            'leadProfile' => $leadProfile,
+        ]);
+    }
 }
