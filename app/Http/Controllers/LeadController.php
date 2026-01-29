@@ -337,20 +337,9 @@ class LeadController extends Controller
 
     public function callCenter()
     {
-        $data = Lead::with(['status', 'source', 'notes', 'calls', 'reminders', 'profile'])->latest()->get();
-        $users = DB::table('users')->get();
-        $lead_statuses = LeadStatus::all();
-        $LeadSources = LeadSource::all();
-        $LeadStatus = LeadStatus::all();
-        $leadProfile = LeadProfile::all();
-
+        $data = Lead::with(['status', 'source', 'notes', 'calls', 'reminders', 'profile'])->latest()->paginate(10);
         return Inertia::render('lead/callCenter', [
             'leads' => $data,
-            'users' => $users,
-            'lead_statuses' => $lead_statuses,
-            'leadSources' => $LeadSources,
-            'leadStatus' => $LeadStatus,
-            'leadProfile' => $leadProfile,
         ]);
     }
 }
