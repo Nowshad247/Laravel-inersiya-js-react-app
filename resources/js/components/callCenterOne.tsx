@@ -66,8 +66,6 @@ export function CallCenterOne({ leadList, sources, total }: CallCenterOneProps) 
             }
         );
     };
-
-    // Search বা filter change হলে page = 1
     useEffect(() => {
         goToPage(1);
     }, [search, selectedSource]);
@@ -78,8 +76,8 @@ export function CallCenterOne({ leadList, sources, total }: CallCenterOneProps) 
     }, [totalPages]);
 
     return (
-        <div>
-            <Card className="flex flex-col">
+        <div className="h-[150vh] ">
+            <Card className="h-[150vh] flex flex-col">
                 {/* Header */}
                 <CardHeader>
                     <div className="flex items-center justify-between">
@@ -101,7 +99,7 @@ export function CallCenterOne({ leadList, sources, total }: CallCenterOneProps) 
                             value={selectedSource}
                             onChange={(e) => setSelectedSource(e.target.value)}
                         >
-                            <option value="all">All Leads</option>
+                            <option value="all">Lead Source</option>
                             {sources.map((source) => (
                                 <option key={source.id} value={source.name}>
                                     {source.name}

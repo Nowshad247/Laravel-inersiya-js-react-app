@@ -6,12 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { CallCenterOne } from '@/components/callCenterOne'
+import CallToday from '@/components/CallToday'
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
     title: 'Call Center',
     href: dashboard().url,
   },
+  
 ]
 
 const mockLeads = [
@@ -29,31 +31,10 @@ export default function Callcenter({ leads, sources,total }: { leads?: any, sour
       <div className="">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
           {/* Column 1: New Leads */}
-            <CallCenterOne leadList={leadList} sources={sources} paginateData={leads} total={total} />
+          <CallCenterOne leadList={leadList} sources={sources} total={total ?? 0} />
           {/* Column 2: Call Today */}
-          <Card className="h-[75vh] flex flex-col">
-            <CardHeader>
-              <CardTitle>Call Today</CardTitle>
-            </CardHeader>
 
-            <CardContent className="flex-1 overflow-y-auto space-y-3">
-              {mockLeads.map(lead => (
-                <div
-                  key={lead.id}
-                  className="rounded-lg border p-3"
-                >
-                  <p className="font-medium">{lead.name}</p>
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Follow-up scheduled today
-                  </p>
-                  <div className="flex gap-2">
-                    <Button size="sm">Call</Button>
-                    <Button size="sm" variant="outline">Done</Button>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <CallToday leadsdata={leadList} />
 
           {/* Column 3: Search / Manual Call */}
           <Card className="h-[75vh] flex flex-col">
