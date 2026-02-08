@@ -22,47 +22,18 @@ const mockLeads = [
   { id: 3, name: 'Sadia Islam', phone: '019xxxxxxx' },
 ]
 
-export default function Callcenter({ leads, sources,total }: { leads?: any, sources?: any, total?: number }) {
+export default function Callcenter({ leads, sources,total ,reminders}: { leads?: any, sources?: any, total?: number,reminders?:any }) {
     const {data } = leads || {};
     const leadList = data || [];
   return (
     <AppLayout breadcrumbs={breadcrumbs}>
       <Head title="Call Center Dashboard" />
       <div className="">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
           {/* Column 1: New Leads */}
           <CallCenterOne leadList={leadList} sources={sources} total={total ?? 0} />
           {/* Column 2: Call Today */}
-
           <CallToday leadsdata={leadList} />
-
-          {/* Column 3: Search / Manual Call */}
-          <Card className="h-[75vh] flex flex-col">
-            <CardHeader>
-              <CardTitle>Search Leads</CardTitle>
-            </CardHeader>
-
-            <CardContent className="space-y-4">
-              <Input placeholder="Search by name or phone..." />
-
-              <div className="space-y-3 overflow-y-auto">
-                {mockLeads.map(lead => (
-                  <div
-                    key={lead.id}
-                    className="rounded-lg border p-3 flex justify-between items-center"
-                  >
-                    <div>
-                      <p className="font-medium">{lead.name}</p>
-                      <p className="text-sm text-muted-foreground">{lead.phone}</p>
-                    </div>
-                    <Button size="sm" variant="outline">
-                      Call
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
     </AppLayout>
