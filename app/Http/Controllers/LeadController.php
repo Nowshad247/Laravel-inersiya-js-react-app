@@ -311,7 +311,7 @@ class LeadController extends Controller
 
         if (!empty($validated['lead_notes'])) {
             $lead->notes()->create([
-                'lead_id'=>$lead->id,
+                'lead_id' => $lead->id,
                 'note' => $validated['lead_notes'],
                 'user_id' => auth()->user()->id,
             ]);
@@ -324,7 +324,7 @@ class LeadController extends Controller
                 $lead->save();
             }
         }
-        if(!empty($validated['occupation'])) {
+        if (!empty($validated['occupation'])) {
             $leadProfile = new LeadProfile();
             $leadProfile->lead_id = $lead->id;
             $leadProfile->occupation = $validated['occupation'];
@@ -337,9 +337,17 @@ class LeadController extends Controller
 
     public function callCenter()
     {
+        $data = Lead::with(['status', 'source', 'notes', 'calls', 'reminders', 'profile'])->latest()->paginate(30);
+        $total = Lead::count();
+        $sources = LeadSource::all();
+      
+
      $data = Lead::with(['status', 'source', 'notes', 'calls', 'reminders', 'profile'])->latest()->paginate(30);
         return Inertia::render('lead/callCenter', [
             'leads' => $data,
+            'sources' => $sources,
+            'total' => $total,
+    
         ]);
     }
 }
