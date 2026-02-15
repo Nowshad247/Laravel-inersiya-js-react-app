@@ -9,6 +9,7 @@ import { router, useForm } from "@inertiajs/react"
 import { useState } from "react"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
+import { Label } from "./ui/label"
 
 type Props = {
     open: boolean
@@ -99,6 +100,7 @@ export function CallNow({ open, onOpenChange, lead }: Props) {
                             {/* CALL FIELDS */}
                             {data.type === "call" && (
                                 <>
+                                    <Label>Called Tine</Label>
                                     <input
                                         type="datetime-local"
                                         className="w-full border rounded p-2"
@@ -123,13 +125,17 @@ export function CallNow({ open, onOpenChange, lead }: Props) {
                                         value={data.remarks}
                                         onChange={(e) => setData("remarks", e.target.value)}
                                     />
-
-                                    <textarea
-                                        placeholder="Write note"
+                                    <select required
                                         className="w-full border rounded p-2"
-                                        value={data.note}
-                                        onChange={(e) => setData("note", e.target.value)}
-                                    />
+                                        value={data.status_change}
+                                        onChange={(e) => setData("status_change", e.target.value as "New" | "contacted" | "qualified" | "lost" | "converted")}
+                                    >
+                                        <option value="New">New</option>
+                                        <option value="Contacted">Contacted</option>
+                                        <option value="qualified">qualified</option>
+                                        <option value="lost">lost</option>
+                                        <option value="converted">converted</option>
+                                    </select>
                                 </>
                             )}
 
@@ -146,7 +152,6 @@ export function CallNow({ open, onOpenChange, lead }: Props) {
                             {/* REMINDER FIELD */}
                             {data.type === "reminder" && (
                                 <>
-
                                     <input
                                         type="datetime-local"
                                         className="w-full border rounded p-2"

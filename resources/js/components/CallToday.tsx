@@ -45,7 +45,6 @@ export default function CallToday({
 
   const uniqueReminderDates = useMemo(() => {
     const dates = leadReminders.map((r) => {
-      // normalize to only date part (YYYY-MM-DD)
       const d = new Date(r.remind_at);
       return d.toISOString().split("T")[0];
     });
@@ -55,6 +54,7 @@ export default function CallToday({
 
   // Filter + Sort (recent reminder first)
 const filteredReminders = useMemo(() => {
+
   return leadReminders
     .filter((reminder) => {
       const matchSearch = reminder.lead.name
@@ -150,7 +150,7 @@ const filteredReminders = useMemo(() => {
               <div key={reminder.id} className="rounded-lg border p-3">
                 <div className="flex justify-between items-center">
                   <p className="font-medium">
-                    {reminder.lead.name}
+                    {reminder.lead.name} 
                   </p>
 
                   <Button
