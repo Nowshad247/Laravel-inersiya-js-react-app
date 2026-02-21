@@ -4,6 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { useEffect, useMemo, useState } from "react";
 import { LeadViewDialog } from "./LeadViewDialog";
+import { Lead } from "@/types/Leads";
+import { CallNow } from "./CallNow";
 
 type Reminder = {
   id: number;
@@ -43,41 +45,45 @@ export default function CallToday({
   const [search, setSearch] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
 
+  //callNow
+  const [callOpen, setCallOpen] = useState(false)
+  const [selectCall, setCallNow] = useState<Lead | null>(null)
+
   const uniqueReminderDates = useMemo(() => {
     const dates = leadReminders.map((r) => {
       const d = new Date(r.remind_at);
       return d.toISOString().split("T")[0];
     });
-  
+
     return [...new Set(dates)];
   }, [leadReminders]);
 
   // Filter + Sort (recent reminder first)
-const filteredReminders = useMemo(() => {
+  const filteredReminders = useMemo(() => {
 
-  return leadReminders
-    .filter((reminder) => {
-      const matchSearch = reminder.lead.name
-        .toLowerCase()
-        .includes(search.toLowerCase());
+    return leadReminders
+      .filter((reminder) => {
+        const matchSearch = reminder.lead.name
+          .toLowerCase()
+          .includes(search.toLowerCase());
 
-      const reminderDate = new Date(reminder.remind_at)
-        .toISOString()
-        .split("T")[0];
+        const reminderDate = new Date(reminder.remind_at)
+          .toISOString()
+          .split("T")[0];
 
-      const matchDate = selectedDate
-        ? reminderDate === selectedDate
-        : true;
+        const matchDate = selectedDate
+          ? reminderDate === selectedDate
+          : true;
 
-      return matchSearch && matchDate;
-    })
-    .sort((a, b) => {
-      return (
-        new Date(b.remind_at).getTime() -
-        new Date(a.remind_at).getTime()
-      );
-    });
-}, [leadReminders, search, selectedDate]);
+        return matchSearch && matchDate;
+      })
+      .sort((a, b) => {
+        return (
+          new Date(b.remind_at).getTime() -
+          new Date(a.remind_at).getTime()
+        );
+      });
+  }, [leadReminders, search, selectedDate]);
 
   // Pagination navigation
   const goToPage = (page: number) => {
@@ -116,6 +122,8 @@ const filteredReminders = useMemo(() => {
         onOpenChange={setOpen}
         lead={selectedLead}
       />
+      <CallNow open={callOpen} onOpenChange={setCallOpen} lead={selectCall} />
+
 
       <Card className="h-[150vh] flex flex-col">
         <CardHeader>
@@ -150,17 +158,25 @@ const filteredReminders = useMemo(() => {
               <div key={reminder.id} className="rounded-lg border p-3">
                 <div className="flex justify-between items-center">
                   <p className="font-medium">
-                    {reminder.lead.name} 
+                    {reminder.lead.name}
                   </p>
+                  <div className="flex gap-1">
+                    <Button size="sm" variant="outline" onClick={() => {
+                      setCallNow(reminder.lead)
+                      setCallOpen(true)
+                    }}>
+                      Call Now
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setSelectedLead(reminder.lead);
+                        setOpen(true);
+                      }}
+                    >
+                      View
+                    </Button>
+                  </div>
 
-                  <Button
-                    onClick={() => {
-                      setSelectedLead(reminder.lead);
-                      setOpen(true);
-                    }}
-                  >
-                    View
-                  </Button>
                 </div>
 
                 <p className="text-xs text-muted-foreground mt-1">
