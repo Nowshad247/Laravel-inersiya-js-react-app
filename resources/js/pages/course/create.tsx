@@ -14,18 +14,18 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 export default function Index() {
-    const { data, setData, post, processing, errors } = useForm<Course>({
-        id: ' ',
-        name: ' ',
-        course_code: ' ',
-        description: ' ',
-    });
-
-
     function submit(e: React.FormEvent) {
         e.preventDefault();
         post('/courses/create');
     }
+
+    const { data, setData, post, processing, errors } = useForm<Course>({
+        id: '',
+        name: '',
+        course_code: '',
+        description: '',
+    });
+    
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -46,21 +46,27 @@ export default function Index() {
                         <Input
                             value={data.course_code}
                             onChange={(e) => setData("course_code", e.target.value)}
+                            placeholder="course code"
                         />
-                        {errors.name && <p className="text-red-500 text-sm">{errors.course_code}</p>}
+                        {errors.course_code && (
+                            <p className="text-red-500 text-sm">{errors.course_code}</p>
+                        )}
                     </div>
                     <div className='p-4'>
                         <Label>Course Description</Label>
                         <Input
-                            value={data.description ?? " "}
+                            value={data.description}
                             onChange={(e) => setData("description", e.target.value)}
-                        />2024
-                        {errors.name && <p className="text-red-500 text-sm">{errors.description}</p>}
+                            placeholder="course description"
+                        />
+
+                        {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
                     </div>
 
                     <Button type='submit' className='p-6'>
                         {processing ? "Saving..." : "Save Course"}
                     </Button>
+
                 </form>
             </div>
 

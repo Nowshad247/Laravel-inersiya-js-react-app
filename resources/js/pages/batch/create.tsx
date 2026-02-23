@@ -11,10 +11,10 @@ export default function Create({ courses }: { courses: { id: number; name: strin
         e.preventDefault();
         post("/batch/create");
     }
-    const { data, setData, post, processing, errors } = useForm<BatchFormData>({
+    const { data, setData, post, processing, errors } = useForm<BatchFormData & { general?: string }>({
         name: "",
         course_id: 0,
-        batch_code:" ",
+        batch_code: " ",
         start_date: "",
         end_date: "",
         TotalClass: 0,
@@ -61,7 +61,7 @@ export default function Create({ courses }: { courses: { id: number; name: strin
                             <Label>batch_code</Label>
                             <Input type='text'
                                 value={data.batch_code}
-                                onChange={(e) => setData("batch_code",e.target.value)}
+                                onChange={(e) => setData("batch_code", e.target.value)}
                             />
                             {errors.end_date && <p className="text-red-500 text-sm">{errors.end_date}</p>}
                         </div>
@@ -92,7 +92,11 @@ export default function Create({ courses }: { courses: { id: number; name: strin
                         <Button disabled={processing} className="btn outline-1 outline-blue-950 mx-6 my-6 py-3 px-3 rounded-md" type="submit">
                             {processing ? "Saving..." : "Save Batch"}
                         </Button>
-
+                        {errors.general && (
+                            <div className="mb-4 rounded bg-red-100 p-3 text-red-700">
+                                {errors.general}
+                            </div>
+                        )}
                     </div>
                 </form>
             </div>

@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class StudentController extends Controller
 {
@@ -51,30 +53,48 @@ class StudentController extends Controller
     {
         try {
             DB::beginTransaction();
-            // Validation
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'father_name' => 'required|string|max:255',
-                'mother_name' => 'required|string|max:255',
-                'email' => 'required|email|unique:students,email',
-                'phone' => 'nullable|string|max:20',
-                'address' => 'nullable|string',
-                'guardian_name' => 'nullable|string|max:255',
-                'guardian_phone' => 'nullable|string|max:20',
-                'guardian_relation' => 'nullable|string|max:100',
-                'status' => 'required|in:active,inactive',
-                'batch_id' => 'required|exists:batches,id',
-                'course_ids' => 'required|array',
-                'course_ids.*' => 'exists:courses,id',
-                'photo' => 'nullable|image|max:2048',
-            ]);
 
-            // Photo upload
+            $validated = $request->validate(
+                [
+                    'name' => ['required', 'string', 'max:255'],
+                    'father_name' => ['required', 'string', 'max:255'],
+                    'mother_name' => ['required', 'string', 'max:255'],
+                    'email' => ['required', 'email', Rule::unique('students', 'email')],
+                    'phone' => ['nullable', 'string', 'max:20'],
+                    'address' => ['nullable', 'string'],
+                    'guardian_name' => ['nullable', 'string', 'max:255'],
+                    'guardian_phone' => ['nullable', 'string', 'max:20'],
+                    'guardian_relation' => ['nullable', 'string', 'max:100'],
+                    'status' => ['required', Rule::in(['active', 'inactive'])],
+                    'batch_id' => ['required', 'exists:batches,id'],
+                    'course_ids' => ['required', 'array', 'min:1'],
+                    'course_ids.*' => ['exists:courses,id'],
+                    'photo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+                ],
+                [
+                    'name.required' => 'Student name is required.',
+                    'father_name.required' => 'Father name is required.',
+                    'mother_name.required' => 'Mother name is required.',
+                    'email.required' => 'Email address is required.',
+                    'email.email' => 'Please enter a valid email address.',
+                    'email.unique' => 'This email is already registered.',
+                    'status.in' => 'Invalid status selected.',
+                    'batch_id.exists' => 'The selected batch does not exist.',
+                    'course_ids.required' => 'Please select at least one course.',
+                    'course_ids.array' => 'Invalid course selection format.',
+                    'course_ids.*.exists' => 'One of the selected courses is invalid.',
+                    'photo.image' => 'Photo must be an image file.',
+                    'photo.mimes' => 'Photo must be jpg, png, or webp.',
+                    'photo.max' => 'Photo size must be under 2MB.',
+                ]
+            );
+
+            // upload photo
             $photoPath = null;
             if ($request->hasFile('photo')) {
                 $photoPath = $request->file('photo')->store('students', 'public');
             }
-            // Create student
+
             $student = Student::create([
                 'name' => $validated['name'],
                 'father_name' => $validated['father_name'],
@@ -89,50 +109,41 @@ class StudentController extends Controller
                 'batch_id' => $validated['batch_id'],
                 'photo' => $photoPath,
             ]);
-            // Attach courses
-            $student->courses()->attach($validated['course_ids']);
 
-            // UID generation
+            $student->courses()->sync($validated['course_ids']);
+
+            // UID logic (unchanged)
             $batch = $student->batch;
-
-            $courseCode = Course::whereIn('id', $validated['course_ids'])
-                ->value('course_code') ?? 'XXX';
-
+            $courseCode = Course::whereIn('id', $validated['course_ids'])->pluck('course_code')->first() ?? 'XXX';
             $yymm = Carbon::parse($batch->start_date)->format('ym');
-
-            $lastStudent = Student::where('batch_id', $batch->id)
-                ->whereNotNull('student_uid')
-                ->latest('id')
-                ->first();
-
-            $lastSerial = $lastStudent
-                ? (int) substr($lastStudent->student_uid, -6, 4)
-                : 0;
-
+            $lastStudent = Student::where('batch_id', $batch->id)->whereNotNull('student_uid')->latest('id')->first();
+            $lastSerial = $lastStudent ? (int) substr($lastStudent->student_uid, -6, 4) : 0;
             $serialNumber = str_pad($lastSerial + 1, 4, '0', STR_PAD_LEFT);
             $firstLetter = strtoupper(substr($student->name, 0, 1));
-
-            $student->update([
-                'student_uid' => "SDC-{$courseCode}-{$yymm}-{$serialNumber}-{$firstLetter}-{$student->id}",
-            ]);
+            $student->update(['student_uid' => "SDC-{$courseCode}-{$yymm}-{$serialNumber}-{$firstLetter}-{$student->id}",]);
 
             DB::commit();
 
             return redirect()
                 ->route('student.index')
-                ->with('success', 'Student created successfully');
-        } catch (\Throwable $e) {
-
+                ->with('success', 'Student created successfully.');
+        } catch (ValidationException $e) {
             DB::rollBack();
-            // Log full error (important for debugging)
+            throw $e; // <-- this is the key
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
             Log::error('Student Create Failed', [
-                'error' => $e->getMessage(),
-                'file'  => $e->getFile(),
-                'line'  => $e->getLine(),
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
             ]);
+
             return back()
                 ->withInput()
-                ->with('error', 'Failed to create student: ' . $e->getMessage());
+                ->withErrors([
+                    'general' => 'Something went wrong while creating the student. Please try again.'
+                ]);
         }
     }
 
@@ -157,7 +168,7 @@ class StudentController extends Controller
 
         return Inertia::render('student/update', [
             'student' => $student,
-            'id'=>$student->id,
+            'id' => $student->id,
             'batches' => $batchs,
             'courses' => $courses,
             'student_course_ids' => $studentCourseIds

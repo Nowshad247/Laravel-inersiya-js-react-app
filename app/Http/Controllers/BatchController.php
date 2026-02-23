@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Batch;
 use App\Models\Course;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class BatchController extends Controller
@@ -34,14 +35,46 @@ class BatchController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'batch_code' => 'required',
-            'course_id' => 'required|exists:courses,id',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'TotalClass' => 'required|integer|min:1',
+            'name' => ['required', 'string', 'max:255'],
+            'batch_code' => ['required', 'string', 'max:100', Rule::unique('batches', 'batch_code')],
+            'course_id' => ['required', 'exists:courses,id'],
+            'start_date' => ['required', 'date', 'after_or_equal:today'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+            'TotalClass' => ['required', 'integer', 'min:1', 'max:500'],
+        ], [
+            // Name
+            'name.required' => 'Batch name is required.',
+            'name.max' => 'Batch name can’t be longer than 255 characters.',
+
+            // Batch Code
+            'batch_code.required' => 'Batch code is required.',
+            'batch_code.unique' => 'This batch code is already in use. Please choose a different one.',
+
+            // Course
+            'course_id.required' => 'Please select a course.',
+            'course_id.exists' => 'The selected course does not exist.',
+
+            // Dates
+            'start_date.required' => 'Start date is required.',
+            'start_date.after_or_equal' => 'Start date cannot be in the past.',
+            'end_date.required' => 'End date is required.',
+            'end_date.after_or_equal' => 'End date must be the same as or later than the start date.',
+
+            // Total Class
+            'TotalClass.required' => 'Total class count is required.',
+            'TotalClass.integer' => 'Total class must be a whole number.',
+            'TotalClass.min' => 'Total class must be at least 1.',
+            'TotalClass.max' => 'Total class looks too large. Please double-check.',
         ]);
-        $data = Batch::create($validated);
+
+
+        $batch = Batch::create($validated);
+
+        if (! $batch) {
+            return back()->withErrors([
+                'general' => 'Batch could not be created due to a server issue. Please try again.'
+            ]);
+        }
         return redirect()->route('batch.index')->with('success', 'Batch created successfully.');
     }
 

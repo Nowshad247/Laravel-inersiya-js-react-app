@@ -34,19 +34,32 @@ class CourseController extends Controller
      */
     public function store(Request $request)
     {
-        try {
-            $validated = $request->validate([
-                'name' => ['required', 'string', 'max:255'],
-                'course_code' => ['nullable', 'string', 'unique:courses,course_code'],
-                'description' => ['nullable', 'string'],
-            ]);
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'course_code' => ['nullable', 'string', 'unique:courses,course_code'],
+            'description' => ['nullable', 'string'],
+        ],
+        [
+            'name.required' => 'The course name is required.',
+            'name.string' => 'The course name must be a string.',
+            'name.max' => 'The course name may not be greater than 255 characters.',
+            'course_code.string' => 'The course code must be a string.',
+            'course_code.unique' => 'The course code has already been taken. Please choose a different course code.',
+            'description.string' => 'The description must be a string.',
+        ]);
 
-            Course::create($validated);
-            return redirect()->route('courses.index')->with('success', 'Course created successfully');
-        } catch (\Exception $e) {
-            Log::error('Error creating course: ' . $e->getMessage());
-            return redirect()->back()->withErrors('An error occurred while creating the course. Please try again.');
+        if (Course::where('course_code', $validated['course_code'])->exists()) {
+            return redirect()->back()->withErrors('A course with this course code already exists. Please choose a different course code.');
         }
+        if (Course::where('name', $validated['name'])->exists()) {
+            return redirect()->back()->withErrors('A course with this name already exists. Please choose a different name.');
+        }
+        $courseCreted = Course::create($validated);
+
+        if (!$courseCreted) {
+            return redirect()->back()->withErrors('Failed to create the course. Please try again.');
+        }
+        return redirect()->route('courses.index')->with('success', 'Course created successfully');
     }
 
     /**
@@ -55,8 +68,8 @@ class CourseController extends Controller
     public function show(Course $id)
     {
         $courseData = Course::with('batch')->findOrFail($id->id);
-        return Inertia::render('course/showCours',[
-            'course' =>$courseData
+        return Inertia::render('course/showCours', [
+            'course' => $courseData
         ]);
     }
 
@@ -75,7 +88,7 @@ class CourseController extends Controller
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'course_code' => ['nullable', 'string', 'unique:courses,course_code,'.$id->id],
+            'course_code' => ['nullable', 'string', 'unique:courses,course_code,' . $id->id],
             'description' => ['nullable', 'string'],
         ]);
 
