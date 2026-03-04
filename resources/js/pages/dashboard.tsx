@@ -4,7 +4,7 @@ import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
-import { GraduationCap ,LibraryBig,Blend} from 'lucide-react';
+import { GraduationCap, LibraryBig, Blend } from 'lucide-react';
 
 interface DashboardProps {
     totalStudent: number;
@@ -32,15 +32,15 @@ export default function Dashboard({ totalStudent, totalBatchs, totalCourses }: D
             </div>
             <div className='m-6'>
                 <h2 className='text-lg font-medium mb-4'>Leads</h2>
-               <div className='flex'>
-                 <DashboardCard title='Total Leads' value={totalStudent} icon={<GraduationCap className="h-4 w-4" />}></DashboardCard>
-                 <DashboardCard title='Active Calls' value={totalStudent} icon={<GraduationCap className="h-4 w-4" />}></DashboardCard>
-                  <DashboardCard title='Conversion Rate' value={totalStudent} icon={<GraduationCap className="h-4 w-4" />}></DashboardCard>
-                  <DashboardCard title='Follow-ups Today' value={totalStudent} icon={<GraduationCap className="h-4 w-4" />}></DashboardCard>
-                  </div>
+                <div className='flex'>
+                    <DashboardCard title='Total Leads' value={totalStudent} icon={<GraduationCap className="h-4 w-4" />}></DashboardCard>
+                    <DashboardCard title='Active Calls' value={totalStudent} icon={<GraduationCap className="h-4 w-4" />}></DashboardCard>
+                    <DashboardCard title='Conversion Rate' value={totalStudent} icon={<GraduationCap className="h-4 w-4" />}></DashboardCard>
+                    <DashboardCard title='Follow-ups Today' value={totalStudent} icon={<GraduationCap className="h-4 w-4" />}></DashboardCard>
+                </div>
             </div>
             <div className='m-6'>
-                <ChartAreaInteractive/>
+                <ChartAreaInteractive />
             </div>
 
         </AppLayout>
