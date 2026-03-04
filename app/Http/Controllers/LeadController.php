@@ -403,4 +403,13 @@ class LeadController extends Controller
         }
         return redirect()->route('leads.call-center')->with('success', 'Call updated successfully');
     }
+    public function destroy($id)
+    {
+        $lead = Lead::where('id', $id)->first();
+        if ($lead) {
+            $lead->delete();
+            return redirect()->route('leads.index')->with('success', 'Lead deleted successfully');
+        }
+        return redirect()->route('leads.index')->with('error', 'Lead not found');
+    }
 }
