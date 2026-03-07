@@ -10,6 +10,10 @@ interface DashboardProps {
     totalStudent: number;
     totalBatchs: number;
     totalCourses: number;
+    totalLeads: number;
+    activeCalls: number;
+    conversionRate: number;
+    followUpsToday: number;
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -18,7 +22,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: dashboard().url,
     },
 ];
-export default function Dashboard({ totalStudent, totalBatchs, totalCourses }: DashboardProps) {
+export default function Dashboard({ totalStudent, totalBatchs, totalCourses, totalLeads , activeCalls, conversionRate, followUpsToday }: DashboardProps) {
 
 
     return (
@@ -33,15 +37,13 @@ export default function Dashboard({ totalStudent, totalBatchs, totalCourses }: D
             <div className='m-6'>
                 <h2 className='text-lg font-medium mb-4'>Leads</h2>
                 <div className='flex'>
-                    <DashboardCard title='Total Leads' value={totalStudent} icon={<GraduationCap className="h-4 w-4" />}></DashboardCard>
-                    <DashboardCard title='Active Calls' value={totalStudent} icon={<GraduationCap className="h-4 w-4" />}></DashboardCard>
-                    <DashboardCard title='Conversion Rate' value={totalStudent} icon={<GraduationCap className="h-4 w-4" />}></DashboardCard>
-                    <DashboardCard title='Follow-ups Today' value={totalStudent} icon={<GraduationCap className="h-4 w-4" />}></DashboardCard>
+                    <DashboardCard title='Total Leads' value={totalLeads} icon={<GraduationCap className="h-4 w-4" />}></DashboardCard>
+                    <DashboardCard title='Active Calls' value={activeCalls} icon={<GraduationCap className="h-4 w-4" />}></DashboardCard>
+                    <DashboardCard title='Conversion Rate' value={conversionRate} icon={<GraduationCap className="h-4 w-4" />}></DashboardCard>
+                    <DashboardCard title='Follow-ups Today' value={followUpsToday} icon={<GraduationCap className="h-4 w-4" />}></DashboardCard>
                 </div>
             </div>
-            <div className='m-6'>
-                <ChartAreaInteractive />
-            </div>
+          
 
         </AppLayout>
     );

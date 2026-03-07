@@ -76,11 +76,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     //Lead Routes
     Route::get('/leads', [LeadController::class, 'index'])->name('leads.index')->middleware('permission:view_leads');
     Route::get('/leads/create', [LeadController::class, 'create'])->name('leads.create')->middleware('permission:create_leads');
-
     Route::post('/leads/create', [LeadController::class, 'store'])->name('leads.store')->middleware('permission:create_leads');
-
-    Route::get('/leads/upload', [LeadController::class, 'upload'])->name('leads.upload')->middleware('permission:import_leads');
-    Route::post('/leads/import', [LeadController::class, 'import'])->name('leads.import')->middleware('permission:import_leads');
+    Route::get('/leads/upload', [LeadController::class, 'upload'])->name('leads.upload')->middleware('permission:create_leads');
+    Route::post('/leads/import', [LeadController::class, 'import'])->name('leads.import')->middleware('permission:create_leads');
     Route::post('/leads/create', [LeadController::class, 'store'])->name('leads.store')->middleware('permission:create_leads');
     Route::get('/leads/edit/{id}', [LeadController::class, 'edit'])->name('leads.edit')->middleware('permission:edit_leads');
     Route::put('/leads/edit/{id}', [LeadController::class, 'update'])->name('leads.update')->middleware('permission:edit_leads');

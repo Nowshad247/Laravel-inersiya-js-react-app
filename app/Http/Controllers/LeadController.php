@@ -282,7 +282,6 @@ class LeadController extends Controller
 
     public function create()
     {
-
         $lead_statuses = LeadStatus::all();
         $lead_sources = LeadSource::all();
 
