@@ -17,8 +17,6 @@ type Props = {
 
 export function CallNow({ open, onOpenChange, lead }: Props) {
 
-    console.log("Lead in CallNow:", lead) // Debugging log
-
     interface FormData {
         lead_id: string | number
         called_at: string
