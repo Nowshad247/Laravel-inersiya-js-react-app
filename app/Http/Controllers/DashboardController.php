@@ -12,17 +12,19 @@ class DashboardController extends Controller
 {
     public function index(){
 
+        $lead = Lead::all();
         $totalStudetn = Student::Count();
         $totalBatch= Batch::Count();
         $totalCourses = Course::Count();
         $totalleads = Lead::Count();
-        $ActiveCalls = Lead::where('status', 'active')->Count();
+        
+        $ActiveCalls = "0";
 
-        $lead = Lead::where('status', 'converted')->Count();
+        $lead = "0";
 
-        $ConversionRate = $totalleads > 0 ? round((  $lead / $totalleads) * 100, 2) : 0;
+        $ConversionRate ="0%";
 
-        $Follow_ups_Today = Lead::whereDate('follow_up_date', now()->toDateString())->where('is_call', true)->Count();
+        $Follow_ups_Today = "0";
 
         return Inertia::render('dashboard',[
             'totalStudent'=> $totalStudetn,

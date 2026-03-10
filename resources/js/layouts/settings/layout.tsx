@@ -31,11 +31,6 @@ const sidebarNavItems: NavItem[] = [
         title: 'Appearance',
         href: editAppearance(),
         icon: null,
-    },
-    {
-        title: 'Site Settings',
-        href: sitesetting(),
-        icon: null,
     }
 
 ];
