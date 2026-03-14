@@ -9,6 +9,7 @@ import {
 import { resolveUrl } from '@/lib/utils';
 import { type NavItem } from '@/types';
 import { type ComponentPropsWithoutRef } from 'react';
+import Can from './ui/can';
 
 export function NavFooter({
     items,
@@ -24,25 +25,28 @@ export function NavFooter({
         >
             <SidebarGroupContent>
                 <SidebarMenu>
+
                     {items.map((item) => (
                         <SidebarMenuItem key={item.title}>
                             <SidebarMenuButton
                                 asChild
                                 className="text-neutral-600 hover:text-neutral-800 dark:text-neutral-300 dark:hover:text-neutral-100"
                             >
-                                <a
-                                    href={resolveUrl(item.href)}
-                                    target=""
-                                    rel="noopener noreferrer"
-                                >
-                                    {item.icon && (
-                                        <Icon
-                                            iconNode={item.icon}
-                                            className="h-5 w-5"
-                                        />
-                                    )}
-                                    <span>{item.title}</span>
-                                </a>
+                                <Can permission={item.permission || ''}>
+                                    <a
+                                        href={resolveUrl(item.href)}
+                                        target=""
+                                        rel="noopener noreferrer"
+                                    >
+                                        {item.icon && (
+                                            <Icon
+                                                iconNode={item.icon}
+                                                className="h-4 w-4"
+                                            />
+                                        )}
+                                        <span>{item.title}</span>
+                                    </a>
+                                </Can>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     ))}
