@@ -85,6 +85,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/leads/delete/{id}', [LeadController::class, 'destroy'])->name('leads.delete')->middleware('permission:delete_leads');
     Route::get('/leads/call-center', [LeadController::class, 'callCenter'])->name('leads.call-center');
     Route::post('/leads/call-center/{id}', [LeadController::class, 'callupdate'])->name('leads.callupdate');
+    Route::get('/leads/call-now/{id}', [LeadController::class, 'callNow'])->name('leads.call-now');
+
 
     //PDF Generation Route
     Route::get('/student/pdf', [PdfController::class, 'student'])->name('student.pdf')->withoutMiddleware([

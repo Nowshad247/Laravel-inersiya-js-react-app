@@ -342,7 +342,7 @@ class LeadController extends Controller
         $total = Lead::count();
         $sources = LeadSource::all();
         $leadReminders = LeadReminder::with('lead')->where('is_call', true)->get();
-        
+
         return Inertia::render('lead/callCenter', [
             'leads' => $data,
             'sources' => $sources,
@@ -350,8 +350,9 @@ class LeadController extends Controller
             'leadReminders' => $leadReminders,
         ]);
     }
-    public function callupdate(Request $request,$id){
-       
+    public function callupdate(Request $request, $id)
+    {
+
         $request->validate([
             'type' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:255'],
@@ -365,7 +366,7 @@ class LeadController extends Controller
 
         $lead = Lead::where('id', $id)->first();
 
-        if($request->type === 'call'){
+        if ($request->type === 'call') {
             LeadCall::create([
                 'lead_id' => $lead->id,
                 'user_id' => auth()->user()->id,
@@ -375,24 +376,24 @@ class LeadController extends Controller
             ]);
         }
 
-        if($request->type === 'note'){
+        if ($request->type === 'note') {
             LeadNote::create([
                 'lead_id' => $lead->id,
                 'note' => $request->note,
                 'user_id' => auth()->user()->id,
             ]);
         }
-        if($request->type === 'status_change'){
+        if ($request->type === 'status_change') {
             $lead = Lead::where('id', $id)->first();
-            $status = LeadStatus::where('name', $request->status_change)->first();  
-            if($status){
+            $status = LeadStatus::where('name', $request->status_change)->first();
+            if ($status) {
                 $lead->status_id = $status->id;
                 $lead->save();
                 return redirect()->route('leads.call-center')->with('success', 'Status changed successfully');
             }
             return redirect()->route('leads.call-center')->with('error', 'Status not found');
         }
-        if($request->type === 'reminder'){
+        if ($request->type === 'reminder') {
             LeadReminder::create([
                 'lead_id' => $lead->id,
                 'user_id' => auth()->user()->id,
@@ -410,5 +411,13 @@ class LeadController extends Controller
             return redirect()->route('leads.index')->with('success', 'Lead deleted successfully');
         }
         return redirect()->route('leads.index')->with('error', 'Lead not found');
+    }
+
+    public function callNow($id)
+    {
+        $lead = Lead::where('id', $id)->with(['profile', 'calls', 'notes', 'reminders', 'status', 'source'])->first();
+        return Inertia::render('lead/callNow', [
+            'lead' => $lead,
+        ]);
     }
 }
