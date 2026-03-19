@@ -37,6 +37,7 @@ export function CourseDailog({
     useEffect(() => {
         setData({
             name: coursesdata.name ?? '',
+            course_code: coursesdata.course_code ?? '',
             description: coursesdata.description ?? '',
         });
     }, [coursesdata]);

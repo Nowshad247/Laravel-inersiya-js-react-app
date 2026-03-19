@@ -23,6 +23,9 @@ export const columns: ColumnDef<Course>[] = [
     {
         accessorKey: 'description',
         header: 'Description',
+    },{
+        accessorKey: 'students_count',
+        header: 'Enrolled Students',
     },
     {
         id: 'actions',

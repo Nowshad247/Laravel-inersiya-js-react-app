@@ -27,6 +27,10 @@ export const columns: ColumnDef<Batch>[] = [
         header: 'Total Class',
     },
     {
+        accessorKey: 'batch_status',
+        header: 'Status',
+    },
+    {
         accessorKey: 'start_date',
         header: 'Start Date',
         cell: ({ row }) =>

@@ -28,6 +28,7 @@ export default function Update({ batch, courses, error }: Props) {
         'end_date',
         'TotalClass',
         'batch_code',
+        'batch_status',
     ];
 
     function submit(e: React.FormEvent) {
@@ -59,27 +60,47 @@ export default function Update({ batch, courses, error }: Props) {
                                 {field.replace('_', ' ')}
                             </label>
 
-                            <input
-                                type={
-                                    field.includes('date')
-                                        ? 'date'
-                                        : field === 'TotalClass'
-                                          ? 'number'
-                                          : 'text'
-                                }
-                                value={data[field] ?? ''}
-                                onChange={(e) => {
-                                    const value =
-                                        field === 'TotalClass'
-                                            ? Number(e.target.value)
-                                            : e.target.value;
-                                    setData((prev: Record<string, any>) => ({
-                                        ...prev,
-                                        [field]: value,
-                                    }));
-                                }}
-                                className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm"
-                            />
+                            {field === 'batch_status' ? (
+                                <select
+                                    value={data[field] ?? ''}
+                                    onChange={(e) => {
+                                        setData((prev: Record<string, any>) => ({
+                                            ...prev,
+                                            [field]: e.target.value,
+                                        }));
+                                    }}
+                                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm"
+                                >
+                                    <option value={`${data[field] ?? ''}`}>{data[field] ?? ''}</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="pending">Pending</option>
+                                </select>
+                            ) : (
+                                <input
+                                    type={
+                                        field.includes('date')
+                                            ? 'date'
+                                            : field === 'TotalClass'
+                                                ? 'number'
+                                                : 'text'
+                                    }
+                                    value={data[field] ?? ''}
+                                    onChange={(e) => {
+                                        const value =
+                                            field === 'TotalClass'
+                                                ? Number(e.target.value)
+                                                : e.target.value;
+
+                                        setData((prev: Record<string, any>) => ({
+                                            ...prev,
+                                            [field]: value,
+                                        }));
+                                    }}
+                                    className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm"
+                                />
+                            )}
 
                             {errors[field] && (
                                 <p className="text-sm text-red-500">
@@ -88,7 +109,6 @@ export default function Update({ batch, courses, error }: Props) {
                             )}
                         </div>
                     ))}
-
                     <div>
                         <label className="block text-sm font-medium text-gray-700">
                             Course
@@ -116,6 +136,7 @@ export default function Update({ batch, courses, error }: Props) {
                             </p>
                         )}
                     </div>
+
 
                     <div className="pt-4">
                         <button

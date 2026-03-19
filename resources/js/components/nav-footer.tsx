@@ -32,21 +32,19 @@ export function NavFooter({
                                 asChild
                                 className="text-neutral-600 hover:text-neutral-800 dark:text-neutral-300 dark:hover:text-neutral-100"
                             >
-                                <Can permission={item.permission || ''}>
-                                    <a
-                                        href={resolveUrl(item.href)}
-                                        target=""
-                                        rel="noopener noreferrer"
-                                    >
-                                        {item.icon && (
-                                            <Icon
-                                                iconNode={item.icon}
-                                                className="h-4 w-4"
-                                            />
-                                        )}
-                                        <span>{item.title}</span>
-                                    </a>
-                                </Can>
+                                <a
+                                    href={resolveUrl(item.href)}
+                                    target=""
+                                    rel="noopener noreferrer"
+                                >
+                                    {item.icon && (
+                                        <Icon
+                                            iconNode={item.icon}
+                                            className="h-4 w-4"
+                                        />
+                                    )}
+                                    <span>{item.title}</span>
+                                </a>
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     ))}

@@ -23,6 +23,7 @@ export default function Create({
         batch_code: ' ',
         start_date: '',
         end_date: '',
+        batch_status: 'pending',
         TotalClass: 0,
     });
     const breadcrumbs: BreadcrumbItem[] = [
@@ -143,6 +144,21 @@ export default function Create({
                                     </option>
                                 ))}
                             </select>
+                        </div>
+                        <div>
+                            <Label>Batch Status</Label>
+                            <select
+                                value={data.batch_status}
+                                onChange={(e) =>
+                                    setData('batch_status', e.target.value)
+                                }
+                                className="w-full rounded-md border border-gray-300 px-3 py-2"
+                            >
+                                <option value="pending">Pending</option>
+                                <option value="active">Active</option>
+                                <option value="completed">Completed</option>
+                                <option value="archived">Upcoming</option>
+                            </select>   
                         </div>
                         <Button
                             disabled={processing}

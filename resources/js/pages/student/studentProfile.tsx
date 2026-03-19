@@ -1,5 +1,6 @@
 import RenderAny from '@/components/RenderAny';
 import { Button } from '@/components/ui/button';
+import { PdfButton } from '@/components/ui/pdfbtn';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
@@ -16,6 +17,7 @@ interface PageProps {
 }
 export default function Index(studentData: PageProps) {
     const { id }: any = studentData.studentData;
+    console.log(studentData);
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Student Profile" />
@@ -27,6 +29,7 @@ export default function Index(studentData: PageProps) {
                 >
                     Edit Profile
                 </Button>
+                <PdfButton href={`/student/pdf/${id}`} label="Download Student Profile"></PdfButton>
                 <RenderAny data={studentData as unknown as any} />
             </div>
         </AppLayout>

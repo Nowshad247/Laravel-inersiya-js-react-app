@@ -61,7 +61,7 @@ export default function CreateStudent({ batchs, courses }: Props) {
                 <form onSubmit={submit} className="space-y-5">
                     {/* Student Name */}
                     <div>
-                        <Label className="my-2">Name</Label>
+                        <Label className="my-2">Name*</Label>
                         <Input
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
@@ -76,7 +76,7 @@ export default function CreateStudent({ batchs, courses }: Props) {
                     {/* Father & Mother */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <Label className="my-2">Father Name</Label>
+                            <Label className="my-2">Father Name*</Label>
                             <Input
                                 value={data.father_name}
                                 onChange={(e) =>
@@ -91,7 +91,7 @@ export default function CreateStudent({ batchs, courses }: Props) {
                         </div>
 
                         <div>
-                            <Label className="my-2">Mother Name</Label>
+                            <Label className="my-2">Mother Name*</Label>
                             <Input
                                 value={data.mother_name}
                                 onChange={(e) =>
@@ -109,7 +109,7 @@ export default function CreateStudent({ batchs, courses }: Props) {
                     {/* Email & Phone */}
                     <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <Label className="my-2">Email</Label>
+                            <Label className="my-2">Email *</Label>
                             <Input
                                 type="email"
                                 value={data.email}
@@ -125,7 +125,7 @@ export default function CreateStudent({ batchs, courses }: Props) {
                         </div>
 
                         <div>
-                            <Label className="my-2">Phone</Label>
+                            <Label className="my-2">Phone*</Label>
                             <Input
                                 value={data.phone}
                                 onChange={(e) =>

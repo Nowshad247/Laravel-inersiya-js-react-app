@@ -21,5 +21,6 @@ export interface BatchFormData {
     batch_code: string | ' ';
     start_date: string;
     end_date: string;
+    batch_status: string;
     TotalClass: number | 30;
 }

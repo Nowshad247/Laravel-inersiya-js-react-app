@@ -35,14 +35,13 @@ export const batchColumn: ColumnDef<Batch>[] = [
         header: 'Actions',
         cell: ({ row }) => {
             const batch = row.original;
-
             return (
                 <div className="flex gap-2">
                     {/* View Batch */}
                     <Button
                         size="icon"
                         variant="outline"
-                        onClick={() => router.get(`batch/show/${batch.id}`)}
+                        onClick={() => router.get(`/batch/show/${batch.id}`)}
                     >
                         <Eye className="h-4 w-4" />
                     </Button>
