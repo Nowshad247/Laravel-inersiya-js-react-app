@@ -33,21 +33,21 @@ export default function CallNow({ lead }: { lead: Lead }) {
                 <div className='w-full border-1 p-4 rounded-lg bg-gray-50'>
                     <div className='flex items-center justify-between mb-4 '>
                         <h1>Notes</h1>
-                        <CallDailoag ButtonLabel="Add Note"/>
+                        <CallDailoag ButtonLabel="Add Note" leadID={lead.id} />
                     </div>
                      <Notes notes={lead.notes} />
                 </div>
                 <div className='w-full border-1 p-4 rounded-lg bg-gray-50'>
                     <div className='flex items-center justify-between mb-4'>
                         <h1>Call List</h1>  
-                        <CallList ButtonLabel="Add Call Log"/>
+                        <CallList ButtonLabel="Add Call Log" leadID={lead.id} />
                     </div>
                      <CallsList calls={lead.calls} />
                 </div>
                 <div className='w-full border-1 p-4 rounded-lg bg-gray-50'>
                     <div className='flex items-center justify-between mb-4'>
                         <h1>Reminders</h1>  
-                        <CallRemindersDialog ButtonLabel="Add Reminder"/>
+                        <CallRemindersDialog ButtonLabel="Add Reminder" leadID={lead.id} />
                     </div>
                     <RemindersList reminders={lead.reminders} />
                 </div>

@@ -24,7 +24,7 @@ export default function AddLead({
         status_id: '',
         source_id: '',
         assigned_to: '',
-        lead_notes: '',
+        lead_notes: 'New',
         town: '',
         address: '',
         company: '',
@@ -245,6 +245,13 @@ export default function AddLead({
                                 {errors.occupation}
                             </p>
                         )}
+                    </div>
+                    <div className=''>
+                        <Label id="interest">interest</Label>
+                        <Input id="interest" value={data.interest} onChange={(e)=>
+                            setData('interest',e.target.value)
+                        }/>
+
                     </div>
                     <div>
                         <Label htmlFor="company">Company</Label>

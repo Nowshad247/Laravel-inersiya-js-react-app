@@ -15,6 +15,26 @@ type Props = {
   calls: Call[];
 };
 
+const resultStyles = {
+  answered: "bg-green-100 text-green-600",
+  interested: "bg-green-100 text-green-600",
+  converted: "bg-green-100 text-green-600",
+
+  no_answer: "bg-gray-100 text-gray-600",
+  unavailable: "bg-gray-100 text-gray-600",
+  busy: "bg-yellow-100 text-yellow-600",
+  call_back_later: "bg-yellow-100 text-yellow-600",
+
+  meeting_scheduled: "bg-blue-100 text-blue-600",
+  qualified: "bg-blue-100 text-blue-600",
+  proposal_sent: "bg-purple-100 text-purple-600",
+
+  not_interested: "bg-red-100 text-red-600",
+  rejected: "bg-red-100 text-red-600",
+  wrong_person: "bg-red-100 text-red-600",
+  invalid_number: "bg-red-100 text-red-600",
+};
+
 const CallsList: React.FC<Props> = ({ calls }) => {
   if (!calls || calls.length === 0) {
     return (
@@ -24,6 +44,7 @@ const CallsList: React.FC<Props> = ({ calls }) => {
     );
   }
 
+  
   return (
     <div className="space-y-3">
       {calls.map((call) => (
@@ -33,15 +54,12 @@ const CallsList: React.FC<Props> = ({ calls }) => {
         >
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-semibold">
-              Call ID: {call.id}
+              Caller ID: {call.id}
             </span>
 
             <span
-              className={`text-xs px-2 py-1 rounded ${
-                call.result === "answered"
-                  ? "bg-green-100 text-green-600"
-                  : "bg-red-100 text-red-600"
-              }`}
+              className={`text-xs px-2 py-1 rounded ${resultStyles[call.result as keyof typeof resultStyles] || "bg-gray-100 text-gray-600"
+                }`}
             >
               {call.result}
             </span>
@@ -55,6 +73,13 @@ const CallsList: React.FC<Props> = ({ calls }) => {
             <p className="mt-1">
               <strong>Called Time:</strong>{" "}
               {new Date(call.called_at).toLocaleString()}
+            </p>
+            <p>
+              {call.user_id ? (
+                <>
+                  <strong>Called By:</strong>{call.user.name }
+                </>
+              ) : null}
             </p>
           </div>
         </div>

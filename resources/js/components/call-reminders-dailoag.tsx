@@ -2,6 +2,7 @@ import { Label } from "recharts"
 import { Button } from "./ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog"
 import { Textarea } from "./ui/textarea"
+import { toDate } from "date-fns"
 
 export function CallRemindersDialog({ ButtonLabel = "Add Reminder" }) {
         return (
@@ -15,9 +16,17 @@ export function CallRemindersDialog({ ButtonLabel = "Add Reminder" }) {
                         <DialogDescription>
                             <form>
                                 <div>
-                                    <Label to="note">Note</Label>
-                                    <Textarea id="note" className="w-full border rounded p-2 mt-1" rows={4} placeholder="Add Note"/>
+                                    <Label to="reminder">Next Remind Time</Label>
+                                    <input required type="datetime-local" id="reminder" className="w-full border rounded p-2 mt-1" />
                                 </div>
+                                <div className="mt-4">
+                                    <Label> lead Remind Staus</Label>
+                                    <select required className="w-full border rounded p-2 mt-1">
+                                        <option value="0">Pending</option>
+                                        <option value="1">Completed</option>
+                                    </select>
+                                </div>
+                            
                                 <div className="flex justify-end mt-4">
                                     <Button type="submit">Save</Button>
                                 </div>

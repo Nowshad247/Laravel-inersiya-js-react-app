@@ -280,6 +280,26 @@ class LeadController extends Controller
         }
     }
 
+    public function addNote($leadId, Request $request){
+        
+        $request->validate([
+            'note' => ['required', 'string', 'max:255'],
+        ]);
+
+        $lead = Lead::where('id', $leadId)->first();
+
+        if (! $lead) {
+            return redirect()->route('leads.call-center')->with('error', 'Lead not found');
+        }
+
+        LeadNote::create([
+            'lead_id' => $lead->id,
+            'note' => $request->note,
+            'user_id' => auth()->user()->id,
+        ]);
+        return redirect()->route('leads.call-now', ['id' => $lead->id])->with('success', 'Note added successfully');
+    }
+
     public function create()
     {
         $lead_statuses = LeadStatus::all();
@@ -289,6 +309,44 @@ class LeadController extends Controller
             'lead_statuses' => $lead_statuses,
             'lead_sources' => $lead_sources,
         ]);
+    }
+
+    public function addCallLog($leadId, Request $request){
+      
+        $request->validate([
+            'result' => ['required', 'string', 'max:255'],
+            'remarks' => ['nullable', 'string', 'max:255'],
+            'called_at' => ['nullable', 'date'],
+
+        ]);
+        $formateDate = date('Y-m-d H:i:s', strtotime($request->called_at));
+        
+        $lead = Lead::where('id', $leadId)->first();
+
+        if (! $lead) {
+            return redirect()->route('leads.call-center')->with('error', 'Lead not found');
+        }
+
+        LeadCall::create([
+            'lead_id' => $lead->id,
+            'user_id' => auth()->user()->id,
+            'result' => $request->result,
+            'remarks' => $request->remarks,
+            'called_at' => $formateDate ?? now(),
+        ]);
+       
+
+        return redirect()->route('leads.call-now', ['id' => $lead->id])->with('success', 'Call log added successfully');
+    }
+
+    public function deleteNote($id)
+    {
+        $note = LeadNote::where('id', $id)->first();
+        if (! $note) {
+            return redirect()->route('leads.call-center')->with('error', 'Note not found');
+        }
+        $note->delete();
+        return redirect()->route('leads.call-now', ['id' => $note->lead_id])->with('success', 'Note deleted successfully');
     }
 
     public function store(Request $request)
@@ -415,7 +473,7 @@ class LeadController extends Controller
 
     public function callNow($id)
     {
-        $lead = Lead::where('id', $id)->with(['profile', 'calls', 'notes', 'reminders', 'status', 'source'])->first();
+        $lead = Lead::where('id', $id)->with(['profile', 'calls', 'notes', 'reminders', 'status', 'source','calls.user' ])->first();
         return Inertia::render('lead/callNow', [
             'lead' => $lead,
         ]);
