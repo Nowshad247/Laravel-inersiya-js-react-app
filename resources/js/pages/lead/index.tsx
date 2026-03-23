@@ -24,6 +24,7 @@ export default function Index({
     lead_statuses: LeadStatus[];
     leadSources: LeadSource[];
     leadStatus: LeadStatus[];
+    
 }) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -35,11 +36,14 @@ export default function Index({
                 >
                     Activities
                 </Button>
-                <Button
+                {/* <Button
                     onClick={() => router.get('/leads/call-center')}
                     className="mx-2 my-2 w-3/12"
                 >
-                    Call Center
+                    Follow-up Scheduled
+                </Button> */}
+                <Button onClick={()=>router.get('/lead/FollowUp')}>
+                    Follow Up Lead
                 </Button>
                 <Button
                     onClick={() => router.get('/leads/upload')}
@@ -56,6 +60,7 @@ export default function Index({
                     lead_statuses={lead_statuses}
                     leadSources={leadSources}
                     leadStatus={leadStatus[0]}
+                   
                 ></LeadsTable>
             </div>
         </AppLayout>

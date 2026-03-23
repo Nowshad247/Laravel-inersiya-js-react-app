@@ -12,6 +12,7 @@ use App\Models\LeadNote;
 use App\Models\LeadReminder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\In;
 use Inertia\Inertia;
 
@@ -45,6 +46,7 @@ class LeadController extends Controller
         $leadStatuses = LeadStatus::all();
         $assignedTos = DB::table('users')->get();
         $townNames = DB::table('leads')->distinct()->pluck('town');
+        $lead_interests = LeadProfile::distinct()->pluck('interest');
 
         $leadSources = LeadSource::all();
         return Inertia::render('lead/upload', [
@@ -52,6 +54,7 @@ class LeadController extends Controller
             'leadStatuses' => $leadStatuses,
             'assignedTos' => $assignedTos,
             'townNames' => $townNames,
+            'lead_interests' => $lead_interests,
         ]);
     }
 
@@ -280,8 +283,9 @@ class LeadController extends Controller
         }
     }
 
-    public function addNote($leadId, Request $request){
-        
+    public function addNote($leadId, Request $request)
+    {
+
         $request->validate([
             'note' => ['required', 'string', 'max:255'],
         ]);
@@ -304,15 +308,18 @@ class LeadController extends Controller
     {
         $lead_statuses = LeadStatus::all();
         $lead_sources = LeadSource::all();
+        $lead_interests = LeadProfile::all();
 
         return Inertia::render('lead/create', [
             'lead_statuses' => $lead_statuses,
             'lead_sources' => $lead_sources,
+            'lead_interests' => $lead_interests,
         ]);
     }
 
-    public function addCallLog($leadId, Request $request){
-      
+    public function addCallLog($leadId, Request $request)
+    {
+
         $request->validate([
             'result' => ['required', 'string', 'max:255'],
             'remarks' => ['nullable', 'string', 'max:255'],
@@ -320,7 +327,7 @@ class LeadController extends Controller
 
         ]);
         $formateDate = date('Y-m-d H:i:s', strtotime($request->called_at));
-        
+
         $lead = Lead::where('id', $leadId)->first();
 
         if (! $lead) {
@@ -334,7 +341,7 @@ class LeadController extends Controller
             'remarks' => $request->remarks,
             'called_at' => $formateDate ?? now(),
         ]);
-       
+
 
         return redirect()->route('leads.call-now', ['id' => $lead->id])->with('success', 'Call log added successfully');
     }
@@ -363,8 +370,18 @@ class LeadController extends Controller
             'lead_notes' => ['nullable', 'string', 'max:255'],
             'assigned_to' => ['nullable', 'string', 'max:255'],
             'occupation' => ['nullable', 'string', 'max:255'],
+            'interest' => ['nullable', 'string', 'max:255'],
             'company' => ['nullable', 'string', 'max:255'],
         ]);
+
+        if (empty($validated['status_id'])) {
+            $defaultStatus = LeadStatus::firstOrCreate(['name' => 'New']);
+            $validated['status_id'] = $defaultStatus->id;
+        }
+        if (empty($validated['source_id'])) {
+            $defaultSource = LeadSource::firstOrCreate(['name' => 'Facebook']);
+            $validated['source_id'] = $defaultSource->id;
+        }
 
         $lead = Lead::create(collect($validated)->except('lead_notes')->toArray());
 
@@ -389,6 +406,18 @@ class LeadController extends Controller
             $leadProfile->occupation = $validated['occupation'];
             $leadProfile->company = $validated['company'] ?? null;
             $leadProfile->save();
+        }
+        if (!empty($validated['interest'])) {
+            $leadProfile = LeadProfile::where('lead_id', $lead->id)->first();
+            if ($leadProfile) {
+                $leadProfile->interest = $validated['interest'];
+                $leadProfile->save();
+            } else {
+                $leadProfile = new LeadProfile();
+                $leadProfile->lead_id = $lead->id;
+                $leadProfile->interest = $validated['interest'];
+                $leadProfile->save();
+            }
         }
 
         return redirect()->route('leads.index')->with('success', 'Lead created successfully');
@@ -473,9 +502,104 @@ class LeadController extends Controller
 
     public function callNow($id)
     {
-        $lead = Lead::where('id', $id)->with(['profile', 'calls', 'notes', 'reminders', 'status', 'source','calls.user' ])->first();
+        $lead = Lead::where('id', $id)->with(['profile', 'calls', 'notes', 'reminders', 'status', 'source', 'calls.user'])->first();
+        $statuses = LeadStatus::all();
+        $sources = LeadSource::all();
+        $users = User::all();
+        $town = $lead->town;
         return Inertia::render('lead/callNow', [
             'lead' => $lead,
+            'statuses' => $statuses,
+            'sources' => $sources,
+            'users' => $users,
+            'town' => $town,
         ]);
     }
+    public function addReminder($id, Request $request)
+    {
+        $request->validate([
+            'remind_time' => ['required', 'date'],
+            'status' => ['required', 'string', 'max:255'],
+        ]);
+
+        $lead = Lead::where('id', $id)->first();
+
+        if (! $lead) {
+            return redirect()->route('leads.call-center')->with('error', 'Lead not found');
+        }
+
+        LeadReminder::create([
+            'lead_id' => $lead->id,
+            'user_id' => auth()->user()->id,
+            'remind_at' => $request->remind_time,
+            'is_call' => $request->status === '1' ? true : false,
+            'is_completed' => $request->status === '1' ? true : false,
+        ]);
+
+        return redirect()->route('leads.call-now', ['id' => $lead->id])->with('success', 'Reminder added successfully');
+    }
+    public function updateReminder(Request $request)
+    {
+        $request->validate([
+            'reminder_id' => ['required', 'exists:lead_reminders,id'],
+            'status' => ['required', 'string', 'max:255'],
+        ]);
+
+        $reminder = LeadReminder::where('id', $request->reminder_id)->first();
+
+        if (! $reminder) {
+            return redirect()->route('leads.call-center')->with('error', 'Reminder not found');
+        }
+        $reminder->is_completed = $request->status === '1' ? true : false;
+        $reminder->save();
+        return redirect()->route('leads.call-now', ['id' => $reminder->lead_id])->with('success', 'Reminder updated successfully');
+    }
+    public function update(Request $request)
+{
+    // 1. Set defaults first
+    if (empty($request->status_id)) {
+        $request->merge([
+            'status_id' => LeadStatus::where('name', 'New')->value('id')
+        ]);
+    }
+
+    if (empty($request->source_id)) {
+        $request->merge([
+            'source_id' => LeadSource::where('name', 'Facebook')->value('id')
+        ]);
+    }
+
+    // 2. Validate
+    $validated = $request->validate([
+        'lead_id' => ['required', 'exists:leads,id'],
+        'name' => ['required', 'string', 'max:255'],
+        'email' => ['nullable', 'email', 'max:255', Rule::unique('leads', 'email')->ignore($request->lead_id)],
+        'phone' => ['nullable', 'string', 'max:20', Rule::unique('leads', 'phone')->ignore($request->lead_id)],
+        'whatsapp_number' => ['nullable', 'string', 'max:20', Rule::unique('leads', 'whatsapp_number')->ignore($request->lead_id)],
+        'status_id' => ['required', 'exists:lead_statuses,id'],
+        'source_id' => ['nullable', 'exists:lead_sources,id'],
+        'town' => ['nullable', 'string', 'max:100'],
+        'address' => ['nullable', 'string', 'max:255'],
+        'assigned_to' => ['nullable'],
+        'occupation' => ['nullable', 'string', 'max:255'],
+        'interest' => ['nullable', 'string', 'max:255'],
+        'company' => ['nullable', 'string', 'max:255'],
+    ]);
+
+    // 3. Find lead
+    $lead = Lead::find($validated['lead_id']);
+
+    // 4. Update lead
+    $lead->update(collect($validated)->except(['lead_id', 'interest'])->toArray());
+
+    // 5. Update profile (interest)
+    if (!empty($validated['interest'])) {
+        LeadProfile::updateOrCreate(
+            ['lead_id' => $lead->id],
+            ['interest' => $validated['interest']]
+        );
+    }
+
+    return redirect()->route('leads.index')->with('success', 'Lead updated successfully');
+}
 }

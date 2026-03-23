@@ -9,13 +9,14 @@ import { type PropsWithChildren } from 'react';
 export default function AppSidebarLayout({
     children,
     breadcrumbs = [],
-}: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[] }>) {
+    backButton ,
+}: PropsWithChildren<{ breadcrumbs?: BreadcrumbItem[]; backButton?: boolean }>) {
     const flash = (usePage().props as any)?.flash;
     return (
         <AppShell variant="sidebar">
             <AppSidebar />
             <AppContent variant="sidebar" className="overflow-x-hidden">
-                <AppSidebarHeader breadcrumbs={breadcrumbs} />
+                <AppSidebarHeader breadcrumbs={breadcrumbs} backButton={backButton} />
                 {flash?.toast && (
                     <div className="toast">{flash.toast.message}</div>
                 )}

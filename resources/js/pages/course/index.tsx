@@ -24,7 +24,7 @@ export default function Index({ courses }: { courses: Course[] }) {
                 Add New Course
             </Button>
             <div className="m-6">
-                <DataTable columns={columns} data={courses} searchKey="name" />
+                <DataTable columns={columns} data={courses} searchKey="lead.name" />
             </div>
         </AppLayout>
     );

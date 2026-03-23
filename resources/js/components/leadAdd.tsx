@@ -4,17 +4,20 @@ import { useForm } from '@inertiajs/react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { useState } from 'react';
 
 export default function AddLead({
     leadSources,
     leadStatuses,
     assignedTos,
     townNames,
+    interests,
 }: {
     leadSources: LeadSource[];
     leadStatuses: LeadStatus[];
     assignedTos: User[];
     townNames: string[];
+    interests: string[];
 }) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
@@ -24,7 +27,7 @@ export default function AddLead({
         status_id: '',
         source_id: '',
         assigned_to: '',
-        lead_notes: 'New',
+        lead_notes: '',
         town: '',
         address: '',
         company: '',
@@ -35,15 +38,24 @@ export default function AddLead({
         lead_reminders: '',
         lead_activities: '',
         occupation: '',
-        interest: ' ',
+        interest: '',
         reminder_at: '',
     });
+
+    const [filteredInterests, setFilteredInterests] = useState<string[]>([]);
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         post('/leads/create', {
             onSuccess: () => reset(),
         });
     };
+
+    const handleSearch = (query: string) => {
+        const filteredInterests = interests.filter((interest) =>
+            interest.toLowerCase().includes(query.toLowerCase())
+        );
+        setFilteredInterests(filteredInterests);
+    }
 
     return (
         <>
@@ -130,7 +142,10 @@ export default function AddLead({
                         >
                             <option value="">Select Status</option>
                             {leadStatuses.map((status) => (
-                                <option key={status.id} value={status.id}>
+                                <option
+                                    key={status.id}
+                                    value={status.id}
+                                >
                                     {status.name}
                                 </option>
                             ))}
@@ -151,7 +166,6 @@ export default function AddLead({
                                 setData('source_id', e.target.value)
                             }
                         >
-                            <option value="">Select Source</option>
                             {leadSources.map((source) => (
                                 <option key={source.id} value={source.id}>
                                     {source.name}
@@ -174,7 +188,6 @@ export default function AddLead({
                                 setData('assigned_to', e.target.value)
                             }
                         >
-                            <option value="">Select User</option>
                             {assignedTos.map((user) => (
                                 <option key={user.id} value={user.id}>
                                     {user.name}
@@ -202,7 +215,6 @@ export default function AddLead({
                             value={data.town}
                             onChange={(e) => setData('town', e.target.value)}
                         >
-                            <option value="">Select Town</option>
                             {townNames.map((town) => (
                                 <option key={town} value={town}>
                                     {town}
@@ -246,11 +258,37 @@ export default function AddLead({
                             </p>
                         )}
                     </div>
-                    <div className=''>
+                    <div>
                         <Label id="interest">interest</Label>
-                        <Input id="interest" value={data.interest} onChange={(e)=>
-                            setData('interest',e.target.value)
-                        }/>
+                        <div className="relative w-full">
+                            <Input
+                                id="interest"
+                                value={data.interest}
+                                autoComplete="off"
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setData('interest', value);
+                                    handleSearch(value);
+                                }}
+                            />
+
+                            {filteredInterests.length > 0 && (
+                                <div className="absolute z-50 w-full bottom-full mb-1 max-h-48 overflow-y-auto rounded-md border bg-white shadow-lg">
+                                    {filteredInterests.map((item, index) => (
+                                        <div
+                                            key={index}
+                                            className="px-3 py-2 cursor-pointer hover:bg-gray-100 text-sm"
+                                            onClick={() => {
+                                                setData('interest', item);
+                                                setFilteredInterests([]);
+                                            }}
+                                        >
+                                            {item}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
 
                     </div>
                     <div>

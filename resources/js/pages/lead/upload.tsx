@@ -17,11 +17,13 @@ export default function upload({
     leadStatuses,
     assignedTos,
     townNames,
+    lead_interests,
 }: {
     leadSources: LeadSource;
     leadStatuses: LeadStatus;
     assignedTos: User;
     townNames: Array<string>;
+    lead_interests: Array<string>;
 }) {
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -36,6 +38,7 @@ export default function upload({
                             leadStatuses={leadStatuses}
                             assignedTos={assignedTos}
                             townNames={townNames}
+                            interests={lead_interests}
                         />
                     </div>
 

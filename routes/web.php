@@ -5,6 +5,7 @@ use App\Http\Controllers\BatchController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FollowUpScheduledController;
 use App\Http\Controllers\HomePageController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\PdfController;
@@ -14,6 +15,7 @@ use App\Http\Middleware\HandleInertiaRequests;
 use \App\Http\Controllers\ProfilePictureController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use BaconQrCode\Renderer\Module\RoundnessModule;
 
 Route::get('/', [HomePageController::class, 'index'])->name('home');
 //public routes
@@ -81,7 +83,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/leads/import', [LeadController::class, 'import'])->name('leads.import')->middleware('permission:create_leads');
     Route::post('/leads/create', [LeadController::class, 'store'])->name('leads.store')->middleware('permission:create_leads');
     Route::get('/leads/edit/{id}', [LeadController::class, 'edit'])->name('leads.edit')->middleware('permission:edit_leads');
+
     Route::put('/leads/edit/{id}', [LeadController::class, 'update'])->name('leads.update')->middleware('permission:edit_leads');
+    
     Route::delete('/leads/delete/{id}', [LeadController::class, 'destroy'])->name('leads.delete')->middleware('permission:delete_leads');
     Route::get('/leads/call-center', [LeadController::class, 'callCenter'])->name('leads.call-center');
     Route::post('/leads/call-center/{id}', [LeadController::class, 'callupdate'])->name('leads.callupdate');
@@ -89,6 +93,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/leads/add-note/{id}', [LeadController::class, 'addNote'])->name('leads.add-note');
     Route::put('/leads/update-status/{id}', [LeadController::class, 'updateStatus'])->name('leads.update-status');
     Route::delete('/leads/delete-note/{id}', [LeadController::class, 'deleteNote'])->name('leads.delete-note');
+
+    Route::post('/leads/add-reminder/{id}', [LeadController::class, 'addReminder'])->name('leads.add-reminder');
+
+    //Lead Redminder update route
+    Route::post('/leads/update-reminder/', [LeadController::class, 'updateReminder'])->name('leads.update-reminder');
+
+    //FollowUpScheduled Route 
+
+    Route::get('/lead/FollowUp',[FollowUpScheduledController::class,'index'])->name('lead.FollowUpScheduled');
 
     //Lead add call Now
     Route::post('/leads/add-call-log/{id}', [LeadController::class, 'addCallLog'])->name('leads.add-call-now');
