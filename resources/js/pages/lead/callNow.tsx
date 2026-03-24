@@ -63,14 +63,14 @@ export default function CallNow({
                         <h1>Notes</h1>
                         <CallDailoag ButtonLabel="Add Note" leadID={lead.id} />
                     </div>
-                    <Notes notes={lead.notes} />
+                    <Notes notes={lead.notes || []} />
                 </div>
                 <div className="w-full rounded-lg border-1 bg-gray-50 p-4">
                     <div className="mb-4 flex items-center justify-between">
                         <h1>Call List</h1>
                         <CallList ButtonLabel="Add Call Log" leadID={lead.id} />
                     </div>
-                    <CallsList calls={lead.calls} />
+                    <CallsList calls={lead.calls || []} />
                 </div>
                 <div className="w-full rounded-lg border-1 bg-gray-50 p-4">
                     <div className="mb-4 flex items-center justify-between">
@@ -81,7 +81,7 @@ export default function CallNow({
                         />
                     </div>
                     <RemindersList
-                        reminders={lead.reminders}
+                        reminders={lead.reminders || []}
                         leadId={lead.id}
                     />
                 </div>

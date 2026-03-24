@@ -1,14 +1,13 @@
 import { Button } from '@headlessui/react';
 import { router, useForm } from '@inertiajs/react';
 import React from 'react';
-import { Label } from 'recharts';
 
 type Reminder = {
     id: number;
     lead_id: number;
     user_id: number;
-    is_call: number;
-    is_completed: number;
+    is_call?: number;
+    is_completed: number | boolean;
     remind_at: string;
     created_at: string;
     updated_at: string;
@@ -16,9 +15,10 @@ type Reminder = {
 
 type Props = {
     reminders: Reminder[];
+    leadId?: number;
 };
 
-const RemindersList: React.FC<Props> = ({ reminders }) => {
+const RemindersList: React.FC<Props> = ({ reminders, leadId }) => {
     if (!reminders || reminders.length === 0) {
         return (
             <div className="py-6 text-center text-gray-400">
@@ -100,12 +100,12 @@ const RemindersList: React.FC<Props> = ({ reminders }) => {
                                 Update Reminders
                             </h1>
                             <form onSubmit={handelUpdate}>
-                                <Label
+                                <label
                                     htmlFor={`status-${item.id}`}
                                     className="mb-1 block text-xs font-medium text-gray-700"
                                 >
                                     Update Status
-                                </Label>
+                                </label>
                                 <select
                                     id={`status-${item.id}`}
                                     name="status"

@@ -8,6 +8,7 @@ type Call = {
     remarks: string;
     result: string;
     created_at: string | null;
+    user?: { id: number; name: string };
     updated_at: string | null;
 };
 
@@ -80,7 +81,7 @@ const CallsList: React.FC<Props> = ({ calls }) => {
                             {call.user_id ? (
                                 <>
                                     <strong>Called By:</strong>
-                                    {call.user.name}
+                                    {call.user?.name}
                                 </>
                             ) : null}
                         </p>

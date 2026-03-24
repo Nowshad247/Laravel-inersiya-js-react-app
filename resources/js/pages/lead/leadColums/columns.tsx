@@ -1,8 +1,9 @@
 import { Button } from '@/components/ui/button';
+import { ColumnDef } from '@tanstack/react-table';
 import { Lead } from '@/types/Lead';
 import { Trash2 } from 'lucide-react';
 
-export const columns: columns<Lead>[] = [
+export const columns: ColumnDef<Lead>[] = [
     {
         accessorKey: 'id',
         header: 'ID',

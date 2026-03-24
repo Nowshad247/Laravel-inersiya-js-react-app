@@ -1,9 +1,14 @@
 import { Button } from '@/components/ui/button';
-import { Lead } from '@/types/Lead';
+import { ColumnDef, Row } from '@tanstack/react-table';
+import { Lead, LeadReminder } from '@/types/Lead';
 import { router } from '@inertiajs/react';
 import { PhoneForwardedIcon } from 'lucide-react';
 
-export const followUpColumns: columns<Lead>[] = [
+type ReminderWithLead = LeadReminder & {
+    lead: Lead;
+};
+
+export const followUpColumns: ColumnDef<ReminderWithLead>[] = [
     {
         accessorKey: 'id',
         header: 'ID',
@@ -19,7 +24,7 @@ export const followUpColumns: columns<Lead>[] = [
     {
         accessorKey: 'remind_at',
         header: 'Remind At',
-        cell: ({ row }) => {
+        cell: ({ row }: { row: Row<ReminderWithLead> }) => {
             const remindAt = new Date(row.original.remind_at);
 
             const today = new Date();
@@ -39,7 +44,7 @@ export const followUpColumns: columns<Lead>[] = [
     {
         accessorKey: 'is_completed',
         header: 'Status',
-        cell: ({ row }) => {
+        cell: ({ row }: { row: Row<ReminderWithLead> }) => {
             const isCompleted = row.original.is_completed;
             return (
                 <span
@@ -57,7 +62,7 @@ export const followUpColumns: columns<Lead>[] = [
     {
         id: 'lead.id',
         header: 'Actions',
-        cell: ({ row }) => {
+        cell: ({ row }: { row: Row<ReminderWithLead> }) => {
             return (
                 <div className="flex gap-2">
                     <Button

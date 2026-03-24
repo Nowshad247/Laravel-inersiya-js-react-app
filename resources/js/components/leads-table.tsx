@@ -2208,7 +2208,7 @@ export function LeadsTable({
                                                             variant="outline"
                                                             onClick={() =>
                                                                 handleDelete(
-                                                                    lead.id,
+                                                                    lead.id.toString(),
                                                                 )
                                                             }
                                                             className="border-red-600 text-red-600 hover:bg-red-600 hover:text-white"

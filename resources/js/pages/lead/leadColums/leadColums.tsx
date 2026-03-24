@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Lead } from '@/types/lead';
+import { Lead } from '@/types/Lead';
 import { router } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
 import { Eye } from 'lucide-react';

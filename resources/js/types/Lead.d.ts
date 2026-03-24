@@ -67,6 +67,7 @@ export interface LeadReminder {
     user_id: number;
     remind_at: string;
     is_completed: boolean;
+    is_call?: number;
     created_at: string;
     updated_at: string;
 }

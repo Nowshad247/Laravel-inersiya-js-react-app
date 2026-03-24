@@ -168,7 +168,7 @@ const CallNows: React.FC<Props> = ({
                     <Row label="Notes">{data.notes?.length || 0}</Row>
                     <Row label="Reminders">{data.reminders?.length || 0}</Row>
 
-                    <Row label="Created At" name="created_at">
+                    <Row label="Created At">
                         {new Date(data.created_at || '').toLocaleString()}
                     </Row>
 
