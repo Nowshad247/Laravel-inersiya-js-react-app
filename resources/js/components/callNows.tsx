@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Lead } from '@/types/Lead';
+import { Lead, LeadStatus, LeadSource } from '@/types/Lead';
 import { useForm } from '@inertiajs/react';
 import React from 'react';
 import { toast } from 'sonner';
@@ -7,8 +7,8 @@ import { toast } from 'sonner';
 type Props = {
     data: Lead;
     isEdit?: boolean;
-    statuses?: Status[];
-    sources?: Source[];
+    statuses?: LeadStatus[];
+    sources?: LeadSource[];
     users?: { id: number; name: string }[];
     town?: any;
 };
@@ -164,16 +164,16 @@ const CallNows: React.FC<Props> = ({
                     </Row>
 
                     {/* Read-only fields */}
-                    <Row label="Calls">{data.calls.length}</Row>
-                    <Row label="Notes">{data.notes.length}</Row>
-                    <Row label="Reminders">{data.reminders.length}</Row>
+                    <Row label="Calls">{data.calls?.length || 0}</Row>
+                    <Row label="Notes">{data.notes?.length || 0}</Row>
+                    <Row label="Reminders">{data.reminders?.length || 0}</Row>
 
                     <Row label="Created At" name="created_at">
-                        {new Date(data.created_at).toLocaleString()}
+                        {new Date(data.created_at || '').toLocaleString()}
                     </Row>
 
                     <Row label="Updated At">
-                        {new Date(data.updated_at).toLocaleString()}
+                        {new Date(data.updated_at || '').toLocaleString()}
                     </Row>
 
                     {/* Update Button */}
