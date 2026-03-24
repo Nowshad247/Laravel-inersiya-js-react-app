@@ -58,7 +58,8 @@ jobs:
         with:
           php-version: "8.4"
           tools: composer:v2
-          extensions: mbstring, bcmath, intl, pdo_mysql
+          extensions: mbstring, bcmath, ctype, fileinfo, json, tokenizer, xml, pdo, pdo_mysql, openssl, curl, zip, imagick, swoole
+          ini-values: memory_limit=-1
           coverage: none
 
       - name: Setup Node.js
@@ -134,5 +135,12 @@ jobs:
             php artisan migrate --force
             npm ci
             npm run build
+            mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache
+            chmod -R ug+rwX storage bootstrap/cache
+            find storage bootstrap/cache -type d -exec chmod 775 {} \;
+            find storage bootstrap/cache -type f -exec chmod 664 {} \;
+            if [ -n "${{ secrets.WEB_USER }}" ] && [ -n "${{ secrets.WEB_GROUP }}" ]; then
+              sudo chown -R "${{ secrets.WEB_USER }}:${{ secrets.WEB_GROUP }}" storage bootstrap/cache || chown -R "${{ secrets.WEB_USER }}:${{ secrets.WEB_GROUP }}" storage bootstrap/cache || true
+            fi
             php artisan optimize:clear
             php artisan optimize
