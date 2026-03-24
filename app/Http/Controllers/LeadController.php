@@ -430,6 +430,7 @@ class LeadController extends Controller
         $sources = LeadSource::all();
         $leadReminders = LeadReminder::with('lead')->where('is_call', true)->get();
 
+     $data = Lead::with(['status', 'source', 'notes', 'calls', 'reminders', 'profile'])->latest()->paginate(30);
         return Inertia::render('lead/callCenter', [
             'leads' => $data,
             'sources' => $sources,
