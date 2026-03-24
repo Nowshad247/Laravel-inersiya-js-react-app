@@ -91,6 +91,9 @@ jobs:
           cp .env.example .env
           php artisan key:generate --force
 
+      - name: Generate Wayfinder types
+        run: php artisan wayfinder:generate --with-form --no-interaction
+
       - name: Run database migrations
         run: php artisan migrate --force
 
