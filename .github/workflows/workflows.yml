@@ -93,9 +93,6 @@ jobs:
       - name: Check PHP code style (Pint)
         run: vendor/bin/pint --dirty
 
-      - name: Run PHP tests
-        run: php artisan test
-
       - name: Check frontend formatting
         run: npm run format:check
 
@@ -104,6 +101,9 @@ jobs:
 
       - name: Build frontend assets
         run: npm run build
+
+      - name: Run PHP tests
+        run: php artisan test
 
   deploy:
     name: Deploy
