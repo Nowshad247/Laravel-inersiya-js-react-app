@@ -170,7 +170,9 @@ export default function CallToday({
                                             size="sm"
                                             variant="outline"
                                             onClick={() => {
-                                                setCallNow(reminder.lead as unknown as Lead);
+                                                setCallNow(
+                                                    reminder.lead as unknown as Lead,
+                                                );
                                                 setCallOpen(true);
                                             }}
                                         >

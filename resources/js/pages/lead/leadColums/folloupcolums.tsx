@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
-import { ColumnDef, Row } from '@tanstack/react-table';
 import { Lead, LeadReminder } from '@/types/Lead';
 import { router } from '@inertiajs/react';
+import { ColumnDef, Row } from '@tanstack/react-table';
 import { PhoneForwardedIcon } from 'lucide-react';
 
 type ReminderWithLead = LeadReminder & {

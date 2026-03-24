@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
-import { ColumnDef } from '@tanstack/react-table';
 import { Lead } from '@/types/Lead';
+import { ColumnDef } from '@tanstack/react-table';
 import { Trash2 } from 'lucide-react';
 
 export const columns: ColumnDef<Lead>[] = [

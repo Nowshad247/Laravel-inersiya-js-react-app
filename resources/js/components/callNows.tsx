@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Lead, LeadStatus, LeadSource } from '@/types/Lead';
+import { Lead, LeadSource, LeadStatus } from '@/types/Lead';
 import { useForm } from '@inertiajs/react';
 import React from 'react';
 import { toast } from 'sonner';

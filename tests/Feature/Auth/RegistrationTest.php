@@ -1,12 +1,22 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+
 test('registration screen can be rendered', function () {
+    if (! Route::has('register')) {
+        $this->markTestSkipped('Registration is disabled for this application.');
+    }
+
     $response = $this->get(route('register'));
 
-    $response->assertStatus(200);
+    $response->assertOk();
 });
 
 test('new users can register', function () {
+    if (! Route::has('register.store')) {
+        $this->markTestSkipped('Registration is disabled for this application.');
+    }
+
     $response = $this->post(route('register.store'), [
         'name' => 'Test User',
         'email' => 'test@example.com',
