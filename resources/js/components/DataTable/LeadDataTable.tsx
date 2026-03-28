@@ -6,7 +6,6 @@ import {
     flexRender,
     getCoreRowModel,
     getFilteredRowModel,
-    getGlobalFilteredRowModel,
     getPaginationRowModel,
     getSortedRowModel,
     SortingState,
@@ -49,7 +48,6 @@ export function DataTable<TData>({ columns, data }: DataTableProps<TData>) {
         onGlobalFilterChange: setGlobalFilter,
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
-        getGlobalFilteredRowModel: getGlobalFilteredRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getPaginationRowModel: getPaginationRowModel(),
     });

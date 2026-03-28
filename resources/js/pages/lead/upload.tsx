@@ -19,9 +19,9 @@ export default function upload({
     townNames,
     lead_interests,
 }: {
-    leadSources: LeadSource;
-    leadStatuses: LeadStatus;
-    assignedTos: User;
+    leadSources: LeadSource[];
+    leadStatuses: LeadStatus[];
+    assignedTos: User[];
     townNames: Array<string>;
     lead_interests: Array<string>;
 }) {
