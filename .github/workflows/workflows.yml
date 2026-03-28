@@ -128,10 +128,10 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
-          test -n "$SSH_HOST" || { echo "Missing SSH_HOST secret"; exit 1; }
-          test -n "$SSH_USERNAME" || { echo "Missing SSH_USERNAME secret"; exit 1; }
-          test -n "$SSH_PRIVATE_KEY" || { echo "Missing SSH_PRIVATE_KEY secret"; exit 1; }
-          test -n "$DEPLOY_PATH" || { echo "Missing DEPLOY_PATH secret"; exit 1; }
+          test -n "202.59.209.159" || { echo "Missing SSH_HOST secret"; exit 1; }
+          test -n "nowshad" || { echo "Missing SSH_USERNAME secret"; exit 1; }
+          test -n "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCwXpu+c3SmlOJkqdOk6FO32W0EwpSx0cW5/0zIEU1Spl78ulUub8tMsS4PeGtq2tH6/kvMUAJO4i9om4vMmx3TTCqfB55hQvCAXjqlaCiXxltUf0W2IoippWulHSxxjONDhSOxgsiiELHSEPTo311HcUWE6og+kWEaJerPFB3OfSmujWlWiKQwVTP0SnxAOHenhTcX7i0H5Q5yJRIxPDOKINVBuJEC7PFkjVNIXmfN+uPqemzV4cmQkg7/iMz9W+8etde49XiEMFMf8p7mwkuAzB0W05f29PnQLjb4uECTNoLqMDbLE4IZd+RLb9Nt1IKsnlkLfm+WEW0aMaRkelWPrA4+pSpDH7yJYC1eyZ+LhKF8Z3nBypK6ZLaynMTKascH8pD97INPXayFn5gNo9+wW9y6t4AwyVYQXpNZWPaKhieEMLQxILQXtDPtuqSOWiiJsJs27a4g/e7Ujg1duTFMJn5yAyVpu5MYAiI2rJUGD8HKx7SQ+KfDztXf3MLK650= nowshad@localhost.localdomain" || { echo "Missing SSH_PRIVATE_KEY secret"; exit 1; }
+          test -n "/data/sdcapp" || { echo "Missing DEPLOY_PATH secret"; exit 1; }
 
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.2.0
