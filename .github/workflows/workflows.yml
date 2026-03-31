@@ -111,6 +111,13 @@ jobs:
 
       - name: Run PHP tests
         run: php artisan test
+      - name: Check key exists
+        run: |
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "KEY IS EMPTY"
+          else
+            echo "KEY EXISTS"
+          fi
 
   deploy:
     name: Deploy
@@ -139,7 +146,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || '22' }}
+          port: ${{ secrets.SSH_PORT || '2222' }}
           script: |
             set -e
             cd "${{ secrets.DEPLOY_PATH }}"

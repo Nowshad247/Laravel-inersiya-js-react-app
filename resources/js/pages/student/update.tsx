@@ -5,6 +5,7 @@ import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, useForm } from '@inertiajs/react';
+import { useEffect, useRef, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Student Update', href: dashboard().url },
@@ -18,7 +19,7 @@ interface Student {
     student_uid?: string | null;
     phone?: string | null;
     email: string;
-    photo: File | null;
+    photo: File | string | null;
     address?: string | null;
     guardian_name?: string | null;
     guardian_phone?: string | null;
@@ -31,6 +32,7 @@ interface Student {
 interface Batch {
     id: string | number;
     name: string;
+    course_id: number;
 }
 
 interface Course {
@@ -51,8 +53,35 @@ export default function StudentEdit({
     courses,
     student_course_ids,
 }: Props) {
-    const { data, setData, put, errors } = useForm<Student>({
-        id: student.id,
+    // 🔥 derive course from batch (correct way)
+    const initialBatch = batches.find(
+        (b) => Number(b.id) === Number(student.batch_id),
+    );
+
+    const [selectedCourseId, setSelectedCourseId] = useState<number | null>(
+        initialBatch?.course_id ?? null,
+    );
+
+    const isFirstLoad = useRef(true);
+
+    const { data, setData, put, errors, processing } = useForm<{
+        student_id: string | number;
+        name: string;
+        father_name: string;
+        mother_name: string;
+        student_uid: string;
+        phone: string;
+        email: string;
+        photo: File | null;
+        address: string;
+        guardian_name: string;
+        guardian_phone: string;
+        guardian_relation: string;
+        status: 'active' | 'inactive';
+        batch_id: string | number | null;
+        course_ids: (string | number)[];
+    }>({
+        student_id: student.id,
         name: student.name,
         father_name: student.father_name,
         mother_name: student.mother_name,
@@ -65,7 +94,7 @@ export default function StudentEdit({
         guardian_phone: student.guardian_phone ?? '',
         guardian_relation: student.guardian_relation ?? '',
         status: student.status,
-        batch_id: student.batch_id ?? '',
+        batch_id: student.batch_id ?? null,
         course_ids: student_course_ids ?? [],
     });
 
@@ -76,15 +105,35 @@ export default function StudentEdit({
         });
     };
 
+    // ✅ reset batch only when user changes course
+    useEffect(() => {
+        if (isFirstLoad.current) {
+            isFirstLoad.current = false;
+            return;
+        }
+        setData('batch_id', student.batch_id);
+    }, [selectedCourseId]);
+
+    // ✅ sync course_ids
+    useEffect(() => {
+        if (selectedCourseId) {
+            setData('course_ids', [selectedCourseId]);
+        } else {
+            setData('course_ids', []);
+        }
+    }, [selectedCourseId]);
+    console.log('Selected Course ID:', student);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Update Student" />
+
             <div className="m-6 max-w-4xl p-6">
                 <form
                     onSubmit={submit}
                     className="grid grid-cols-1 gap-6 md:grid-cols-2"
                 >
-                    {/* Left Column */}
+                    {/* LEFT */}
                     <div className="flex flex-col gap-4">
                         <div>
                             <Label>Name</Label>
@@ -137,11 +186,6 @@ export default function StudentEdit({
                                     setData('student_uid', e.target.value)
                                 }
                             />
-                            {errors.student_uid && (
-                                <p className="text-red-500">
-                                    {errors.student_uid}
-                                </p>
-                            )}
                         </div>
 
                         <div>
@@ -172,50 +216,39 @@ export default function StudentEdit({
                         </div>
 
                         <div>
-                            <Label>Photo</Label>
-
-                            {student.photo &&
-                                typeof student.photo === 'string' && (
-                                    <img
-                                        src={`/storage/${student.photo}`}
-                                        alt="Student Photo"
-                                        className="mb-2 h-32 w-32 rounded border object-cover"
-                                    />
-                                )}
-                            <Input
-                                type="file"
-                                onChange={(
-                                    e: React.ChangeEvent<HTMLInputElement>,
-                                ) => {
-                                    if (e.target.files?.[0])
-                                        setData(
-                                            'photo',
-                                            e.target.files?.[0] ||
-                                                student.photo,
-                                        );
-                                }}
-                            />
-                            {errors.photo && (
-                                <p className="text-red-500">{errors.photo}</p>
-                            )}
-                        </div>
-
-                        <div>
                             <Label>Address</Label>
                             <textarea
+                                className="w-full rounded border p-2"
                                 value={data.address || ''}
                                 onChange={(e) =>
                                     setData('address', e.target.value)
                                 }
-                                className="w-full rounded border p-2"
                             />
-                            {errors.address && (
-                                <p className="text-red-500">{errors.address}</p>
+                        </div>
+
+                        <div>
+                            <Label>Photo</Label>
+
+                            {typeof student.photo === 'string' && (
+                                <img
+                                    src={`/storage/${student.photo}`}
+                                    className="mb-2 h-32 w-32 rounded object-cover"
+                                />
                             )}
+
+                            <Input
+                                type="file"
+                                onChange={(e) =>
+                                    setData(
+                                        'photo',
+                                        e.target.files?.[0] || null,
+                                    )
+                                }
+                            />
                         </div>
                     </div>
 
-                    {/* Right Column */}
+                    {/* RIGHT */}
                     <div className="flex flex-col gap-4">
                         <div>
                             <Label>Guardian Name</Label>
@@ -225,26 +258,16 @@ export default function StudentEdit({
                                     setData('guardian_name', e.target.value)
                                 }
                             />
-                            {errors.guardian_name && (
-                                <p className="text-red-500">
-                                    {errors.guardian_name}
-                                </p>
-                            )}
                         </div>
 
                         <div>
-                            <Label>Guardian Phone </Label>
+                            <Label>Guardian Phone</Label>
                             <Input
                                 value={data.guardian_phone || ''}
                                 onChange={(e) =>
                                     setData('guardian_phone', e.target.value)
                                 }
                             />
-                            {errors.guardian_phone && (
-                                <p className="text-red-500">
-                                    {errors.guardian_phone}
-                                </p>
-                            )}
                         </div>
 
                         <div>
@@ -255,16 +278,12 @@ export default function StudentEdit({
                                     setData('guardian_relation', e.target.value)
                                 }
                             />
-                            {errors.guardian_relation && (
-                                <p className="text-red-500">
-                                    {errors.guardian_relation}
-                                </p>
-                            )}
                         </div>
 
                         <div>
                             <Label>Status</Label>
                             <select
+                                className="w-full rounded border p-2"
                                 value={data.status}
                                 onChange={(e) =>
                                     setData(
@@ -272,32 +291,65 @@ export default function StudentEdit({
                                         e.target.value as 'active' | 'inactive',
                                     )
                                 }
-                                className="w-full rounded border p-2"
                             >
                                 <option value="active">Active</option>
+                                {errors.status && (
+                                    <p className="text-red-500">
+                                        {errors.status}
+                                    </p>
+                                )}
                                 <option value="inactive">Inactive</option>
                             </select>
-                            {errors.status && (
-                                <p className="text-red-500">{errors.status}</p>
-                            )}
                         </div>
 
+                        {/* COURSE */}
                         <div>
-                            <Label>Batch</Label>
+                            <Label>Select Course</Label>
                             <select
-                                value={data.batch_id || ''}
-                                onChange={(e) =>
-                                    setData('batch_id', e.target.value)
-                                }
                                 className="w-full rounded border p-2"
+                                value={selectedCourseId ?? ''}
+                                onChange={(e) =>
+                                    setSelectedCourseId(
+                                        e.target.value
+                                            ? Number(e.target.value)
+                                            : null,
+                                    )
+                                }
                             >
-                                <option value="">Select The Batch</option>
-                                {batches.map((batch) => (
-                                    <option key={batch.id} value={batch.id}>
-                                        {batch.name}
+                                <option value="">-- Select Course --</option>
+                                {courses.map((course) => (
+                                    <option key={course.id} value={course.id}>
+                                        {course.name}
                                     </option>
                                 ))}
                             </select>
+                        </div>
+
+                        {/* BATCH */}
+                        <div>
+                            <Label>Select Batch</Label>
+                            <select>
+                                {batches
+                                    .filter((b) =>
+                                        selectedCourseId
+                                            ? Number(b.course_id) ===
+                                              Number(selectedCourseId)
+                                            : true,
+                                    )
+                                    .map((batch) => (
+                                        <option
+                                            key={batch.id}
+                                            value={batch.id}
+                                            {...(Number(batch.id) ===
+                                            Number(student.batch_id)
+                                                ? { selected: true }
+                                                : {})}
+                                        >
+                                            {batch.name}
+                                        </option>
+                                    ))}
+                            </select>
+
                             {errors.batch_id && (
                                 <p className="text-red-500">
                                     {errors.batch_id}
@@ -305,57 +357,13 @@ export default function StudentEdit({
                             )}
                         </div>
 
-                        <div>
-                            <Label>Courses</Label>
-                            <div className="flex max-h-64 flex-col gap-2 overflow-y-auto rounded border p-2">
-                                {courses.map((course) => {
-                                    const courseId = Number(course.id);
-                                    return (
-                                        <label
-                                            key={course.id}
-                                            className="flex items-center gap-2"
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                value={course.id}
-                                                checked={data.course_ids.includes(
-                                                    courseId,
-                                                )}
-                                                onChange={(e) => {
-                                                    if (e.target.checked) {
-                                                        setData('course_ids', [
-                                                            ...data.course_ids,
-                                                            courseId,
-                                                        ]);
-                                                    } else {
-                                                        setData(
-                                                            'course_ids',
-                                                            data.course_ids.filter(
-                                                                (id) =>
-                                                                    id !==
-                                                                    courseId,
-                                                            ),
-                                                        );
-                                                    }
-                                                }}
-                                            />
-                                            {course.name}
-                                        </label>
-                                    );
-                                })}
-                            </div>
-                            {errors.course_ids && (
-                                <p className="text-red-500">
-                                    {errors.course_ids}
-                                </p>
-                            )}
-                        </div>
-
-                        <div className="mt-4">
-                            <Button type="submit" className="w-full">
-                                Update Student
-                            </Button>
-                        </div>
+                        <Button
+                            type="submit"
+                            className="mt-4 w-full"
+                            disabled={processing}
+                        >
+                            {processing ? 'Updating...' : 'Update Student'}
+                        </Button>
                     </div>
                 </form>
             </div>
