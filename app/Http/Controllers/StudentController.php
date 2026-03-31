@@ -182,6 +182,7 @@ class StudentController extends Controller
     public function update(Request $request, Student $student)
 {
     try {
+        
         if(!$request->student_id) {
             return back()->with('error', 'Student ID is required for update.')->withInput();
         }
@@ -246,7 +247,7 @@ class StudentController extends Controller
         $student->update($updateData);
         $student->courses()->sync($validated['course_ids']);
         $student->batchs()->sync($validated['batch_id']);
-        
+
         if ($request->hasFile('photo')) {
             if ($student->photo) {
                 Storage::disk('public')->delete($student->photo);
