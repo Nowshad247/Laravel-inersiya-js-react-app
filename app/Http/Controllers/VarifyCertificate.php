@@ -21,7 +21,7 @@ class VarifyCertificate extends Controller
                 'uid' => [
                     'required',
                     'string',
-                    'regex:/^SDC-[A-Z]{2,5}-\d{4}-\d{4}-[A-Z]-\d+$/'
+                    'regex:/^SDC-[A-Z0-9-]{2,10}-\d{4}-\d{4}-[A-Z]-\d+$/'
                 ],
             ]);
 

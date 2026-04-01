@@ -18,7 +18,13 @@ use App\Http\Controllers\UserController;
 use BaconQrCode\Renderer\Module\RoundnessModule;
 
 Route::get('/', [HomePageController::class, 'index'])->name('home');
+
 //public routes
+// Certificate Varificattion 
+Route::get('/certificate', [VarifyCertificate::class, 'index'])->middleware('throttle:10,1');
+Route::post('/certificate', [VarifyCertificate::class, 'show'])->middleware('throttle:10,1');
+
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     // Profile picture upload
@@ -49,10 +55,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/student/{id}', [StudentController::class, 'destroy'])->name('student.delete')->middleware('permission:delete_students');
     //Student Profile View Route 
     Route::get('/student/profile/{id}', [StudentController::class, 'studentDetails'])->name('student.profile')->middleware('permission:view_students');
-    // Certificate Varificattion 
-    Route::get('/certificate', [VarifyCertificate::class, 'index'])->middleware('throttle:10,1');
-    Route::post('/certificate', [VarifyCertificate::class, 'show'])->middleware('throttle:10,1');
-
 
 
     //Website settings routes
@@ -85,7 +87,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/leads/edit/{id}', [LeadController::class, 'edit'])->name('leads.edit')->middleware('permission:edit_leads');
 
     Route::put('/leads/edit/{id}', [LeadController::class, 'update'])->name('leads.update')->middleware('permission:edit_leads');
-    
+
     Route::delete('/leads/delete/{id}', [LeadController::class, 'destroy'])->name('leads.delete')->middleware('permission:delete_leads');
     Route::get('/leads/call-center', [LeadController::class, 'callCenter'])->name('leads.call-center');
     Route::post('/leads/call-center/{id}', [LeadController::class, 'callupdate'])->name('leads.callupdate');
@@ -101,7 +103,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     //FollowUpScheduled Route 
 
-    Route::get('/lead/FollowUp',[FollowUpScheduledController::class,'index'])->name('lead.FollowUpScheduled');
+    Route::get('/lead/FollowUp', [FollowUpScheduledController::class, 'index'])->name('lead.FollowUpScheduled');
 
     //Lead add call Now
     Route::post('/leads/add-call-log/{id}', [LeadController::class, 'addCallLog'])->name('leads.add-call-now');

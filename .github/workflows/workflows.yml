@@ -111,6 +111,13 @@ jobs:
 
       - name: Run PHP tests
         run: php artisan test
+      - name: Check key exists
+        run: |
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "KEY IS EMPTY"
+          else
+            echo "KEY EXISTS"
+          fi
 
   deploy:
     name: Deploy
@@ -139,23 +146,32 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || '22' }}
+          port: ${{ secrets.SSH_PORT || '2222' }}
           script: |
             set -e
             cd "${{ secrets.DEPLOY_PATH }}"
+
             git fetch --all
             git checkout "${{ github.ref_name }}"
             git pull origin "${{ github.ref_name }}"
+
+            sudo chown -R apache:apache .
+
             composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader
             php artisan migrate --force
+
             npm ci
             npm run build
-            mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache
-            chmod -R ug+rwX storage bootstrap/cache
-            find storage bootstrap/cache -type d -exec chmod 775 {} \;
-            find storage bootstrap/cache -type f -exec chmod 664 {} \;
-            if [ -n "${{ secrets.WEB_USER }}" ] && [ -n "${{ secrets.WEB_GROUP }}" ]; then
-              sudo chown -R "${{ secrets.WEB_USER }}:${{ secrets.WEB_GROUP }}" storage bootstrap/cache || chown -R "${{ secrets.WEB_USER }}:${{ secrets.WEB_GROUP }}" storage bootstrap/cache || true
-            fi
+
+            # Ensure correct ownership FIRST
+            sudo chown -R apache:apache storage bootstrap/cache || true
+
+            # Then permissions
+            sudo find storage bootstrap/cache -type d -exec chmod 775 {} \;
+            sudo find storage bootstrap/cache -type f -exec chmod 664 {} \;
+
+            # SELinux fix (Rocky Linux)
+            sudo chcon -R -t httpd_sys_rw_content_t storage bootstrap/cache || true
+
             php artisan optimize:clear
             php artisan optimize

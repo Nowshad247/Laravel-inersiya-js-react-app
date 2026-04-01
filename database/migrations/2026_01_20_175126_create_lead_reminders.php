@@ -22,7 +22,6 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->dateTime('remind_at')->index();
-            $table->boolean('is_call')->default(false);
             $table->boolean('is_completed')->default(false);
             $table->timestamps();
         });
