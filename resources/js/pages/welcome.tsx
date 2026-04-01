@@ -4,7 +4,7 @@ import { CertificateResult } from '@/types/CertificateResult';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useMemo } from 'react';
 
-const UID_REGEX = /^SDC-[A-Z]{2,5}-\d{4}-\d{4}-[A-Z]-\d+$/;
+const UID_REGEX = /^SDC-[A-Z0-9-]{2,10}-\d{4}-\d{4}-[A-Z]-\d+$/;
 
 interface Course {
     id: number;
