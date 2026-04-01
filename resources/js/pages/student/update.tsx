@@ -329,25 +329,23 @@ export default function StudentEdit({
                         <div>
                             <Label>Select Batch</Label>
                             <select>
-                                {batches
-                                    .filter((b) =>
-                                        selectedCourseId
-                                            ? Number(b.course_id) ===
-                                              Number(selectedCourseId)
-                                            : true,
-                                    )
-                                    .map((batch) => (
-                                        <option
-                                            key={batch.id}
-                                            value={batch.id}
-                                            {...(Number(batch.id) ===
-                                            Number(student.batch_id)
-                                                ? { selected: true }
-                                                : {})}
-                                        >
-                                            {batch.name}
-                                        </option>
-                                    ))}
+                                {batches.map((batch) => {
+                                    if (
+                                        selectedCourseId &&
+                                        Number(batch.course_id) ===
+                                            Number(selectedCourseId)
+                                    ) {
+                                        return (
+                                            <option
+                                                key={batch.id}
+                                                value={batch.id}
+                                            >
+                                                {batch.name}
+                                            </option>
+                                        );
+                                    }
+                                    return null;
+                                })}
                             </select>
 
                             {errors.batch_id && (
