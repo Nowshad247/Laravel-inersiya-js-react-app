@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Student } from '@/types/Students';
 import { router } from '@inertiajs/react';
 import { ColumnDef } from '@tanstack/react-table';
-import { Eye, Pencil, Trash2 } from 'lucide-react';
+import { Eye, Pencil } from 'lucide-react';
 
 export const columns: ColumnDef<Student>[] = [
     {
@@ -76,23 +76,6 @@ export const columns: ColumnDef<Student>[] = [
                         }
                     >
                         <Pencil className="h-4 w-4" />
-                    </Button>
-
-                    {/* Delete */}
-                    <Button
-                        size="icon"
-                        variant="destructive"
-                        onClick={() => {
-                            if (
-                                confirm(
-                                    'Are you sure you want to delete this student?',
-                                )
-                            ) {
-                                router.delete(`/student/${student.id}`);
-                            }
-                        }}
-                    >
-                        <Trash2 className="h-4 w-4" />
                     </Button>
                 </div>
             );

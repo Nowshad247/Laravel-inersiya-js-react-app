@@ -297,9 +297,21 @@ class StudentController extends Controller
      */
     public function destroy(Student $id)
     {
+        if (!$id) {
+            return redirect()->route('student.index')->with('error', 'Student not found.');
+        }
+
         $id->courses()->detach();
         $id->delete();
 
-        return redirect()->route('student.index')->with('sucess', 'Student Update Successfully');
+        if ($id->photo) {
+            Storage::disk('public')->delete($id->photo);
+        }
+
+        if ($id->student_uid) {
+            Log::info("Deleted student with UID: {$id->student_uid}");
+        }
+
+        return redirect()->route('student.index')->with('success', 'Student deleted successfully.');
     }
 }

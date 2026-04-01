@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/app-layout';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router, useForm } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -53,7 +53,6 @@ export default function StudentEdit({
     courses,
     student_course_ids,
 }: Props) {
-    // 🔥 derive course from batch (correct way)
     const initialBatch = batches.find(
         (b) => Number(b.id) === Number(student.batch_id),
     );
@@ -123,6 +122,10 @@ export default function StudentEdit({
         }
     }, [selectedCourseId]);
     console.log('Selected Course ID:', student);
+
+    function back() {
+        throw new Error('Function not implemented.');
+    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -361,6 +364,30 @@ export default function StudentEdit({
                             disabled={processing}
                         >
                             {processing ? 'Updating...' : 'Update Student'}
+                        </Button>
+                        {/* Delete */}
+                        <Button
+                            variant="destructive"
+                            onClick={() => {
+                                if (
+                                    confirm(
+                                        'Are you sure you want to delete this student?',
+                                    )
+                                ) {
+                                    if (!student.id) {
+                                        alert(
+                                            'Student ID is missing. Cannot delete.',
+                                        );
+                                        return;
+                                    }
+
+                                    router.delete(
+                                        `/students/delete/${student.id}`,
+                                    );
+                                }
+                            }}
+                        >
+                            Delete Student
                         </Button>
                     </div>
                 </form>
