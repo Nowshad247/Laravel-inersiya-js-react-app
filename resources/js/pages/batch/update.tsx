@@ -72,7 +72,7 @@ export default function Update({ batch, courses, error }: Props) {
     ];
 
     function handleWeekdayChange(day: string) {
-        setData((prev) => ({
+        setData((prev: Record<string, any>) => ({
             ...prev,
             weekdays: prev.weekdays.includes(day)
                 ? prev.weekdays.filter((d: string) => d !== day)
@@ -101,7 +101,7 @@ export default function Update({ batch, courses, error }: Props) {
     function submit(e: React.FormEvent) {
         e.preventDefault();
 
-        const submitData = {
+        const submitData: Record<string, any> = {
             ...data,
             faq_json: localFaq.length > 0 ? JSON.stringify(localFaq) : '',
             instructor_details_json:
@@ -118,9 +118,7 @@ export default function Update({ batch, courses, error }: Props) {
                     : '',
         };
 
-        put(`/batch/edit/${batch.id}`, {
-            data: submitData,
-        });
+        put(`/batch/edit/${batch.id}`, submitData as any);
     }
 
     return (
@@ -160,10 +158,12 @@ export default function Update({ batch, courses, error }: Props) {
                                     type="text"
                                     value={data.name}
                                     onChange={(e) =>
-                                        setData((prev) => ({
-                                            ...prev,
-                                            name: e.target.value,
-                                        }))
+                                        setData(
+                                            (prev: Record<string, any>) => ({
+                                                ...prev,
+                                                name: e.target.value,
+                                            }),
+                                        )
                                     }
                                     className={`mt-2 block w-full rounded-lg border p-3 shadow-sm focus:ring-2 focus:outline-none ${
                                         errors.name
@@ -188,10 +188,12 @@ export default function Update({ batch, courses, error }: Props) {
                                     maxLength={10}
                                     value={data.batch_code}
                                     onChange={(e) =>
-                                        setData((prev) => ({
-                                            ...prev,
-                                            batch_code: e.target.value,
-                                        }))
+                                        setData(
+                                            (prev: Record<string, any>) => ({
+                                                ...prev,
+                                                batch_code: e.target.value,
+                                            }),
+                                        )
                                     }
                                     className={`mt-2 block w-full rounded-lg border p-3 shadow-sm focus:ring-2 focus:outline-none ${
                                         errors.batch_code
@@ -214,10 +216,14 @@ export default function Update({ batch, courses, error }: Props) {
                                 <select
                                     value={data.course_id}
                                     onChange={(e) =>
-                                        setData((prev) => ({
-                                            ...prev,
-                                            course_id: Number(e.target.value),
-                                        }))
+                                        setData(
+                                            (prev: Record<string, any>) => ({
+                                                ...prev,
+                                                course_id: Number(
+                                                    e.target.value,
+                                                ),
+                                            }),
+                                        )
                                     }
                                     className={`mt-2 block w-full rounded-lg border p-3 shadow-sm focus:ring-2 focus:outline-none ${
                                         errors.course_id
@@ -250,10 +256,12 @@ export default function Update({ batch, courses, error }: Props) {
                                 <select
                                     value={data.batch_status}
                                     onChange={(e) =>
-                                        setData((prev) => ({
-                                            ...prev,
-                                            batch_status: e.target.value,
-                                        }))
+                                        setData(
+                                            (prev: Record<string, any>) => ({
+                                                ...prev,
+                                                batch_status: e.target.value,
+                                            }),
+                                        )
                                     }
                                     className={`mt-2 block w-full rounded-lg border p-3 shadow-sm focus:ring-2 focus:outline-none ${
                                         errors.batch_status
@@ -282,10 +290,12 @@ export default function Update({ batch, courses, error }: Props) {
                                     type="date"
                                     value={data.start_date}
                                     onChange={(e) =>
-                                        setData((prev) => ({
-                                            ...prev,
-                                            start_date: e.target.value,
-                                        }))
+                                        setData(
+                                            (prev: Record<string, any>) => ({
+                                                ...prev,
+                                                start_date: e.target.value,
+                                            }),
+                                        )
                                     }
                                     className={`mt-2 block w-full rounded-lg border p-3 shadow-sm focus:ring-2 focus:outline-none ${
                                         errors.start_date
@@ -309,10 +319,12 @@ export default function Update({ batch, courses, error }: Props) {
                                     type="date"
                                     value={data.end_date}
                                     onChange={(e) =>
-                                        setData((prev) => ({
-                                            ...prev,
-                                            end_date: e.target.value,
-                                        }))
+                                        setData(
+                                            (prev: Record<string, any>) => ({
+                                                ...prev,
+                                                end_date: e.target.value,
+                                            }),
+                                        )
                                     }
                                     className={`mt-2 block w-full rounded-lg border p-3 shadow-sm focus:ring-2 focus:outline-none ${
                                         errors.end_date
@@ -337,10 +349,14 @@ export default function Update({ batch, courses, error }: Props) {
                                     min="1"
                                     value={data.TotalClass}
                                     onChange={(e) =>
-                                        setData((prev) => ({
-                                            ...prev,
-                                            TotalClass: Number(e.target.value),
-                                        }))
+                                        setData(
+                                            (prev: Record<string, any>) => ({
+                                                ...prev,
+                                                TotalClass: Number(
+                                                    e.target.value,
+                                                ),
+                                            }),
+                                        )
                                     }
                                     className={`mt-2 block w-full rounded-lg border p-3 shadow-sm focus:ring-2 focus:outline-none ${
                                         errors.TotalClass
@@ -373,10 +389,12 @@ export default function Update({ batch, courses, error }: Props) {
                                     type="text"
                                     value={data.batch_modules || ''}
                                     onChange={(e) =>
-                                        setData((prev) => ({
-                                            ...prev,
-                                            batch_modules: e.target.value,
-                                        }))
+                                        setData(
+                                            (prev: Record<string, any>) => ({
+                                                ...prev,
+                                                batch_modules: e.target.value,
+                                            }),
+                                        )
                                     }
                                     placeholder="e.g., Module 1, Module 2, Module 3"
                                     className={`mt-2 block w-full rounded-lg border p-3 shadow-sm focus:ring-2 focus:outline-none ${
@@ -402,12 +420,14 @@ export default function Update({ batch, courses, error }: Props) {
                                     min="0"
                                     value={data.total_classes || ''}
                                     onChange={(e) =>
-                                        setData((prev) => ({
-                                            ...prev,
-                                            total_classes: e.target.value
-                                                ? Number(e.target.value)
-                                                : '',
-                                        }))
+                                        setData(
+                                            (prev: Record<string, any>) => ({
+                                                ...prev,
+                                                total_classes: e.target.value
+                                                    ? Number(e.target.value)
+                                                    : '',
+                                            }),
+                                        )
                                     }
                                     className={`mt-2 block w-full rounded-lg border p-3 shadow-sm focus:ring-2 focus:outline-none ${
                                         errors.total_classes
@@ -433,12 +453,14 @@ export default function Update({ batch, courses, error }: Props) {
                                     step="0.01"
                                     value={data.price || ''}
                                     onChange={(e) =>
-                                        setData((prev) => ({
-                                            ...prev,
-                                            price: e.target.value
-                                                ? Number(e.target.value)
-                                                : '',
-                                        }))
+                                        setData(
+                                            (prev: Record<string, any>) => ({
+                                                ...prev,
+                                                price: e.target.value
+                                                    ? Number(e.target.value)
+                                                    : '',
+                                            }),
+                                        )
                                     }
                                     className={`mt-2 block w-full rounded-lg border p-3 shadow-sm focus:ring-2 focus:outline-none ${
                                         errors.price
@@ -464,12 +486,14 @@ export default function Update({ batch, courses, error }: Props) {
                                     step="0.01"
                                     value={data.discount_price || ''}
                                     onChange={(e) =>
-                                        setData((prev) => ({
-                                            ...prev,
-                                            discount_price: e.target.value
-                                                ? Number(e.target.value)
-                                                : '',
-                                        }))
+                                        setData(
+                                            (prev: Record<string, any>) => ({
+                                                ...prev,
+                                                discount_price: e.target.value
+                                                    ? Number(e.target.value)
+                                                    : '',
+                                            }),
+                                        )
                                     }
                                     className={`mt-2 block w-full rounded-lg border p-3 shadow-sm focus:ring-2 focus:outline-none ${
                                         errors.discount_price
@@ -493,10 +517,12 @@ export default function Update({ batch, courses, error }: Props) {
                                     type="text"
                                     value={data.class_time || ''}
                                     onChange={(e) =>
-                                        setData((prev) => ({
-                                            ...prev,
-                                            class_time: e.target.value,
-                                        }))
+                                        setData(
+                                            (prev: Record<string, any>) => ({
+                                                ...prev,
+                                                class_time: e.target.value,
+                                            }),
+                                        )
                                     }
                                     placeholder="e.g., 10:00 AM - 12:00 PM"
                                     className={`mt-2 block w-full rounded-lg border p-3 shadow-sm focus:ring-2 focus:outline-none ${
@@ -520,10 +546,12 @@ export default function Update({ batch, courses, error }: Props) {
                                 <select
                                     value={data.delivery_mode || ''}
                                     onChange={(e) =>
-                                        setData((prev) => ({
-                                            ...prev,
-                                            delivery_mode: e.target.value,
-                                        }))
+                                        setData(
+                                            (prev: Record<string, any>) => ({
+                                                ...prev,
+                                                delivery_mode: e.target.value,
+                                            }),
+                                        )
                                     }
                                     className={`mt-2 block w-full rounded-lg border p-3 shadow-sm focus:ring-2 focus:outline-none ${
                                         errors.delivery_mode
@@ -551,10 +579,12 @@ export default function Update({ batch, courses, error }: Props) {
                                     rows={3}
                                     value={data.description || ''}
                                     onChange={(e) =>
-                                        setData((prev) => ({
-                                            ...prev,
-                                            description: e.target.value,
-                                        }))
+                                        setData(
+                                            (prev: Record<string, any>) => ({
+                                                ...prev,
+                                                description: e.target.value,
+                                            }),
+                                        )
                                     }
                                     className={`mt-2 block w-full rounded-lg border p-3 shadow-sm focus:ring-2 focus:outline-none ${
                                         errors.description
@@ -578,10 +608,12 @@ export default function Update({ batch, courses, error }: Props) {
                                     rows={3}
                                     value={data.opportunity || ''}
                                     onChange={(e) =>
-                                        setData((prev) => ({
-                                            ...prev,
-                                            opportunity: e.target.value,
-                                        }))
+                                        setData(
+                                            (prev: Record<string, any>) => ({
+                                                ...prev,
+                                                opportunity: e.target.value,
+                                            }),
+                                        )
                                     }
                                     className={`mt-2 block w-full rounded-lg border p-3 shadow-sm focus:ring-2 focus:outline-none ${
                                         errors.opportunity

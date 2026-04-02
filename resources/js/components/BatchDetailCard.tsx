@@ -101,9 +101,7 @@ export function BatchDetailCard({ batchDetail }: BatchDetailCardProps) {
                                 </p>
                                 <p className="mt-2 text-3xl font-bold text-green-900">
                                     ৳{' '}
-                                    {parseFloat(
-                                        batchDetail.price,
-                                    ).toLocaleString()}
+                                    {Number(batchDetail.price).toLocaleString()}
                                 </p>
                             </div>
                         )}
@@ -115,7 +113,7 @@ export function BatchDetailCard({ batchDetail }: BatchDetailCardProps) {
                                 </p>
                                 <p className="mt-2 text-3xl font-bold text-blue-900">
                                     ৳{' '}
-                                    {parseFloat(
+                                    {Number(
                                         batchDetail.discount_price,
                                     ).toLocaleString()}
                                 </p>
