@@ -1,6 +1,6 @@
 name: CI/CD Pipeline
 
-'on':
+on:
   pull_request:
     branches:
       - main
@@ -12,6 +12,7 @@ name: CI/CD Pipeline
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  RUNNER_OS: ubuntu-latest  # Change to "[self-hosted, linux]" on Rocky self-hosted runner
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -20,7 +21,7 @@ concurrency:
 jobs:
   ci:
     name: Laravel CI
-    runs-on: ubuntu-latest
+    runs-on: ${{ env.RUNNER_OS }}
 
     services:
       mysql:
@@ -52,6 +53,10 @@ jobs:
       DB_DATABASE: laracrafr_test
       DB_USERNAME: laravel
       DB_PASSWORD: secret
+
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Checkout code
@@ -111,67 +116,68 @@ jobs:
 
       - name: Run PHP tests
         run: php artisan test
-      - name: Check key exists
+
+      - name: Validate deploy key exists
         run: |
           if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
             echo "KEY IS EMPTY"
+            exit 1
           else
             echo "KEY EXISTS"
           fi
 
   deploy:
-    name: Deploy
+    name: Deploy to Rocky Linux
     runs-on: ubuntu-latest
     needs: ci
-    if: >-
-      github.event_name == 'push' &&
-      (github.ref_name == 'main' || github.ref_name == 'production')
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production'
 
     steps:
-      - name: Validate deploy secrets
-        env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USERNAME: ${{ secrets.SSH_USERNAME }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
-        run: |
-          test -n "$SSH_HOST" || { echo "Missing SSH_HOST secret"; exit 1; }
-          test -n "$SSH_USERNAME" || { echo "Missing SSH_USERNAME secret"; exit 1; }
-          test -n "$SSH_PRIVATE_KEY" || { echo "Missing SSH_PRIVATE_KEY secret"; exit 1; }
-          test -n "$DEPLOY_PATH" || { echo "Missing DEPLOY_PATH secret"; exit 1; }
-
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || '2222' }}
+          port: ${{ secrets.SSH_PORT || '22' }}
           script: |
             set -e
             cd "${{ secrets.DEPLOY_PATH }}"
 
-            git fetch --all
-            git checkout "${{ github.ref_name }}"
-            git pull origin "${{ github.ref_name }}"
+            # 1. Update Code
+            git fetch origin
+            git reset --hard "origin/${{ github.ref_name }}"
 
-            sudo chown -R apache:apache .
-
+            # 2. Dependency Management
             composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader
+
+            # 3. Frontend
+            if command -v npm >/dev/null 2>&1; then
+              npm ci
+              npm run build
+            else
+              echo "npm not installed on deploy server; skip frontend build"
+            fi
+
+            # 4. Database & Cache (Rocky-friendly)
             php artisan migrate --force
-
-            npm ci
-            npm run build
-
-            # Ensure correct ownership FIRST
-            sudo chown -R apache:apache storage bootstrap/cache || true
-
-            # Then permissions
-            sudo find storage bootstrap/cache -type d -exec chmod 775 {} \;
-            sudo find storage bootstrap/cache -type f -exec chmod 664 {} \;
-
-            # SELinux fix (Rocky Linux)
-            sudo chcon -R -t httpd_sys_rw_content_t storage bootstrap/cache || true
-
             php artisan optimize:clear
             php artisan optimize
+
+            # 5. Rocky/RHEL file permissions
+            WEB_USER=apache
+            if id -u nginx >/dev/null 2>&1; then WEB_USER=nginx; fi
+            sudo chown -R "$WEB_USER":"$WEB_USER" .
+            sudo chmod -R 775 storage bootstrap/cache
+
+            # 6. SELinux support (Rocky/Linux)
+            if command -v semanage >/dev/null 2>&1; then
+              sudo semanage fcontext -a -t httpd_sys_rw_content_t "${{ secrets.DEPLOY_PATH }}/storage(/.*)?" 2>/dev/null || true
+              sudo semanage fcontext -a -t httpd_sys_rw_content_t "${{ secrets.DEPLOY_PATH }}/bootstrap/cache(/.*)?" 2>/dev/null || true
+              sudo restorecon -Rv storage bootstrap/cache
+            fi
+
+            # 7. Post-deploy cleanup
+            php artisan route:cache
+            php artisan config:cache
+            php artisan view:cache
