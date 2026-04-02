@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('lead_reminders', function (Blueprint $table) {
-            $table->boolean('is_call')->default(0);
+           
         });
     }
 

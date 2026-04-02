@@ -35,6 +35,7 @@ export default function Index(batchData: BatchData) {
                 </Button>
             </div>
             <BatchTable batch={batchData.batch}></BatchTable>
+
             <div className="m-6">
                 <DataTable
                     columns={studentCollum}

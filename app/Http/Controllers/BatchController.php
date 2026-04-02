@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Batch;
+use App\Models\BatchDetail;
 use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class BatchController extends Controller
 {
@@ -34,50 +37,123 @@ class BatchController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'batch_code' => ['required', 'string', 'max:100', Rule::unique('batches', 'batch_code')],
-            'course_id' => ['required', 'exists:courses,id'],
-            'start_date' => ['required', 'date', ],
-            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
-            'TotalClass' => ['required', 'integer', 'min:1', 'max:500'],
-            'batch_status' => ['required', 'string', 'max:50'],
-        ], [
-            // Name
-            'name.required' => 'Batch name is required.',
-            'name.max' => 'Batch name can’t be longer than 255 characters.',
+        try {
+            DB::beginTransaction();
 
-            // Batch Code
-            'batch_code.required' => 'Batch code is required.',
-            'batch_code.unique' => 'This batch code is already in use. Please choose a different one.',
-
-            // Course
-            'course_id.required' => 'Please select a course.',
-            'course_id.exists' => 'The selected course does not exist.',
-
-            // Dates
-            'start_date.required' => 'Start date is required.',
-            'start_date.after_or_equal' => 'Start date cannot be in the past.',
-            'end_date.required' => 'End date is required.',
-            'end_date.after_or_equal' => 'End date must be the same as or later than the start date.',
-
-            // Total Class
-            'TotalClass.required' => 'Total class count is required.',
-            'TotalClass.integer' => 'Total class must be a whole number.',
-            'TotalClass.min' => 'Total class must be at least 1.',
-            'TotalClass.max' => 'Total class looks too large. Please double-check.',
-            // Batch Status
-            'batch_status.required' => 'Batch status is required.',
-        ]);
-
-        $batch = Batch::create($validated);
-
-        if (! $batch) {
-            return back()->withErrors([
-                'general' => 'Batch could not be created due to a server issue. Please try again.'
+            $batchValidated = $request->validate([
+                // Batch Info
+                'name' => ['required', 'string', 'max:255'],
+                'batch_code' => ['required', 'string', 'max:10', Rule::unique('batches', 'batch_code')],
+                'course_id' => ['required', 'exists:courses,id'],
+                'start_date' => ['required', 'date'],
+                'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+                'TotalClass' => ['required', 'integer', 'min:1', 'max:500'],
+                'batch_status' => ['required', 'string', 'max:50'],
+                
+                // Batch Details - Optional
+                'total_classes' => ['nullable', 'integer', 'min:1'],
+                'price' => ['nullable', 'numeric', 'min:0'],
+                'discount_price' => ['nullable', 'numeric', 'min:0'],
+                'batch_modules' => ['nullable', 'string'],
+                'weekdays' => ['nullable', 'array'],
+                'weekdays.*' => ['string'],
+                'class_time' => ['nullable', 'string', 'max:100'],
+                'delivery_mode' => ['nullable', 'in:online,offline'],
+                'description' => ['nullable', 'string'],
+                'opportunity' => ['nullable', 'string'],
+                'faq_json' => ['nullable', 'json'],
+                'instructor_details_json' => ['nullable', 'json'],
+            ], [
+                'name.required' => 'Batch name is required.',
+                'name.max' => 'Batch name can\'t exceed 255 characters.',
+                'batch_code.required' => 'Batch code is required.',
+                'batch_code.max' => 'Batch code can\'t exceed 10 characters.',
+                'batch_code.unique' => 'This batch code is already in use.',
+                'course_id.required' => 'Please select a course.',
+                'course_id.exists' => 'The selected course does not exist.',
+                'start_date.required' => 'Start date is required.',
+                'end_date.required' => 'End date is required.',
+                'end_date.after_or_equal' => 'End date must be same as or after start date.',
+                'TotalClass.required' => 'Total class count is required.',
+                'TotalClass.min' => 'Total class must be at least 1.',
+                'batch_status.required' => 'Batch status is required.',
+                'total_classes.integer' => 'Duration must be a number.',
+                'price.numeric' => 'Price must be a valid number.',
+                'discount_price.numeric' => 'Discount price must be a valid number.',
+                'delivery_mode.in' => 'Delivery mode must be online or offline.',
+                'faq_json.json' => 'FAQ data is invalid JSON format.',
+                'instructor_details_json.json' => 'Instructor details must be valid JSON format.',
             ]);
+
+            // Create Batch
+            $batch = Batch::create([
+                'name' => $batchValidated['name'],
+                'batch_code' => $batchValidated['batch_code'],
+                'course_id' => $batchValidated['course_id'],
+                'start_date' => $batchValidated['start_date'],
+                'end_date' => $batchValidated['end_date'],
+                'TotalClass' => $batchValidated['TotalClass'],
+                'batch_status' => $batchValidated['batch_status'],
+            ]);
+
+            if (!$batch) {
+                DB::rollBack();
+                return back()->withErrors([
+                    'general' => 'Batch could not be created due to a server issue. Please try again.'
+                ]);
+            }
+
+            // Create Batch Details
+            $batchDetailData = [
+                'batch_id' => $batch->id,
+                'total_classes' => $batchValidated['total_classes'] ?? null,
+                'price' => $batchValidated['price'] ?? null,
+                'discount_price' => $batchValidated['discount_price'] ?? null,
+                'batch_modules' => $batchValidated['batch_modules'] ?? null,
+                'weekdays' => !empty($batchValidated['weekdays']) ? $batchValidated['weekdays'] : null,
+                'class_time' => $batchValidated['class_time'] ?? null,
+                'delivery_mode' => $batchValidated['delivery_mode'] ?? null,
+                'description' => $batchValidated['description'] ?? null,
+                'opportunity' => $batchValidated['opportunity'] ?? null,
+            ];
+
+            // Parse JSON fields
+            if (!empty($batchValidated['faq_json'])) {
+                $batchDetailData['faq'] = json_decode($batchValidated['faq_json'], true);
+            }
+
+            if (!empty($batchValidated['instructor_details_json'])) {
+                $batchDetailData['instructor_details'] = json_decode($batchValidated['instructor_details_json'], true);
+            }
+
+            // Create batch detail record
+            $batchDetail = BatchDetail::create($batchDetailData);
+
+            if (!$batchDetail) {
+                Log::warning('Batch detail creation warning for batch ID: ' . $batch->id);
+            }
+
+            DB::commit();
+
+            return redirect()->route('batch.index')->with('success', 'Batch created successfully with all details.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Batch Create Failed', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'general' => 'An error occurred while creating the batch. Error: ' . $e->getMessage()
+                ]);
         }
-        return redirect()->route('batch.index')->with('success', 'Batch created successfully.');
     }
 
     /**
@@ -87,11 +163,13 @@ class BatchController extends Controller
     {
         $batchData = Batch::with(
             'students',
-            'course:id,name'
+            'course:id,name',
         )->findOrFail($id->id);
 
+
         return Inertia::render("batch/show", [
-            'batch' => $batchData
+            'batch' => $batchData,
+        
         ]);
     }
 
@@ -127,7 +205,7 @@ class BatchController extends Controller
             'name' => 'required|string|max:255',
             'course_id' => 'required|exists:courses,id',
             'start_date' => 'required|date',
-            'batch_code' => 'required | string',
+            'batch_code' => 'required|string|max:10|unique:batches,batch_code,' . $id->id,
             'end_date' => 'required|date|after_or_equal:start_date',
             'TotalClass' => 'required|integer|min:1',
             'batch_status' => 'required|string|max:50',
