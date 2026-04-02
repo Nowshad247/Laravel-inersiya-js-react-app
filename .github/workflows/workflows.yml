@@ -21,7 +21,7 @@ concurrency:
 jobs:
   ci:
     name: Laravel CI
-    runs-on: ${{ env.RUNNER_OS }}
+    runs-on: ubuntu-latest
 
     services:
       mysql:
