@@ -36,6 +36,7 @@ export interface Batch {
     updated_at: string;
     students?: Array;
     detail?: BatchDetail;
+    batchDetail?: BatchDetail;
 }
 
 export interface Course {

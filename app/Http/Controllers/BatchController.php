@@ -164,12 +164,14 @@ class BatchController extends Controller
         $batchData = Batch::with(
             'students',
             'course:id,name',
+            
         )->findOrFail($id->id);
 
+        $batchDetail = BatchDetail::where('batch_id', $id->id)->first();
 
         return Inertia::render("batch/show", [
             'batch' => $batchData,
-        
+            'batchDetail' => $batchDetail,
         ]);
     }
 
@@ -178,7 +180,7 @@ class BatchController extends Controller
      */
     public function edit(Batch $id)
     {
-        $data = Batch::findOrFail($id->id);
+        $data = Batch::with('batchDetail')->findOrFail($id->id);
 
         $batch = [
             'id' => $data->id,
@@ -189,6 +191,18 @@ class BatchController extends Controller
             'end_date' => $data->end_date,
             'TotalClass' => $data->TotalClass,
             'batch_status' => $data->batch_status,
+            // Batch Details
+            'total_classes' => $data->batchDetail?->total_classes,
+            'price' => $data->batchDetail?->price,
+            'discount_price' => $data->batchDetail?->discount_price,
+            'batch_modules' => $data->batchDetail?->batch_modules,
+            'weekdays' => $data->batchDetail?->weekdays ?? [],
+            'class_time' => $data->batchDetail?->class_time,
+            'delivery_mode' => $data->batchDetail?->delivery_mode,
+            'description' => $data->batchDetail?->description,
+            'opportunity' => $data->batchDetail?->opportunity,
+            'faq' => $data->batchDetail?->faq ?? [],
+            'instructor_details' => $data->batchDetail?->instructor_details,
         ];
         return Inertia::render('batch/update', [
             'batch' => $batch,
@@ -201,23 +215,106 @@ class BatchController extends Controller
      */
     public function update(Request $request, Batch $id)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'course_id' => 'required|exists:courses,id',
-            'start_date' => 'required|date',
-            'batch_code' => 'required|string|max:10|unique:batches,batch_code,' . $id->id,
-            'end_date' => 'required|date|after_or_equal:start_date',
-            'TotalClass' => 'required|integer|min:1',
-            'batch_status' => 'required|string|max:50',
-        ]);
+        try {
+            DB::beginTransaction();
 
-        $batch = Batch::findOrFail($id->id);
-        $batch->update($validated);
+            // Validate all inputs
+            $validated = $request->validate([
+                // Batch Info - Required
+                'name' => 'required|string|max:255',
+                'course_id' => 'required|exists:courses,id',
+                'start_date' => 'required|date',
+                'batch_code' => 'required|string|max:10|unique:batches,batch_code,' . $id->id,
+                'end_date' => 'required|date|after_or_equal:start_date',
+                'TotalClass' => 'required|integer|min:1',
+                'batch_status' => 'required|string|max:50',
+                
+                // Batch Details - Optional
+                'total_classes' => ['nullable', 'integer', 'min:1'],
+                'price' => ['nullable', 'numeric', 'min:0'],
+                'discount_price' => ['nullable', 'numeric', 'min:0'],
+                'batch_modules' => ['nullable', 'string'],
+                'weekdays' => ['nullable', 'array'],
+                'weekdays.*' => ['string'],
+                'class_time' => ['nullable', 'string', 'max:100'],
+                'delivery_mode' => ['nullable', 'in:online,offline'],
+                'description' => ['nullable', 'string'],
+                'opportunity' => ['nullable', 'string'],
+                'faq_json' => ['nullable', 'json'],
+                'instructor_details_json' => ['nullable', 'json'],
+            ]);
 
-        if ($batch) {
-            return redirect()->route('batch.index')->with('success', 'Batch updated successfully.');
-        } else {
-            return redirect()->back()->with('error', 'Failed to update batch.');
+            // Step 1: Update Batch Information
+            $batch = Batch::findOrFail($id->id);
+            $batchData = [
+                'name' => $validated['name'],
+                'course_id' => $validated['course_id'],
+                'batch_code' => $validated['batch_code'],
+                'start_date' => $validated['start_date'],
+                'end_date' => $validated['end_date'],
+                'TotalClass' => $validated['TotalClass'],
+                'batch_status' => $validated['batch_status'],
+            ];
+            $batch->update($batchData);
+
+            // Step 2: Prepare Batch Details Data
+            $batchDetailData = [
+                'total_classes' => $validated['total_classes'] ?? null,
+                'price' => $validated['price'] ?? null,
+                'discount_price' => $validated['discount_price'] ?? null,
+                'batch_modules' => $validated['batch_modules'] ?? null,
+                'weekdays' => !empty($validated['weekdays']) ? $validated['weekdays'] : null,
+                'class_time' => $validated['class_time'] ?? null,
+                'delivery_mode' => $validated['delivery_mode'] ?? null,
+                'description' => $validated['description'] ?? null,
+                'opportunity' => $validated['opportunity'] ?? null,
+            ];
+
+            // Step 3: Parse and add JSON fields
+            if (!empty($validated['faq_json'])) {
+                $faqData = json_decode($validated['faq_json'], true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $batchDetailData['faq'] = $faqData;
+                }
+            }
+
+            if (!empty($validated['instructor_details_json'])) {
+                $instructorData = json_decode($validated['instructor_details_json'], true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    $batchDetailData['instructor_details'] = $instructorData;
+                }
+            }
+
+            // Step 4: Update or Create Batch Details
+            if ($batch->batchDetail) {
+                // Update existing batch detail
+                $batch->batchDetail->update($batchDetailData);
+            } else {
+                // Create new batch detail if it doesn't exist
+                $batchDetailData['batch_id'] = $batch->id;
+                BatchDetail::create($batchDetailData);
+            }
+
+            DB::commit();
+
+            return redirect()->route('batch.index')->with('success', 'Batch and details updated successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            throw $e;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Batch Update Failed', [
+                'batch_id' => $id->id,
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors(['general' => 'An error occurred while updating the batch. Please try again.']);
         }
     }
 

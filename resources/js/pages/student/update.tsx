@@ -113,7 +113,6 @@ export default function StudentEdit({
         setData('batch_id', student.batch_id);
     }, [selectedCourseId]);
 
-    // ✅ sync course_ids
     useEffect(() => {
         if (selectedCourseId) {
             setData('course_ids', [selectedCourseId]);
@@ -121,7 +120,6 @@ export default function StudentEdit({
             setData('course_ids', []);
         }
     }, [selectedCourseId]);
-    console.log('Selected Course ID:', student);
 
     function back() {
         throw new Error('Function not implemented.');
