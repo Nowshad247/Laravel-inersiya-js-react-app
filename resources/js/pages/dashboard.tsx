@@ -50,7 +50,7 @@ export default function Dashboard({
                     icon={<LibraryBig className="h-4 w-4" />}
                 ></DashboardCard>
             </div>
-            <div className="m-6">
+            <div className="m-2">
                 <h2 className="mb-4 text-lg font-medium">Leads</h2>
                 <div className="flex">
                     <DashboardCard
@@ -74,6 +74,10 @@ export default function Dashboard({
                         icon={<GraduationCap className="h-4 w-4" />}
                     ></DashboardCard>
                 </div>
+            </div>
+            <div className="m-2">
+                <h2 className="mb-4 text-lg font-medium">Upcoming Batches</h2>
+                <div className="flex">{/* Add financial cards here */}</div>
             </div>
         </AppLayout>
     );
