@@ -3,6 +3,7 @@ import { send } from '@/routes/verification';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Transition } from '@headlessui/react';
 import { Form, Head, Link, usePage } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 
 import DeleteUser from '@/components/delete-user';
 import HeadingSmall from '@/components/heading-small';
@@ -29,6 +30,17 @@ export default function Profile({
     status?: string;
 }) {
     const { auth } = usePage<SharedData>().props;
+    const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (photoPreview?.startsWith('blob:')) {
+                URL.revokeObjectURL(photoPreview);
+            }
+        };
+    }, [photoPreview]);
+
+    const avatarSrc = photoPreview ?? auth.user.avatar ?? '/default-avatar.png';
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -38,7 +50,7 @@ export default function Profile({
                 <div className="space-y-6">
                     <HeadingSmall
                         title="Profile information"
-                        description="Update your name and email address"
+                        description="Update your profile, designation, and profile picture"
                     />
 
                     <Form
@@ -46,6 +58,7 @@ export default function Profile({
                         options={{
                             preserveScroll: true,
                         }}
+                        encType="multipart/form-data"
                         className="space-y-6"
                     >
                         {({ processing, recentlySuccessful, errors }) => (
@@ -70,6 +83,27 @@ export default function Profile({
                                 </div>
 
                                 <div className="grid gap-2">
+                                    <Label htmlFor="designation">
+                                        Designation
+                                    </Label>
+                                    <Input
+                                        id="designation"
+                                        className="mt-1 block w-full"
+                                        defaultValue={
+                                            auth.user.designation ?? ''
+                                        }
+                                        name="designation"
+                                        autoComplete="organization-title"
+                                        placeholder="Designation or job title"
+                                    />
+
+                                    <InputError
+                                        className="mt-2"
+                                        message={errors.designation}
+                                    />
+                                </div>
+
+                                <div className="grid gap-2">
                                     <Label htmlFor="email">Email address</Label>
                                     <Input
                                         id="email"
@@ -86,6 +120,57 @@ export default function Profile({
                                         className="mt-2"
                                         message={errors.email}
                                     />
+                                </div>
+
+                                <div className="grid gap-2">
+                                    <Label className="mb-2">
+                                        Profile picture
+                                    </Label>
+                                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                                        <img
+                                            src={avatarSrc}
+                                            alt="Profile preview"
+                                            className="h-24 w-24 rounded-full border bg-muted object-cover"
+                                        />
+
+                                        <div className="grid gap-2">
+                                            <Input
+                                                id="profile_picture"
+                                                name="profile_picture"
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={(event) => {
+                                                    const file =
+                                                        event.target
+                                                            .files?.[0] ?? null;
+
+                                                    if (
+                                                        photoPreview?.startsWith(
+                                                            'blob:',
+                                                        )
+                                                    ) {
+                                                        URL.revokeObjectURL(
+                                                            photoPreview,
+                                                        );
+                                                    }
+
+                                                    if (file) {
+                                                        setPhotoPreview(
+                                                            URL.createObjectURL(
+                                                                file,
+                                                            ),
+                                                        );
+                                                    } else {
+                                                        setPhotoPreview(null);
+                                                    }
+                                                }}
+                                            />
+                                            <InputError
+                                                className="mt-2"
+                                                message={errors.profile_picture}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
 
                                 {mustVerifyEmail &&
