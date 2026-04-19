@@ -19,6 +19,7 @@ import {
     LayoutGrid,
     ReceiptText,
     ScanSearch,
+    Settings,
     UserPlus,
     UsersRound,
 } from 'lucide-react';
@@ -77,6 +78,12 @@ const footerNavItems: NavItem[] = [
         href: '/',
         icon: ScanSearch,
         permission: 'verify_certificate',
+    },
+    {
+        title: 'site Setting',
+        href: '/admin/settings',
+        icon: Settings,
+        permission: 'admin',
     },
 ];
 

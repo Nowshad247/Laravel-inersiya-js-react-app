@@ -14,6 +14,7 @@ use App\Http\Controllers\VarifyCertificate;
 use App\Http\Middleware\HandleInertiaRequests;
 use \App\Http\Controllers\ProfilePictureController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\UserController;
 use BaconQrCode\Renderer\Module\RoundnessModule;
 
@@ -115,6 +116,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/student/pdf/{id}', [PdfController::class, 'studentProfile'])->name('student.profile.pdf')->withoutMiddleware([
         HandleInertiaRequests::class,
     ]);
+
+    Route::get('/admin/settings',[SettingsController::class, 'index'])->name('admin.settings');
+    Route::post('/admin/settings',[SettingsController::class, 'update'])->name('admin.settings.update');
 });
 
 require __DIR__ . '/settings.php';

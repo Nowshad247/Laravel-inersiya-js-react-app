@@ -27,6 +27,7 @@ class User extends Authenticatable
         'email',
         'password',
         'profile_picture',
+        'designation',
     ];
 
     /**
@@ -58,6 +59,11 @@ class User extends Authenticatable
     /**
      * URL accessor for the profile picture stored in the `public` disk.
      */
+    public function getAvatarAttribute(): ?string
+    {
+        return $this->profile_picture_url;
+    }
+
     public function getProfilePictureUrlAttribute(): ?string
     {
         if (empty($this->profile_picture)) {
