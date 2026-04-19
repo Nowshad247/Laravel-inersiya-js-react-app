@@ -139,7 +139,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT || '22' }}
+          port: '2222'
           script: |
             set -e
             cd "${{ secrets.DEPLOY_PATH }}"
