@@ -25,10 +25,10 @@ class UpdateSiteSettingsRequest extends FormRequest
             'site_author' => ['sometimes', 'string', 'max:255'],
             'site_url' => ['sometimes', 'url', 'max:255'],
 
-            'site_logo' => ['sometimes', 'file', 'image', 'max:4096'],
-            'site_icon' => ['sometimes', 'file', 'image', 'max:4096'],
-            'site_cover_image' => ['sometimes', 'file', 'image', 'max:6144'],
-            'site_favicon' => ['sometimes', 'file', 'max:2048', 'mimes:png,svg,ico'],
+            'site_logo' => ['sometimes', 'file', 'max:4096', 'mimes:svg,png,jpg,jpeg'],
+            'site_icon' => ['sometimes', 'file', 'max:4096', 'mimes:svg,png,jpg,jpeg'],
+            'site_cover_image' => ['sometimes', 'file', 'max:6144', 'mimes:svg,png,jpg,jpeg'],
+            'site_favicon' => ['sometimes', 'file', 'max:2048', 'mimes:svg,png,jpg,jpeg'],
 
             'contact_email' => ['sometimes', 'nullable', 'email', 'max:255'],
             'contact_phone' => ['sometimes', 'string', 'max:50'],
