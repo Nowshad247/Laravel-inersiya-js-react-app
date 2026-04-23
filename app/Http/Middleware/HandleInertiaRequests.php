@@ -84,12 +84,12 @@ class HandleInertiaRequests extends Middleware
 
                     // Platform settings
                     'maintenance_mode' => $values['maintenance_mode'] ?? 'off',
-                    'timezone' => $values['timezone'] ?? 'UTC',
+                    'timezone' => $values['timezone'] ?? 'UTC+06:00',
                     'date_format' => $values['date_format'] ?? 'Y-m-d',
-                    'time_format' => $values['time_format'] ?? 'H:i:s',
+                    'time_format' => $values['time_format'] ?? 'H:i',
                     'default_language' => $values['default_language'] ?? 'en',
                     'default_user_role' => $values['default_user_role'] ?? 'student',
-                    'currency' => $values['currency'] ?? 'TK',
+                    'currency' => $values['currency'] ?? 'BDT',
                     'currency_symbol' => $values['currency_symbol'] ?? '৳',
                     'currency_position' => $values['currency_position'] ?? 'right',
                     'decimal_separator' => $values['decimal_separator'] ?? '.',

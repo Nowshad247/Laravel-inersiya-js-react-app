@@ -9,12 +9,12 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-   public function up(): void
+    public function up(): void
     {
         Schema::create('batches', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('batch_code', 10)->unique()->nullable();
+            $table->string('batch_code', 20)->unique()->nullable();
             $table->foreignId('course_id')->constrained('courses')->onDelete('cascade');
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
@@ -22,7 +22,6 @@ return new class extends Migration
             $table->timestamps();
         });
     }
-
 
     /**
      * Reverse the migrations.
