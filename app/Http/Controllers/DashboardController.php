@@ -36,10 +36,12 @@ class DashboardController extends Controller
                 'course:id,name',
                 'batchDetail:id,batch_id,total_classes',
             ])
-            ->where('start_date', '>', now())
-            ->orWhere('batch_status', '=', 'upcoming')
+            ->where(function ($query) {
+                $query
+                    ->where('start_date', '>', now())
+                    ->orWhere('batch_status', '=', 'upcoming');
+            })
             ->orderBy('start_date')
-            ->distinct('id')
             ->get();
 
         return Inertia::render('dashboard', [

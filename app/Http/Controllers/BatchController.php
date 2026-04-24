@@ -44,7 +44,7 @@ class BatchController extends Controller
             $batchValidated = $request->validate([
                 // Batch Info
                 'name' => ['required', 'string', 'max:255'],
-                'batch_code' => ['required', 'string', 'max:10', Rule::unique('batches', 'batch_code')],
+                'batch_code' => ['required', 'string', 'max:20', Rule::unique('batches', 'batch_code')],
                 'course_id' => ['required', 'exists:courses,id'],
                 'start_date' => ['required', 'date'],
                 'end_date' => ['required', 'date', 'after_or_equal:start_date'],
@@ -68,7 +68,7 @@ class BatchController extends Controller
                 'name.required' => 'Batch name is required.',
                 'name.max' => 'Batch name can\'t exceed 255 characters.',
                 'batch_code.required' => 'Batch code is required.',
-                'batch_code.max' => 'Batch code can\'t exceed 10 characters.',
+                'batch_code.max' => 'Batch code can\'t exceed 20 characters.',
                 'batch_code.unique' => 'This batch code is already in use.',
                 'course_id.required' => 'Please select a course.',
                 'course_id.exists' => 'The selected course does not exist.',
@@ -233,7 +233,7 @@ class BatchController extends Controller
                 'name' => 'required|string|max:255',
                 'course_id' => 'required|exists:courses,id',
                 'start_date' => 'required|date',
-                'batch_code' => 'required|string|max:10|unique:batches,batch_code,'.$id->id,
+                'batch_code' => 'required|string|max:20|unique:batches,batch_code,'.$id->id,
                 'end_date' => 'required|date|after_or_equal:start_date',
                 'TotalClass' => 'required|integer|min:1',
                 'batch_status' => 'required|string|max:50',
@@ -255,6 +255,10 @@ class BatchController extends Controller
 
             // Step 1: Update Batch Information
             $batch = Batch::findOrFail($id->id);
+
+            $validated['batch_code'] = strtoupper($validated['batch_code']);
+            $validated['batch_status'] = ucfirst(strtolower($validated['batch_status']));
+
             $batchData = [
                 'name' => $validated['name'],
                 'course_id' => $validated['course_id'],

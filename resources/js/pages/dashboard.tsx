@@ -94,11 +94,14 @@ export default function Dashboard({
             }
 
             // Course filter
-            if (
-                selectedCourse !== 'all' &&
-                batch.course_id !== parseInt(selectedCourse)
-            ) {
-                return false;
+            if (selectedCourse !== 'all') {
+                const selectedCourseId = Number(selectedCourse);
+                if (
+                    !Number.isFinite(selectedCourseId) ||
+                    batch.course_id !== selectedCourseId
+                ) {
+                    return false;
+                }
             }
 
             return true;
