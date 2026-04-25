@@ -2,7 +2,6 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { cn, isSameUrl, resolveUrl } from '@/lib/utils';
-import { settings as adminSettings } from '@/routes/admin';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
 import { show } from '@/routes/two-factor';
