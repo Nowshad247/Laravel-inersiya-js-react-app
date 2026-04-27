@@ -192,6 +192,8 @@ export default function SiteSettings({
                     />
 
                     <Form
+                        action="/admin/settings"
+                        method="post"
                         options={{ preserveScroll: true }}
                         encType="multipart/form-data"
                         className="space-y-10"
