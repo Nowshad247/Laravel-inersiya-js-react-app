@@ -18,6 +18,7 @@ import { useEffect, useState } from 'react';
 
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
+import adminRoutes from '@/routes/admin';
 
 import type { SiteSettings } from '@/types/SiteSettings';
 
