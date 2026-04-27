@@ -18,14 +18,13 @@ import { useEffect, useState } from 'react';
 
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
-import adminRoutes from '@/routes/admin/index';
 
 import type { SiteSettings } from '@/types/SiteSettings';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Site settings',
-        href: adminRoutes.settings().url,
+        href: '/',
     },
 ];
 
@@ -193,7 +192,6 @@ export default function SiteSettings({
                     />
 
                     <Form
-                        {...adminRoutes.settings.update.form()}
                         options={{ preserveScroll: true }}
                         encType="multipart/form-data"
                         className="space-y-10"
