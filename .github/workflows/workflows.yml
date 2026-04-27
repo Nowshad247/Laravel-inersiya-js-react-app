@@ -164,18 +164,9 @@ jobs:
             php artisan optimize:clear
             php artisan optimize
 
-            # 5. Rocky/RHEL file permissions
-            WEB_USER=apache
-            if id -u nginx >/dev/null 2>&1; then WEB_USER=nginx; fi
-            sudo chown -R "$WEB_USER":"$WEB_USER" .
+           
             sudo chmod -R 775 storage bootstrap/cache
 
-            # 6. SELinux support (Rocky/Linux)
-            if command -v semanage >/dev/null 2>&1; then
-              sudo semanage fcontext -a -t httpd_sys_rw_content_t "${{ secrets.DEPLOY_PATH }}/storage(/.*)?" 2>/dev/null || true
-              sudo semanage fcontext -a -t httpd_sys_rw_content_t "${{ secrets.DEPLOY_PATH }}/bootstrap/cache(/.*)?" 2>/dev/null || true
-              sudo restorecon -Rv storage bootstrap/cache
-            fi
 
             # 7. Post-deploy cleanup
             php artisan route:cache
