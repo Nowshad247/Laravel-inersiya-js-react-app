@@ -34,6 +34,7 @@ export interface Batch {
     batch_status: string;
     created_at: string;
     updated_at: string;
+    course?: Course;
     students?: Array;
     detail?: BatchDetail;
     batchDetail?: BatchDetail;

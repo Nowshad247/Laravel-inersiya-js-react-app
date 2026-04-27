@@ -271,6 +271,7 @@ export default function Update({ batch, courses, error }: Props) {
                                 >
                                     <option value="active">Active</option>
                                     <option value="inactive">Inactive</option>
+                                    <option value="upcoming">Upcoming</option>
                                     <option value="completed">Completed</option>
                                     <option value="pending">Pending</option>
                                 </select>

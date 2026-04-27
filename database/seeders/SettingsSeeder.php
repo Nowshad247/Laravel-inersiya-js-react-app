@@ -2,8 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\settings;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -37,29 +35,29 @@ class SettingsSeeder extends Seeder
             ['key' => 'meta_keywords', 'value' => 'Laravel, course management, education'],
             ['key' => 'google_analytics_id', 'value' => ''],
             ['key' => 'maintenance_mode', 'value' => 'off'],
-            ['key' => 'timezone', 'value' => 'UTC'],
+            ['key' => 'timezone', 'value' => 'UTC+06:00'],
             ['key' => 'date_format', 'value' => 'Y-m-d'],
-            ['key' => 'time_format', 'value' => 'H:i:s'],
+            ['key' => 'time_format', 'value' => 'H:i'],
             ['key' => 'default_language', 'value' => 'en'],
-            ['key' => 'currency', 'value' => 'TK'],
+            ['key' => 'currency', 'value' => 'BDT'],
             ['key' => 'currency_symbol', 'value' => '৳'],
             ['key' => 'currency_position', 'value' => 'right'],
             ['key' => 'decimal_separator', 'value' => '.'],
             ['key' => 'thousand_separator', 'value' => ','],
             ['key' => 'number_of_decimals', 'value' => 2],
-            ['key'=>'enable_registration', 'value' => 'true'],
+            ['key' => 'enable_registration', 'value' => 'true'],
             ['key' => 'default_user_role', 'value' => 'student'],
-            ['key'=>'SMTP','value'=>'off'],
-            ['key'=>'SMTP_HOST','value'=>''],
-            ['key'=>'SMTP_PORT','value'=>''],
-            ['key'=>'SMTP_USERNAME','value'=>''],
-            ['key'=>'SMTP_PASSWORD','value'=>''],
-            ['key'=>'SMTP_ENCRYPTION','value'=>'tls'],
+            ['key' => 'SMTP', 'value' => 'off'],
+            ['key' => 'SMTP_HOST', 'value' => ''],
+            ['key' => 'SMTP_PORT', 'value' => ''],
+            ['key' => 'SMTP_USERNAME', 'value' => ''],
+            ['key' => 'SMTP_PASSWORD', 'value' => ''],
+            ['key' => 'SMTP_ENCRYPTION', 'value' => 'tls'],
 
         ];
 
         foreach ($settings as $setting) {
-           DB::table('settings')->insert([
+            DB::table('settings')->insert([
                 'key' => $setting['key'],
                 'value' => $setting['value'],
                 'created_at' => now(),

@@ -187,7 +187,7 @@ export function LeadsTable({
         assignedTo: false,
         town: true,
         address: false,
-        occupation: true,
+        occupation: false,
         company: false,
         interest: true,
         createdAt: false,

@@ -7,6 +7,75 @@ use Illuminate\Validation\Rule;
 
 class UpdateSiteSettingsRequest extends FormRequest
 {
+    private const array TIMEZONES = [
+        'UTC-12:00',
+        'UTC-11:00',
+        'UTC-10:00',
+        'UTC-09:00',
+        'UTC-08:00',
+        'UTC-07:00',
+        'UTC-06:00',
+        'UTC-05:00',
+        'UTC-04:00',
+        'UTC-03:00',
+        'UTC-02:00',
+        'UTC-01:00',
+        'UTC+00:00',
+        'UTC+01:00',
+        'UTC+02:00',
+        'UTC+03:00',
+        'UTC+04:00',
+        'UTC+05:00',
+        'UTC+06:00',
+        'UTC+07:00',
+        'UTC+08:00',
+        'UTC+09:00',
+        'UTC+10:00',
+        'UTC+11:00',
+        'UTC+12:00',
+        'UTC+13:00',
+        'UTC+14:00',
+    ];
+
+    private const array DATE_FORMATS = [
+        'Y-m-d',
+        'd-m-Y',
+        'm-d-Y',
+        'd/m/Y',
+        'm/d/Y',
+        'Y/m/d',
+    ];
+
+    private const array TIME_FORMATS = [
+        'H:i',
+        'h:i A',
+    ];
+
+    private const array LANGUAGES = [
+        'en',
+        'bn',
+    ];
+
+    private const array CURRENCY_CODES = [
+        'BDT',
+        'USD',
+        'EUR',
+        'GBP',
+        'INR',
+        'JPY',
+        'AUD',
+    ];
+
+    private const array CURRENCY_SYMBOLS = [
+        '৳',
+        '$',
+        '€',
+        '£',
+        '₹',
+        '¥',
+        'A$',
+    ];
+
     public function authorize(): bool
     {
         return true;
@@ -46,14 +115,14 @@ class UpdateSiteSettingsRequest extends FormRequest
             'google_analytics_id' => ['sometimes', 'nullable', 'string', 'max:255'],
 
             'maintenance_mode' => ['sometimes', 'in:on,off'],
-            'timezone' => ['sometimes', 'string', 'max:100'],
-            'date_format' => ['sometimes', 'string', 'max:50'],
-            'time_format' => ['sometimes', 'string', 'max:50'],
-            'default_language' => ['sometimes', 'string', 'max:10'],
+            'timezone' => ['sometimes', 'string', Rule::in(self::TIMEZONES)],
+            'date_format' => ['sometimes', 'string', Rule::in(self::DATE_FORMATS)],
+            'time_format' => ['sometimes', 'string', Rule::in(self::TIME_FORMATS)],
+            'default_language' => ['sometimes', 'string', Rule::in(self::LANGUAGES)],
             'default_user_role' => ['sometimes', 'string', 'max:50'],
 
-            'currency' => ['sometimes', 'string', 'max:10'],
-            'currency_symbol' => ['sometimes', 'string', 'max:10'],
+            'currency' => ['sometimes', 'string', Rule::in(self::CURRENCY_CODES)],
+            'currency_symbol' => ['sometimes', 'string', Rule::in(self::CURRENCY_SYMBOLS)],
             'currency_position' => ['sometimes', 'in:left,right'],
             'decimal_separator' => ['sometimes', 'string', 'max:5'],
             'thousand_separator' => ['sometimes', 'string', 'max:5'],

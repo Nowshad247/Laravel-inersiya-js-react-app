@@ -5,6 +5,13 @@ import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { type BreadcrumbItem } from '@/types';
 import { useEffect, useState } from 'react';
@@ -21,6 +28,95 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+type CurrencyOption = {
+    code: string;
+    symbol: string;
+    label: string;
+};
+
+type SelectOption = {
+    value: string;
+    label: string;
+};
+
+const currencyOptions: CurrencyOption[] = [
+    { code: 'BDT', symbol: '৳', label: 'BDT (৳)' },
+    { code: 'USD', symbol: '$', label: 'USD ($)' },
+    { code: 'EUR', symbol: '€', label: 'EUR (€)' },
+    { code: 'GBP', symbol: '£', label: 'GBP (£)' },
+    { code: 'INR', symbol: '₹', label: 'INR (₹)' },
+    { code: 'JPY', symbol: '¥', label: 'JPY (¥)' },
+    { code: 'AUD', symbol: 'A$', label: 'AUD (A$)' },
+];
+
+function normalizeCurrencyCode(currencyCode: string): string {
+    if (currencyCode === 'TK') {
+        return 'BDT';
+    }
+
+    return currencyCode;
+}
+
+function optionByCode(code: string): CurrencyOption {
+    return (
+        currencyOptions.find((option) => option.code === code) ??
+        currencyOptions[0]
+    );
+}
+
+const timezoneOptions: SelectOption[] = [
+    { value: 'UTC-12:00', label: 'UTC−12:00 (Baker Island)' },
+    { value: 'UTC-11:00', label: 'UTC−11:00 (American Samoa)' },
+    { value: 'UTC-10:00', label: 'UTC−10:00 (Hawaii)' },
+    { value: 'UTC-09:00', label: 'UTC−09:00 (Alaska)' },
+    { value: 'UTC-08:00', label: 'UTC−08:00 (Los Angeles)' },
+    { value: 'UTC-07:00', label: 'UTC−07:00 (Denver)' },
+    { value: 'UTC-06:00', label: 'UTC−06:00 (Chicago)' },
+    { value: 'UTC-05:00', label: 'UTC−05:00 (New York)' },
+    { value: 'UTC-04:00', label: 'UTC−04:00 (Santiago)' },
+    { value: 'UTC-03:00', label: 'UTC−03:00 (São Paulo)' },
+    { value: 'UTC-02:00', label: 'UTC−02:00 (South Georgia)' },
+    { value: 'UTC-01:00', label: 'UTC−01:00 (Azores)' },
+    { value: 'UTC+00:00', label: 'UTC±00:00 (London)' },
+    { value: 'UTC+01:00', label: 'UTC+01:00 (Berlin)' },
+    { value: 'UTC+02:00', label: 'UTC+02:00 (Cairo)' },
+    { value: 'UTC+03:00', label: 'UTC+03:00 (Moscow)' },
+    { value: 'UTC+04:00', label: 'UTC+04:00 (Dubai)' },
+    { value: 'UTC+05:00', label: 'UTC+05:00 (Karachi)' },
+    { value: 'UTC+06:00', label: 'UTC+06:00 (Dhaka)' },
+    { value: 'UTC+07:00', label: 'UTC+07:00 (Bangkok)' },
+    { value: 'UTC+08:00', label: 'UTC+08:00 (Singapore)' },
+    { value: 'UTC+09:00', label: 'UTC+09:00 (Tokyo)' },
+    { value: 'UTC+10:00', label: 'UTC+10:00 (Sydney)' },
+    { value: 'UTC+11:00', label: 'UTC+11:00 (Solomon Islands)' },
+    { value: 'UTC+12:00', label: 'UTC+12:00 (Auckland)' },
+    { value: 'UTC+13:00', label: 'UTC+13:00 (Nukuʻalofa)' },
+    { value: 'UTC+14:00', label: 'UTC+14:00 (Kiritimati)' },
+];
+
+const dateFormatOptions: SelectOption[] = [
+    { value: 'Y-m-d', label: 'YYYY-MM-DD' },
+    { value: 'd-m-Y', label: 'DD-MM-YYYY' },
+    { value: 'm-d-Y', label: 'MM-DD-YYYY' },
+    { value: 'd/m/Y', label: 'DD/MM/YYYY' },
+    { value: 'm/d/Y', label: 'MM/DD/YYYY' },
+    { value: 'Y/m/d', label: 'YYYY/MM/DD' },
+];
+
+const timeFormatOptions: SelectOption[] = [
+    { value: 'H:i', label: '24-hour (HH:mm)' },
+    { value: 'h:i A', label: '12-hour (hh:mm AM/PM)' },
+];
+
+const defaultLanguageOptions: SelectOption[] = [
+    { value: 'en', label: 'English (en)' },
+    { value: 'bn', label: 'Bangla (bn)' },
+];
+
+function optionByValue(options: SelectOption[], value: string): SelectOption {
+    return options.find((option) => option.value === value) ?? options[0];
+}
+
 export default function SiteSettings({
     siteSettings,
 }: {
@@ -32,6 +128,28 @@ export default function SiteSettings({
         site_cover_image?: string;
         site_favicon?: string;
     }>({});
+
+    const [selectedCurrencyCode, setSelectedCurrencyCode] = useState<string>(
+        () => normalizeCurrencyCode(siteSettings.currency),
+    );
+
+    const [selectedTimezone, setSelectedTimezone] = useState<string>(
+        () => optionByValue(timezoneOptions, siteSettings.timezone).value,
+    );
+    const [selectedDateFormat, setSelectedDateFormat] = useState<string>(
+        () => optionByValue(dateFormatOptions, siteSettings.date_format).value,
+    );
+    const [selectedTimeFormat, setSelectedTimeFormat] = useState<string>(
+        () => optionByValue(timeFormatOptions, siteSettings.time_format).value,
+    );
+    const [selectedDefaultLanguage, setSelectedDefaultLanguage] =
+        useState<string>(
+            () =>
+                optionByValue(
+                    defaultLanguageOptions,
+                    siteSettings.default_language,
+                ).value,
+        );
 
     useEffect(() => {
         return () => {
@@ -569,14 +687,37 @@ export default function SiteSettings({
                                             <Label htmlFor="timezone">
                                                 Timezone
                                             </Label>
-                                            <Input
-                                                id="timezone"
+                                            <input
+                                                type="hidden"
                                                 name="timezone"
-                                                defaultValue={
-                                                    siteSettings.timezone
-                                                }
-                                                placeholder="UTC"
+                                                value={selectedTimezone}
                                             />
+                                            <Select
+                                                value={selectedTimezone}
+                                                onValueChange={(value) =>
+                                                    setSelectedTimezone(value)
+                                                }
+                                            >
+                                                <SelectTrigger id="timezone">
+                                                    <SelectValue placeholder="Select timezone" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {timezoneOptions.map(
+                                                        (option) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    option.value
+                                                                }
+                                                                value={
+                                                                    option.value
+                                                                }
+                                                            >
+                                                                {option.label}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
                                             <InputError
                                                 message={errors.timezone}
                                             />
@@ -586,14 +727,37 @@ export default function SiteSettings({
                                             <Label htmlFor="date_format">
                                                 Date format
                                             </Label>
-                                            <Input
-                                                id="date_format"
+                                            <input
+                                                type="hidden"
                                                 name="date_format"
-                                                defaultValue={
-                                                    siteSettings.date_format
-                                                }
-                                                placeholder="Y-m-d"
+                                                value={selectedDateFormat}
                                             />
+                                            <Select
+                                                value={selectedDateFormat}
+                                                onValueChange={(value) =>
+                                                    setSelectedDateFormat(value)
+                                                }
+                                            >
+                                                <SelectTrigger id="date_format">
+                                                    <SelectValue placeholder="Select date format" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {dateFormatOptions.map(
+                                                        (option) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    option.value
+                                                                }
+                                                                value={
+                                                                    option.value
+                                                                }
+                                                            >
+                                                                {option.label}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
                                             <InputError
                                                 message={errors.date_format}
                                             />
@@ -603,14 +767,37 @@ export default function SiteSettings({
                                             <Label htmlFor="time_format">
                                                 Time format
                                             </Label>
-                                            <Input
-                                                id="time_format"
+                                            <input
+                                                type="hidden"
                                                 name="time_format"
-                                                defaultValue={
-                                                    siteSettings.time_format
-                                                }
-                                                placeholder="H:i:s"
+                                                value={selectedTimeFormat}
                                             />
+                                            <Select
+                                                value={selectedTimeFormat}
+                                                onValueChange={(value) =>
+                                                    setSelectedTimeFormat(value)
+                                                }
+                                            >
+                                                <SelectTrigger id="time_format">
+                                                    <SelectValue placeholder="Select time format" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {timeFormatOptions.map(
+                                                        (option) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    option.value
+                                                                }
+                                                                value={
+                                                                    option.value
+                                                                }
+                                                            >
+                                                                {option.label}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
                                             <InputError
                                                 message={errors.time_format}
                                             />
@@ -620,14 +807,39 @@ export default function SiteSettings({
                                             <Label htmlFor="default_language">
                                                 Default language
                                             </Label>
-                                            <Input
-                                                id="default_language"
+                                            <input
+                                                type="hidden"
                                                 name="default_language"
-                                                defaultValue={
-                                                    siteSettings.default_language
-                                                }
-                                                placeholder="en"
+                                                value={selectedDefaultLanguage}
                                             />
+                                            <Select
+                                                value={selectedDefaultLanguage}
+                                                onValueChange={(value) =>
+                                                    setSelectedDefaultLanguage(
+                                                        value,
+                                                    )
+                                                }
+                                            >
+                                                <SelectTrigger id="default_language">
+                                                    <SelectValue placeholder="Select language" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {defaultLanguageOptions.map(
+                                                        (option) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    option.value
+                                                                }
+                                                                value={
+                                                                    option.value
+                                                                }
+                                                            >
+                                                                {option.label}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
                                             <InputError
                                                 message={
                                                     errors.default_language
@@ -658,33 +870,53 @@ export default function SiteSettings({
                                             <Label htmlFor="currency">
                                                 Currency
                                             </Label>
-                                            <Input
-                                                id="currency"
+                                            <input
+                                                type="hidden"
                                                 name="currency"
-                                                defaultValue={
-                                                    siteSettings.currency
-                                                }
-                                                placeholder="TK"
+                                                value={selectedCurrencyCode}
                                             />
-                                            <InputError
-                                                message={errors.currency}
-                                            />
-                                        </div>
-
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="currency_symbol">
-                                                Currency symbol
-                                            </Label>
-                                            <Input
-                                                id="currency_symbol"
+                                            <input
+                                                type="hidden"
                                                 name="currency_symbol"
-                                                defaultValue={
-                                                    siteSettings.currency_symbol
+                                                value={
+                                                    optionByCode(
+                                                        selectedCurrencyCode,
+                                                    ).symbol
                                                 }
-                                                placeholder="৳"
                                             />
+                                            <Select
+                                                value={selectedCurrencyCode}
+                                                onValueChange={(value) =>
+                                                    setSelectedCurrencyCode(
+                                                        value,
+                                                    )
+                                                }
+                                            >
+                                                <SelectTrigger id="currency">
+                                                    <SelectValue placeholder="Select currency" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {currencyOptions.map(
+                                                        (option) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    option.code
+                                                                }
+                                                                value={
+                                                                    option.code
+                                                                }
+                                                            >
+                                                                {option.label}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
                                             <InputError
-                                                message={errors.currency_symbol}
+                                                message={
+                                                    errors.currency ??
+                                                    errors.currency_symbol
+                                                }
                                             />
                                         </div>
 

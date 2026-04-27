@@ -6,10 +6,10 @@ use App\Models\Batch;
 use App\Models\BatchDetail;
 use App\Models\Course;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
+use Inertia\Inertia;
 
 class BatchController extends Controller
 {
@@ -19,8 +19,9 @@ class BatchController extends Controller
     public function index()
     {
         $batches = Batch::with('course')->latest()->get();
+
         return Inertia::render('batch/index', [
-            'batches' => $batches
+            'batches' => $batches,
         ]);
     }
 
@@ -29,7 +30,7 @@ class BatchController extends Controller
      */
     public function create()
     {
-        return Inertia::render('batch/create', ['courses' => Course::select('id', 'name')->get(),]);
+        return Inertia::render('batch/create', ['courses' => Course::select('id', 'name')->get()]);
     }
 
     /**
@@ -43,13 +44,13 @@ class BatchController extends Controller
             $batchValidated = $request->validate([
                 // Batch Info
                 'name' => ['required', 'string', 'max:255'],
-                'batch_code' => ['required', 'string', 'max:10', Rule::unique('batches', 'batch_code')],
+                'batch_code' => ['required', 'string', 'max:20', Rule::unique('batches', 'batch_code')],
                 'course_id' => ['required', 'exists:courses,id'],
                 'start_date' => ['required', 'date'],
                 'end_date' => ['required', 'date', 'after_or_equal:start_date'],
                 'TotalClass' => ['required', 'integer', 'min:1', 'max:500'],
                 'batch_status' => ['required', 'string', 'max:50'],
-                
+
                 // Batch Details - Optional
                 'total_classes' => ['nullable', 'integer', 'min:1'],
                 'price' => ['nullable', 'numeric', 'min:0'],
@@ -67,7 +68,7 @@ class BatchController extends Controller
                 'name.required' => 'Batch name is required.',
                 'name.max' => 'Batch name can\'t exceed 255 characters.',
                 'batch_code.required' => 'Batch code is required.',
-                'batch_code.max' => 'Batch code can\'t exceed 10 characters.',
+                'batch_code.max' => 'Batch code can\'t exceed 20 characters.',
                 'batch_code.unique' => 'This batch code is already in use.',
                 'course_id.required' => 'Please select a course.',
                 'course_id.exists' => 'The selected course does not exist.',
@@ -85,6 +86,12 @@ class BatchController extends Controller
                 'instructor_details_json.json' => 'Instructor details must be valid JSON format.',
             ]);
 
+            // Convert to uppercase
+            $batchValidated['batch_code'] = strtoupper($batchValidated['batch_code']);
+
+            // convert batch status to lowercase
+            $batchValidated['batch_status'] = ucfirst(strtolower($batchValidated['batch_status']));
+
             // Create Batch
             $batch = Batch::create([
                 'name' => $batchValidated['name'],
@@ -96,10 +103,11 @@ class BatchController extends Controller
                 'batch_status' => $batchValidated['batch_status'],
             ]);
 
-            if (!$batch) {
+            if (! $batch) {
                 DB::rollBack();
+
                 return back()->withErrors([
-                    'general' => 'Batch could not be created due to a server issue. Please try again.'
+                    'general' => 'Batch could not be created due to a server issue. Please try again.',
                 ]);
             }
 
@@ -110,7 +118,7 @@ class BatchController extends Controller
                 'price' => $batchValidated['price'] ?? null,
                 'discount_price' => $batchValidated['discount_price'] ?? null,
                 'batch_modules' => $batchValidated['batch_modules'] ?? null,
-                'weekdays' => !empty($batchValidated['weekdays']) ? $batchValidated['weekdays'] : null,
+                'weekdays' => ! empty($batchValidated['weekdays']) ? $batchValidated['weekdays'] : null,
                 'class_time' => $batchValidated['class_time'] ?? null,
                 'delivery_mode' => $batchValidated['delivery_mode'] ?? null,
                 'description' => $batchValidated['description'] ?? null,
@@ -118,19 +126,19 @@ class BatchController extends Controller
             ];
 
             // Parse JSON fields
-            if (!empty($batchValidated['faq_json'])) {
+            if (! empty($batchValidated['faq_json'])) {
                 $batchDetailData['faq'] = json_decode($batchValidated['faq_json'], true);
             }
 
-            if (!empty($batchValidated['instructor_details_json'])) {
+            if (! empty($batchValidated['instructor_details_json'])) {
                 $batchDetailData['instructor_details'] = json_decode($batchValidated['instructor_details_json'], true);
             }
 
             // Create batch detail record
             $batchDetail = BatchDetail::create($batchDetailData);
 
-            if (!$batchDetail) {
-                Log::warning('Batch detail creation warning for batch ID: ' . $batch->id);
+            if (! $batchDetail) {
+                Log::warning('Batch detail creation warning for batch ID: '.$batch->id);
             }
 
             DB::commit();
@@ -151,7 +159,7 @@ class BatchController extends Controller
             return back()
                 ->withInput()
                 ->withErrors([
-                    'general' => 'An error occurred while creating the batch. Error: ' . $e->getMessage()
+                    'general' => 'An error occurred while creating the batch. Error: '.$e->getMessage(),
                 ]);
         }
     }
@@ -164,12 +172,12 @@ class BatchController extends Controller
         $batchData = Batch::with(
             'students',
             'course:id,name',
-            
+
         )->findOrFail($id->id);
 
         $batchDetail = BatchDetail::where('batch_id', $id->id)->first();
 
-        return Inertia::render("batch/show", [
+        return Inertia::render('batch/show', [
             'batch' => $batchData,
             'batchDetail' => $batchDetail,
         ]);
@@ -204,6 +212,7 @@ class BatchController extends Controller
             'faq' => $data->batchDetail?->faq ?? [],
             'instructor_details' => $data->batchDetail?->instructor_details,
         ];
+
         return Inertia::render('batch/update', [
             'batch' => $batch,
             'courses' => Course::select('id', 'name')->get(),
@@ -224,11 +233,11 @@ class BatchController extends Controller
                 'name' => 'required|string|max:255',
                 'course_id' => 'required|exists:courses,id',
                 'start_date' => 'required|date',
-                'batch_code' => 'required|string|max:10|unique:batches,batch_code,' . $id->id,
+                'batch_code' => 'required|string|max:20|unique:batches,batch_code,'.$id->id,
                 'end_date' => 'required|date|after_or_equal:start_date',
                 'TotalClass' => 'required|integer|min:1',
                 'batch_status' => 'required|string|max:50',
-                
+
                 // Batch Details - Optional
                 'total_classes' => ['nullable', 'integer', 'min:1'],
                 'price' => ['nullable', 'numeric', 'min:0'],
@@ -246,6 +255,10 @@ class BatchController extends Controller
 
             // Step 1: Update Batch Information
             $batch = Batch::findOrFail($id->id);
+
+            $validated['batch_code'] = strtoupper($validated['batch_code']);
+            $validated['batch_status'] = ucfirst(strtolower($validated['batch_status']));
+
             $batchData = [
                 'name' => $validated['name'],
                 'course_id' => $validated['course_id'],
@@ -263,7 +276,7 @@ class BatchController extends Controller
                 'price' => $validated['price'] ?? null,
                 'discount_price' => $validated['discount_price'] ?? null,
                 'batch_modules' => $validated['batch_modules'] ?? null,
-                'weekdays' => !empty($validated['weekdays']) ? $validated['weekdays'] : null,
+                'weekdays' => ! empty($validated['weekdays']) ? $validated['weekdays'] : null,
                 'class_time' => $validated['class_time'] ?? null,
                 'delivery_mode' => $validated['delivery_mode'] ?? null,
                 'description' => $validated['description'] ?? null,
@@ -271,14 +284,14 @@ class BatchController extends Controller
             ];
 
             // Step 3: Parse and add JSON fields
-            if (!empty($validated['faq_json'])) {
+            if (! empty($validated['faq_json'])) {
                 $faqData = json_decode($validated['faq_json'], true);
                 if (json_last_error() === JSON_ERROR_NONE) {
                     $batchDetailData['faq'] = $faqData;
                 }
             }
 
-            if (!empty($validated['instructor_details_json'])) {
+            if (! empty($validated['instructor_details_json'])) {
                 $instructorData = json_decode($validated['instructor_details_json'], true);
                 if (json_last_error() === JSON_ERROR_NONE) {
                     $batchDetailData['instructor_details'] = $instructorData;
@@ -303,7 +316,7 @@ class BatchController extends Controller
             throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             Log::error('Batch Update Failed', [
                 'batch_id' => $id->id,
                 'message' => $e->getMessage(),
@@ -321,6 +334,7 @@ class BatchController extends Controller
     public function destroy(Batch $id)
     {
         $id->delete();
+
         return redirect()->route('batch.index')->with('success', 'Batch deleted successfully.');
     }
 }

@@ -83,39 +83,53 @@ export function CallList({
                                     <option value="answered">Answered</option>
                                     <option value="no_answer">No Answer</option>
                                     <option value="busy">Busy</option>
-
+                                    <option value="missed">Missed</option>
                                     <option value="unavailable">
                                         Unavailable
                                     </option>
-
+                                    <option value="not_reachable">
+                                        Not Reachable
+                                    </option>
                                     <option value="interested">
                                         Interested
                                     </option>
                                     <option value="not_interested">
                                         Not Interested
                                     </option>
-
+                                    <option value="maybe_interested">
+                                        Maybe Interested
+                                    </option>
                                     <option value="call_back_later">
                                         Call Back Later
                                     </option>
-
+                                    <option value="follow_up_required">
+                                        Follow Up Required
+                                    </option>
                                     <option value="meeting_scheduled">
                                         Meeting Scheduled
                                     </option>
                                     <option value="qualified">Qualified</option>
-
+                                    <option value="not_qualified">
+                                        Not Qualified
+                                    </option>
                                     <option value="proposal_sent">
                                         Proposal Sent
                                     </option>
-
+                                    <option value="negotiation">
+                                        Negotiation
+                                    </option>
                                     <option value="converted">Converted</option>
+                                    <option value="won">Won</option>
+                                    <option value="lost">Lost</option>
                                     <option value="wrong_person">
                                         Wrong Person
                                     </option>
                                     <option value="invalid_number">
                                         Invalid Number
                                     </option>
-
+                                    <option value="duplicate_lead">
+                                        Duplicate Lead
+                                    </option>
                                     <option value="rejected">Rejected</option>
                                 </select>
                             </div>
