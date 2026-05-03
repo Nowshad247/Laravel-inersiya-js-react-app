@@ -23,19 +23,24 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { router } from '@inertiajs/react';
 
 interface DataTableProps<TData> {
     columns: ColumnDef<TData>[];
     data: TData[];
     searchKey?: string;
+    btnlink?: string;
 }
 
 export function DataTable<TData>({
+    btnlink = '',
     columns,
     data,
     searchKey,
 }: DataTableProps<TData>) {
-    const [sorting, setSorting] = React.useState<SortingState>([]);
+    const [sorting, setSorting] = React.useState<SortingState>([
+        { id: 'updated_at', desc: true },
+    ]);
     const [columnFilters, setColumnFilters] =
         React.useState<ColumnFiltersState>([]);
 
@@ -56,7 +61,19 @@ export function DataTable<TData>({
 
     return (
         <div className="w-full space-y-4">
-            <div className="flex w-11/12 justify-between">
+            <div className="flex w-12/12 justify-between">
+                <div className="px-6">
+                    {btnlink && (
+                        <Button
+                            className="btn btn"
+                            onClick={() => {
+                                router.get('' + btnlink);
+                            }}
+                        >
+                            Add New
+                        </Button>
+                    )}
+                </div>
                 <div className="px-6">
                     Total Records:{' '}
                     {table.getPrePaginationRowModel().rows.length}
@@ -91,13 +108,35 @@ export function DataTable<TData>({
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
                                     <TableHead key={header.id}>
-                                        {header.isPlaceholder
-                                            ? null
-                                            : flexRender(
-                                                  header.column.columnDef
-                                                      .header,
-                                                  header.getContext(),
-                                              )}
+                                        <div className="space-y-2">
+                                            <div className="flex items-center justify-between">
+                                                {header.isPlaceholder
+                                                    ? null
+                                                    : flexRender(
+                                                          header.column
+                                                              .columnDef.header,
+                                                          header.getContext(),
+                                                      )}
+                                            </div>
+                                            {header.column.getCanFilter() &&
+                                                header.column.columnDef
+                                                    .enableColumnFilter !==
+                                                    false && (
+                                                    <Input
+                                                        placeholder="Filter..."
+                                                        value={
+                                                            (header.column.getFilterValue() as string) ??
+                                                            ''
+                                                        }
+                                                        onChange={(e) =>
+                                                            header.column.setFilterValue(
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        className="h-8 w-full text-xs"
+                                                    />
+                                                )}
+                                        </div>
                                     </TableHead>
                                 ))}
                             </TableRow>

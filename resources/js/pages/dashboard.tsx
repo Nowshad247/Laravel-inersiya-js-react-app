@@ -154,7 +154,7 @@ export default function Dashboard({
                 </div>
             </div>
             <div className="m-2">
-                <h2 className="mb-4 text-lg font-medium">Batches</h2>
+                <h2 className="mb-4 text-lg font-medium">Upcoming Batches</h2>
                 <div className="mb-4 flex flex-wrap gap-4">
                     <div className="w-48">
                         <Select

@@ -24,7 +24,7 @@ import type { SiteSettings } from '@/types/SiteSettings';
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Site settings',
-        href: adminRoutes.settings().url,
+        href: '/',
     },
 ];
 
@@ -192,7 +192,8 @@ export default function SiteSettings({
                     />
 
                     <Form
-                        {...adminRoutes.settings.update.form()}
+                        action="/admin/settings"
+                        method="post"
                         options={{ preserveScroll: true }}
                         encType="multipart/form-data"
                         className="space-y-10"

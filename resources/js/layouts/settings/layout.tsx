@@ -33,7 +33,7 @@ const sidebarNavItems: NavItem[] = [
     },
     {
         title: 'Website Settings',
-        href: adminSettings().url,
+        href: '/admin/settings',
         icon: null,
     },
 ];

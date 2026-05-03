@@ -9,30 +9,37 @@ export const columns: ColumnDef<Batch>[] = [
         id: 'id',
         accessorKey: 'id',
         header: 'ID',
+        enableColumnFilter: true,
     },
     {
         accessorKey: 'name',
         header: 'Batch Name',
+        enableColumnFilter: true,
     },
     {
         accessorKey: 'batch_code',
         header: 'Batch Code',
+        enableColumnFilter: true,
     },
     {
         accessorKey: 'course.name',
         header: 'Course Name',
+        enableColumnFilter: true,
     },
     {
         accessorKey: 'TotalClass',
         header: 'Total Class',
+        enableColumnFilter: true,
     },
     {
         accessorKey: 'batch_status',
         header: 'Status',
+        enableColumnFilter: true,
     },
     {
         accessorKey: 'start_date',
         header: 'Start Date',
+        enableColumnFilter: true,
         cell: ({ row }) =>
             row.getValue('start_date')
                 ? new Date(row.getValue('start_date')).toLocaleDateString()
@@ -41,6 +48,7 @@ export const columns: ColumnDef<Batch>[] = [
     {
         id: 'actions',
         header: 'Actions',
+        enableColumnFilter: false,
         cell: ({ row }) => {
             const batch = row.original;
 
