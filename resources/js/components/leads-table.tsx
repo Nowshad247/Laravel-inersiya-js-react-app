@@ -559,7 +559,7 @@ export function LeadsTable({
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-2">
             {/* Top Controls */}
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 {/* Search */}
@@ -577,8 +577,17 @@ export function LeadsTable({
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex-1 flex-wrap items-center gap-2">
                     {/* Advanced Filters */}
+                    <Button
+                        onClick={() => router.get('/leads/upload')}
+                        className="mx-2 my-2 w-3/12"
+                    >
+                        Add New
+                    </Button>
+                    <Button onClick={() => router.get('/lead/FollowUp')}>
+                        Follow Up
+                    </Button>
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button

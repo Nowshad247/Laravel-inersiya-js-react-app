@@ -84,8 +84,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/leads/create', [LeadController::class, 'store'])->name('leads.store')->middleware('permission:create_leads');
     Route::get('/leads/upload', [LeadController::class, 'upload'])->name('leads.upload')->middleware('permission:create_leads');
     Route::post('/leads/import', [LeadController::class, 'import'])->name('leads.import')->middleware('permission:create_leads');
+    Route::post('/leads/store-status', [LeadController::class, 'storeStatus'])->name('leads.store-status')->middleware('permission:create_leads');
+    Route::post('/leads/store-source', [LeadController::class, 'storeSource'])->name('leads.store-source')->middleware('permission:create_leads');
     Route::post('/leads/create', [LeadController::class, 'store'])->name('leads.store')->middleware('permission:create_leads');
-    Route::get('/leads/edit/{id}', [LeadController::class, 'edit'])->name('leads.edit')->middleware('permission:edit_leads');
 
     Route::put('/leads/edit/{id}', [LeadController::class, 'update'])->name('leads.update')->middleware('permission:edit_leads');
 
@@ -119,6 +120,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/admin/settings',[SettingsController::class, 'index'])->name('admin.settings');
     Route::post('/admin/settings',[SettingsController::class, 'update'])->name('admin.settings.update');
+
+    Route::get('/download-template', function () {
+        $filePath = public_path('lead_import_template.csv');
+        return response()->download($filePath, 'lead_import_template.csv', ['Content-Type' => 'text/csv']); })->name('download.template');
 });
 
 require __DIR__ . '/settings.php';
