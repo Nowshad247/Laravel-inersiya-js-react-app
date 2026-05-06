@@ -19,7 +19,6 @@ import {
     LayoutGrid,
     ReceiptText,
     ScanSearch,
-    Settings,
     UserPlus,
     UsersRound,
 } from 'lucide-react';
@@ -79,12 +78,6 @@ const footerNavItems: NavItem[] = [
         icon: ScanSearch,
         permission: 'verify_certificate',
     },
-    {
-        title: 'site Setting',
-        href: '/admin/settings',
-        icon: Settings,
-        permission: 'admin',
-    },
 ];
 
 export function AppSidebar() {
@@ -107,7 +100,6 @@ export function AppSidebar() {
             </SidebarContent>
             <SidebarFooter>
                 <NavFooter items={footerNavItems} className="mt-auto" />
-
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

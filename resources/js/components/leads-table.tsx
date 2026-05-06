@@ -1533,7 +1533,7 @@ export function LeadsTable({
 
             {/* Table */}
             <div className="rounded-md border">
-                <ScrollArea className="h-[600px]">
+                <ScrollArea className="h-[800px]">
                     <Table>
                         <TableHeader className="sticky top-0 z-10 bg-background">
                             <TableRow>
