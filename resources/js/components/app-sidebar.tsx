@@ -20,7 +20,6 @@ import {
     ReceiptText,
     ScanSearch,
     UserPlus,
-    UsersRound,
 } from 'lucide-react';
 import AppLogo from './app-logo';
 
@@ -59,18 +58,6 @@ const footerNavItems: NavItem[] = [
         href: '/leads',
         icon: ContactRound,
         permission: 'view_leads',
-    },
-    {
-        title: 'Website User',
-        href: '/users',
-        icon: UsersRound,
-        permission: 'view_users',
-    },
-    {
-        title: 'Users & Permissions',
-        href: '/userspermissions',
-        icon: LayoutGrid,
-        permission: 'view_userspermissions',
     },
     {
         title: 'Verify Certificate',
