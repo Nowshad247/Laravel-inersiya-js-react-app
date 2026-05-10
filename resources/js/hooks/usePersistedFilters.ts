@@ -23,6 +23,7 @@ interface FilterState {
     sortField: string | null;
     sortDirection: 'asc' | 'desc' | null;
     pageSize: number;
+    currentPage: number;
 }
 
 const STORAGE_KEY = 'leads_table_filters';

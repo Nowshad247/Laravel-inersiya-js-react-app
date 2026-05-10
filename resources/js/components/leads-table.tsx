@@ -253,6 +253,8 @@ export function LeadsTable({
             if (savedFilters.sortDirection)
                 setSortDirection(savedFilters.sortDirection);
             if (savedFilters.pageSize) setPageSize(savedFilters.pageSize);
+            if (savedFilters.currentPage)
+                setCurrentPage(savedFilters.currentPage);
 
             setFiltersLoaded(true);
         }
@@ -284,6 +286,7 @@ export function LeadsTable({
                 sortField,
                 sortDirection,
                 pageSize,
+                currentPage,
             });
         }
     }, [
@@ -306,6 +309,7 @@ export function LeadsTable({
         sortField,
         sortDirection,
         pageSize,
+        currentPage,
     ]);
 
     // Get unique values for filters
