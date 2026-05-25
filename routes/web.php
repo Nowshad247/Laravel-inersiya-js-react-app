@@ -77,7 +77,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/users/delete/{id}', [UserController::class, 'destroy'])->name('users.delete')->middleware('permission:delete_users');
     //Billing Routes
     Route::get('/billings', [BillingController::class, 'index'])->name('billings.index')->middleware('permission:view_billing');
-
+    Route::get('/billings/invoices', [BillingController::class, 'invoices'])->name('billings.invoices')->middleware('permission:view_billing');
+    Route::get('/billings/create-invoice', [BillingController::class, 'create'])->name('billings.create-invoice')->middleware('permission:create_billing');
+    // Billing API (JSON) – used by create-invoice page
+    Route::get('/api/billing/student-search', [BillingController::class, 'studentSearch'])->name('billing.student-search')->middleware('permission:create_billing');
+    Route::get('/api/billing/student/{id}', [BillingController::class, 'getStudentInfo'])->name('billing.student-info')->middleware('permission:create_billing');
+    Route::post('/billings/invoice/store', [BillingController::class, 'store'])->name('billings.invoice.store')->middleware('permission:create_billing');
+    Route::get('/billings/invoice/{id}/preview', [BillingController::class, 'preview'])->name('billings.invoice.preview')->middleware('permission:view_billing');
+    Route::get('/billings/invoice/{id}/pdf', [BillingController::class, 'downloadPdf'])->name('billings.invoice.pdf')->middleware('permission:view_billing')->withoutMiddleware([HandleInertiaRequests::class]);
     //Lead Routes
     Route::get('/leads', [LeadController::class, 'index'])->name('leads.index')->middleware('permission:view_leads');
     Route::get('/leads/create', [LeadController::class, 'create'])->name('leads.create')->middleware('permission:create_leads');
