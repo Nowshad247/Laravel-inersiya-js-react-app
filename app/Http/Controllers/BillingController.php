@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\InstallmentSchedule;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Payment;
@@ -21,11 +22,50 @@ class BillingController extends Controller
      */
     public function index()
     {
+        $now = Carbon::now();
 
-        //billing overview dashboard with charts and summaries
+        $totalRevenue = Invoice::sum('paid_amount');
 
+        $pendingDues = Invoice::where('due_amount', '>', 0)->sum('due_amount');
 
-        return Inertia::render('billings/index');
+        $presentMonthEarnings = Payment::whereMonth('payment_date', $now->month)
+            ->whereYear('payment_date', $now->year)
+            ->where('status', 'verified')
+            ->sum('amount');
+
+        $lastMonth = $now->copy()->subMonth();
+        $lastMonthEarnings = Payment::whereMonth('payment_date', $lastMonth->month)
+            ->whereYear('payment_date', $lastMonth->year)
+            ->where('status', 'verified')
+            ->sum('amount');
+
+        $invoices = Invoice::with(['student', 'course'])
+            ->orderBy('issue_date', 'desc')
+            ->get()
+            ->map(function (Invoice $invoice) {
+                return [
+                    'id'        => $invoice->id,
+                    'invoiceId' => $invoice->invoice_number,
+                    'student'   => $invoice->student?->name ?? 'Unknown Student',
+                    'studentId' => $invoice->student_id,
+                    'course'    => $invoice->course?->name ?? 'Unknown Course',
+                    'dateIssued'=> $invoice->issue_date?->format('Y-m-d') ?? '',
+                    'dueDate'   => $invoice->due_date?->format('Y-m-d') ?? '',
+                    'amount'    => '৳' . number_format($invoice->total_amount ?? 0, 2),
+                    'status'    => ucfirst($invoice->status ?? 'pending'),
+                ];
+            })
+            ->toArray();
+
+        return Inertia::render('billings/index', [
+            'invoices' => $invoices,
+            'stats' => [
+                'totalRevenue'          => (float) $totalRevenue,
+                'pendingDues'           => (float) $pendingDues,
+                'presentMonthEarnings'  => (float) $presentMonthEarnings,
+                'lastMonthEarnings'     => (float) $lastMonthEarnings,
+            ],
+        ]);
     }
 
     public function invoices()
@@ -35,20 +75,272 @@ class BillingController extends Controller
             ->get()
             ->map(function (Invoice $invoice) {
                 return [
-                    'id' => $invoice->id,
-                    'invoiceId' => $invoice->invoice_number,
-                    'student' => $invoice->student?->name ?? 'Unknown Student',
-                    'course' => $invoice->course?->name ?? 'Unknown Course',
+                    'id'         => $invoice->id,
+                    'invoiceId'  => $invoice->invoice_number,
+                    'student'    => $invoice->student?->name ?? 'Unknown Student',
+                    'studentId'  => $invoice->student_id,
+                    'course'     => $invoice->course?->name ?? 'Unknown Course',
                     'dateIssued' => $invoice->issue_date?->format('Y-m-d') ?? '',
-                    'dueDate' => $invoice->due_date?->format('Y-m-d') ?? '',
-                    'amount' => '$' . number_format($invoice->total_amount ?? 0, 2),
-                    'status' => ucfirst($invoice->status ?? 'pending'),
+                    'dueDate'    => $invoice->due_date?->format('Y-m-d') ?? '',
+                    'amount'     => '৳' . number_format($invoice->total_amount ?? 0, 2),
+                    'status'     => ucfirst($invoice->status ?? 'pending'),
                 ];
             })
             ->toArray();
 
         return Inertia::render('billings/invoices', [
             'invoices' => $invoices,
+        ]);
+    }
+
+    public function collections()
+    {
+        $now = Carbon::now();
+        $excludedStatuses = ['paid', 'cancelled', 'draft'];
+
+        $totalOverdue = Invoice::where('due_date', '<', $now->toDateString())
+            ->where('due_amount', '>', 0)
+            ->whereNotIn('status', $excludedStatuses)
+            ->sum('due_amount');
+
+        $pendingCollections = Invoice::where('due_amount', '>', 0)
+            ->whereNotIn('status', $excludedStatuses)
+            ->sum('due_amount');
+
+        $totalBilled = Invoice::whereNotIn('status', ['draft', 'cancelled'])->sum('total_amount');
+        $totalPaid   = Invoice::whereNotIn('status', ['draft', 'cancelled'])->sum('paid_amount');
+        $recoveryRate = $totalBilled > 0 ? round(($totalPaid / $totalBilled) * 100, 1) : 0;
+
+        // Students whose combined due_amount exceeds 5000 are flagged as critical
+        $criticalAccounts = Invoice::where('due_amount', '>', 0)
+            ->whereNotIn('status', $excludedStatuses)
+            ->selectRaw('student_id, SUM(due_amount) as total_due')
+            ->groupBy('student_id')
+            ->having('total_due', '>', 5000)
+            ->get()
+            ->count();
+
+        $activeDues = Invoice::with(['student', 'course'])
+            ->where('due_amount', '>', 0)
+            ->whereNotIn('status', $excludedStatuses)
+            ->orderBy('due_date', 'asc')
+            ->get()
+            ->map(function (Invoice $invoice) use ($now) {
+                $dueDate     = $invoice->due_date;
+                $daysOverdue = ($dueDate && $dueDate->lt($now)) ? (int) $dueDate->diffInDays($now) : 0;
+
+                return [
+                    'id'          => $invoice->id,
+                    'invoiceId'   => $invoice->invoice_number,
+                    'student'     => $invoice->student?->name ?? 'Unknown Student',
+                    'studentId'   => $invoice->student_id,
+                    'course'      => $invoice->course?->name ?? 'Unknown Course',
+                    'dueDate'     => $invoice->due_date?->format('Y-m-d') ?? '',
+                    'totalAmount' => (float) ($invoice->total_amount ?? 0),
+                    'paidAmount'  => (float) ($invoice->paid_amount ?? 0),
+                    'dueAmount'   => (float) ($invoice->due_amount ?? 0),
+                    'daysOverdue' => $daysOverdue,
+                    'status'      => ucfirst($invoice->status ?? 'pending'),
+                ];
+            })
+            ->toArray();
+
+        return Inertia::render('billings/collections', [
+            'stats' => [
+                'totalOverdue'       => (float) $totalOverdue,
+                'pendingCollections' => (float) $pendingCollections,
+                'recoveryRate'       => (float) $recoveryRate,
+                'criticalAccounts'   => (int) $criticalAccounts,
+            ],
+            'activeDues' => $activeDues,
+        ]);
+    }
+
+    public function exportDueReport()
+    {
+        $now = Carbon::now();
+        $excludedStatuses = ['paid', 'cancelled', 'draft'];
+
+        $invoices = Invoice::with(['student', 'course'])
+            ->where('due_amount', '>', 0)
+            ->whereNotIn('status', $excludedStatuses)
+            ->orderBy('due_date', 'asc')
+            ->get();
+
+        $filename = 'due_report_' . $now->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($invoices, $now) {
+            $fh = fopen('php://output', 'w');
+            // UTF-8 BOM so Excel renders Bengali text correctly
+            fwrite($fh, "\xEF\xBB\xBF");
+            fputcsv($fh, ['Invoice ID', 'Student', 'Course', 'Due Date', 'Total Amount (BDT)', 'Paid Amount (BDT)', 'Due Amount (BDT)', 'Days Overdue', 'Status']);
+
+            foreach ($invoices as $invoice) {
+                $dueDate     = $invoice->due_date;
+                $daysOverdue = ($dueDate && $dueDate->lt($now)) ? (int) $dueDate->diffInDays($now) : 0;
+
+                fputcsv($fh, [
+                    $invoice->invoice_number,
+                    $invoice->student?->name ?? 'Unknown',
+                    $invoice->course?->name ?? 'Unknown',
+                    $invoice->due_date?->format('Y-m-d') ?? '',
+                    number_format($invoice->total_amount ?? 0, 2),
+                    number_format($invoice->paid_amount ?? 0, 2),
+                    number_format($invoice->due_amount ?? 0, 2),
+                    $daysOverdue,
+                    ucfirst($invoice->status ?? ''),
+                ]);
+            }
+
+            fclose($fh);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    public function studentBilling(int $id)
+    {
+        $student = Student::with([
+            'batch.course',
+            'batch.batchDetail',
+            'courses',
+        ])->findOrFail($id);
+
+        $invoices = Invoice::with(['items', 'payments', 'course'])
+            ->where('student_id', $id)
+            ->orderBy('issue_date', 'desc')
+            ->get();
+
+        $payments = Payment::with('invoice')
+            ->where('student_id', $id)
+            ->orderBy('payment_date', 'desc')
+            ->get();
+
+        // Summary
+        $activeInvoices = $invoices->whereNotIn('status', ['draft', 'cancelled']);
+        $totalBilled    = $activeInvoices->sum('total_amount');
+        $totalPaid      = $activeInvoices->sum('paid_amount');
+        $totalDue       = $activeInvoices->sum('due_amount');
+        $invoiceCount   = $activeInvoices->count();
+
+        // Next payment: prefer upcoming installment, fall back to earliest due invoice
+        $nextInstallment = InstallmentSchedule::whereHas(
+            'installmentPlan', fn($q) => $q->where('student_id', $id)
+        )
+            ->where('status', '!=', 'paid')
+            ->orderBy('due_date', 'asc')
+            ->first();
+
+        $nextDueInvoice = $invoices
+            ->where('due_amount', '>', 0)
+            ->whereNotIn('status', ['paid', 'cancelled', 'draft'])
+            ->sortBy('due_date')
+            ->first();
+
+        if ($nextInstallment) {
+            $nextPayment = [
+                'type'          => 'installment',
+                'amount'        => (float) $nextInstallment->amount,
+                'dueDate'       => $nextInstallment->due_date?->format('Y-m-d'),
+                'status'        => $nextInstallment->status,
+                'penaltyAmount' => (float) ($nextInstallment->penalty_amount ?? 0),
+            ];
+        } elseif ($nextDueInvoice) {
+            $nextPayment = [
+                'type'        => 'invoice',
+                'invoiceId'   => $nextDueInvoice->invoice_number,
+                'invoiceDbId' => $nextDueInvoice->id,
+                'amount'      => (float) $nextDueInvoice->due_amount,
+                'dueDate'     => $nextDueInvoice->due_date?->format('Y-m-d'),
+                'status'      => ucfirst($nextDueInvoice->status ?? ''),
+            ];
+        } else {
+            $nextPayment = null;
+        }
+
+        // Course payment breakdown
+        $courseBreakdown = $activeInvoices
+            ->groupBy(fn(Invoice $inv) => $inv->course?->name ?? 'General')
+            ->map(fn($group, $courseName) => [
+                'course'       => $courseName,
+                'invoiceCount' => $group->count(),
+                'totalBilled'  => (float) $group->sum('total_amount'),
+                'totalPaid'    => (float) $group->sum('paid_amount'),
+                'totalDue'     => (float) $group->sum('due_amount'),
+            ])
+            ->values()
+            ->toArray();
+
+        // Invoice list
+        $invoiceList = $invoices->map(function (Invoice $inv) {
+            return [
+                'id'            => $inv->id,
+                'invoiceNumber' => $inv->invoice_number,
+                'issueDate'     => $inv->issue_date?->format('Y-m-d') ?? '',
+                'dueDate'       => $inv->due_date?->format('Y-m-d') ?? '',
+                'course'        => $inv->course?->name ?? 'General',
+                'totalAmount'   => (float) ($inv->total_amount ?? 0),
+                'paidAmount'    => (float) ($inv->paid_amount ?? 0),
+                'dueAmount'     => (float) ($inv->due_amount ?? 0),
+                'status'        => ucfirst($inv->status ?? 'pending'),
+                'items'         => $inv->items->map(fn($item) => [
+                    'feeType'   => $item->fee_type,
+                    'quantity'  => $item->quantity,
+                    'unitPrice' => (float) $item->unit_price,
+                    'total'     => (float) $item->total,
+                ])->toArray(),
+            ];
+        })->toArray();
+
+        // Payment history
+        $paymentHistory = $payments->map(fn(Payment $p) => [
+            'id'            => $p->id,
+            'invoiceNumber' => $p->invoice?->invoice_number ?? '—',
+            'invoiceId'     => $p->invoice_id,
+            'amount'        => (float) $p->amount,
+            'method'        => $p->method ?? '—',
+            'status'        => ucfirst($p->status ?? ''),
+            'transactionId' => $p->transaction_id ?? '—',
+            'paymentDate'   => $p->payment_date?->format('Y-m-d H:i') ?? '',
+            'note'          => $p->note ?? '',
+        ])->toArray();
+
+        // Student batches
+        $batches = collect();
+        if ($student->batch) {
+            $batches->push([
+                'name'      => $student->batch->name,
+                'code'      => $student->batch->batch_code,
+                'course'    => $student->batch->course?->name,
+                'startDate' => $student->batch->start_date,
+                'endDate'   => $student->batch->end_date,
+                'price'     => $student->batch->batchDetail?->price,
+                'status'    => $student->batch->batch_status,
+            ]);
+        }
+
+        return Inertia::render('billings/student-billing', [
+            'student' => [
+                'id'            => $student->id,
+                'name'          => $student->name,
+                'studentUid'    => $student->student_uid,
+                'phone'         => $student->phone,
+                'email'         => $student->email,
+                'address'       => $student->address,
+                'status'        => $student->status,
+                'guardianName'  => $student->guardian_name,
+                'guardianPhone' => $student->guardian_phone,
+                'batches'       => $batches->toArray(),
+                'courses'       => $student->courses->map(fn($c) => ['id' => $c->id, 'name' => $c->name])->toArray(),
+            ],
+            'summary' => [
+                'totalBilled'  => (float) $totalBilled,
+                'totalPaid'    => (float) $totalPaid,
+                'totalDue'     => (float) $totalDue,
+                'invoiceCount' => (int) $invoiceCount,
+            ],
+            'nextPayment'     => $nextPayment,
+            'courseBreakdown' => $courseBreakdown,
+            'invoices'        => $invoiceList,
+            'payments'        => $paymentHistory,
         ]);
     }
 

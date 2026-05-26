@@ -15,6 +15,7 @@ use App\Http\Middleware\HandleInertiaRequests;
 use \App\Http\Controllers\ProfilePictureController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\BillingReportsController;
 use App\Http\Controllers\UserController;
 use BaconQrCode\Renderer\Module\RoundnessModule;
 
@@ -85,6 +86,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/billings/invoice/store', [BillingController::class, 'store'])->name('billings.invoice.store')->middleware('permission:create_billing');
     Route::get('/billings/invoice/{id}/preview', [BillingController::class, 'preview'])->name('billings.invoice.preview')->middleware('permission:view_billing');
     Route::get('/billings/invoice/{id}/pdf', [BillingController::class, 'downloadPdf'])->name('billings.invoice.pdf')->middleware('permission:view_billing')->withoutMiddleware([HandleInertiaRequests::class]);
+    Route::get('/billings/collections', [BillingController::class, 'collections'])->name('billings.collections')->middleware('permission:view_billing');
+    Route::get('/billings/collections/export', [BillingController::class, 'exportDueReport'])->name('billings.collections.export')->middleware('permission:view_billing')->withoutMiddleware([HandleInertiaRequests::class]);
+    Route::get('/billings/student/{id}', [BillingController::class, 'studentBilling'])->name('billings.student')->middleware('permission:view_billing');
+    Route::get('/billings/reports', [BillingReportsController::class, 'index'])->name('billings.reports')->middleware('permission:view_billing');
+    Route::get('/billings/reports/export', [BillingReportsController::class, 'export'])->name('billings.reports.export')->middleware('permission:view_billing')->withoutMiddleware([HandleInertiaRequests::class]);
     //Lead Routes
     Route::get('/leads', [LeadController::class, 'index'])->name('leads.index')->middleware('permission:view_leads');
     Route::get('/leads/create', [LeadController::class, 'create'])->name('leads.create')->middleware('permission:create_leads');

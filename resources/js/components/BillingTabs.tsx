@@ -1,5 +1,5 @@
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { ChevronRight } from 'lucide-react';
 import { useMemo } from 'react';
 
@@ -21,19 +21,7 @@ const tabs = [
         title: 'Collections',
         href: '/billings/collections',
     },
-    { value: 'payments', title: 'Payments', href: '/billings/payments' },
-    {
-        value: 'course-fees',
-        title: 'Course Fees',
-        href: '/billings/course-fees',
-    },
     { value: 'reports', title: 'Reports', href: '/billings/reports' },
-    {
-        value: 'administration',
-        title: 'Administration',
-        href: '/billings/administration',
-    },
-    { value: 'settings', title: 'Settings', href: '/billings/settings' },
 ];
 
 export default function BillingTabs({
@@ -64,7 +52,10 @@ export default function BillingTabs({
                     </h1>
                 </div>
                 <div className="max-w-xl text-sm leading-6 text-slate-500">
-                    <button className="rounded-md bg-black px-4 py-2 text-white hover:bg-blue-600">
+                    <button
+                        className="rounded-md bg-black px-4 py-2 text-white hover:bg-blue-300 hover:text-black"
+                        onClick={() => router.get('/billings/create-invoice')}
+                    >
                         Add New Invoice
                     </button>
                 </div>
