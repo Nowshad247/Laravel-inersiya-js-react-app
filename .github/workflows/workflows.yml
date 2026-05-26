@@ -147,7 +147,8 @@ jobs:
             # 1. Update Code
             git fetch origin
             git reset --hard "origin/${{ github.ref_name }}"
-
+            git clean -fd
+            
             # 2. Dependency Management
             composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader
 
