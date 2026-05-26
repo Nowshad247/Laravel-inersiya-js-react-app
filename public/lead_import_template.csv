@@ -1,0 +1,11 @@
+name,email,phone,whatsapp,town,status,source
+John Doe,john@example.com,01710000001,01710000001,Dhaka,new,Facebook
+Jane Smith,jane@example.com,01710000002,01710000002,Chittagong,contacted,Google Ads
+Rahim Uddin,rahim@example.com,01710000003,01710000003,Sylhet,qualified,Website
+Karim Mia,karim@example.com,01710000004,01710000004,Rajshahi,new,Referral
+Ayesha Khan,ayesha@example.com,01710000005,01710000005,Dhaka,contacted,Facebook
+Tanvir Hasan,tanvir@example.com,01710000006,01710000006,Khulna,qualified,Google Ads
+Nusrat Jahan,nusrat@example.com,01710000007,01710000007,Barishal,new,Website
+Imran Hossain,imran@example.com,01710000008,01710000008,Rangpur,lost,Referral
+Faria Islam,faria@example.com,01710000009,01710000009,Dhaka,converted,Facebook
+Mahmudul Hasan,mahmud@example.com,01710000010,01710000010,Mymensingh,contacted,Website

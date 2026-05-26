@@ -15,6 +15,7 @@ use App\Http\Middleware\HandleInertiaRequests;
 use \App\Http\Controllers\ProfilePictureController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\BillingReportsController;
 use App\Http\Controllers\UserController;
 use BaconQrCode\Renderer\Module\RoundnessModule;
 
@@ -77,15 +78,28 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/users/delete/{id}', [UserController::class, 'destroy'])->name('users.delete')->middleware('permission:delete_users');
     //Billing Routes
     Route::get('/billings', [BillingController::class, 'index'])->name('billings.index')->middleware('permission:view_billing');
-
+    Route::get('/billings/invoices', [BillingController::class, 'invoices'])->name('billings.invoices')->middleware('permission:view_billing');
+    Route::get('/billings/create-invoice', [BillingController::class, 'create'])->name('billings.create-invoice')->middleware('permission:create_billing');
+    // Billing API (JSON) – used by create-invoice page
+    Route::get('/api/billing/student-search', [BillingController::class, 'studentSearch'])->name('billing.student-search')->middleware('permission:create_billing');
+    Route::get('/api/billing/student/{id}', [BillingController::class, 'getStudentInfo'])->name('billing.student-info')->middleware('permission:create_billing');
+    Route::post('/billings/invoice/store', [BillingController::class, 'store'])->name('billings.invoice.store')->middleware('permission:create_billing');
+    Route::get('/billings/invoice/{id}/preview', [BillingController::class, 'preview'])->name('billings.invoice.preview')->middleware('permission:view_billing');
+    Route::get('/billings/invoice/{id}/pdf', [BillingController::class, 'downloadPdf'])->name('billings.invoice.pdf')->middleware('permission:view_billing')->withoutMiddleware([HandleInertiaRequests::class]);
+    Route::get('/billings/collections', [BillingController::class, 'collections'])->name('billings.collections')->middleware('permission:view_billing');
+    Route::get('/billings/collections/export', [BillingController::class, 'exportDueReport'])->name('billings.collections.export')->middleware('permission:view_billing')->withoutMiddleware([HandleInertiaRequests::class]);
+    Route::get('/billings/student/{id}', [BillingController::class, 'studentBilling'])->name('billings.student')->middleware('permission:view_billing');
+    Route::get('/billings/reports', [BillingReportsController::class, 'index'])->name('billings.reports')->middleware('permission:view_billing');
+    Route::get('/billings/reports/export', [BillingReportsController::class, 'export'])->name('billings.reports.export')->middleware('permission:view_billing')->withoutMiddleware([HandleInertiaRequests::class]);
     //Lead Routes
     Route::get('/leads', [LeadController::class, 'index'])->name('leads.index')->middleware('permission:view_leads');
     Route::get('/leads/create', [LeadController::class, 'create'])->name('leads.create')->middleware('permission:create_leads');
     Route::post('/leads/create', [LeadController::class, 'store'])->name('leads.store')->middleware('permission:create_leads');
     Route::get('/leads/upload', [LeadController::class, 'upload'])->name('leads.upload')->middleware('permission:create_leads');
     Route::post('/leads/import', [LeadController::class, 'import'])->name('leads.import')->middleware('permission:create_leads');
+    Route::post('/leads/store-status', [LeadController::class, 'storeStatus'])->name('leads.store-status')->middleware('permission:create_leads');
+    Route::post('/leads/store-source', [LeadController::class, 'storeSource'])->name('leads.store-source')->middleware('permission:create_leads');
     Route::post('/leads/create', [LeadController::class, 'store'])->name('leads.store')->middleware('permission:create_leads');
-    Route::get('/leads/edit/{id}', [LeadController::class, 'edit'])->name('leads.edit')->middleware('permission:edit_leads');
 
     Route::put('/leads/edit/{id}', [LeadController::class, 'update'])->name('leads.update')->middleware('permission:edit_leads');
 
@@ -119,6 +133,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/admin/settings',[SettingsController::class, 'index'])->name('admin.settings');
     Route::post('/admin/settings',[SettingsController::class, 'update'])->name('admin.settings.update');
+
+    Route::get('/download-template', function () {
+        $filePath = public_path('lead_import_template.csv');
+        return response()->download($filePath, 'lead_import_template.csv', ['Content-Type' => 'text/csv']); })->name('download.template');
 });
 
 require __DIR__ . '/settings.php';

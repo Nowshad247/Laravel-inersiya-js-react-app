@@ -42,4 +42,29 @@ class Student extends Model
     {
         return $this->belongsTo(Batch::class);
     }
+
+    public function billingAccounts()
+    {
+        return $this->hasMany(BillingAccount::class);
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function installmentPlans()
+    {
+        return $this->hasMany(InstallmentPlan::class);
+    }
+
+    public function refunds()
+    {
+        return $this->hasMany(Refund::class);
+    }
 }

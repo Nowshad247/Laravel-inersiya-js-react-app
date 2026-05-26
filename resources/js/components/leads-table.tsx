@@ -42,6 +42,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { usePersistedFilters } from '@/hooks/usePersistedFilters';
 import { cn } from '@/lib/utils';
 import { Lead, LeadSource, LeadStatus, User } from '@/types/Leads';
 import { router } from '@inertiajs/react';
@@ -68,7 +69,7 @@ import {
     StickyNote,
     X,
 } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 type SortDirection = 'asc' | 'desc' | null;
 type SortField =
     | 'id'
@@ -141,6 +142,14 @@ export function LeadsTable({
     const allLeads = leadsdata;
     const leadStatuses = lead_statuses;
     void leadStatus; // Intentionally unused parameter
+
+    // Initialize filter persistence hook
+    const { saveFilters, loadFilters, clearFilters, setupLogoutListener } =
+        usePersistedFilters();
+
+    // Track if initial filters have been loaded
+    const [filtersLoaded, setFiltersLoaded] = useState(false);
+
     // Filters
     const [globalSearch, setGlobalSearch] = useState('');
     const [selectedStatuses, setSelectedStatuses] = useState<number[]>([]);
@@ -199,6 +208,109 @@ export function LeadsTable({
 
     // Selected rows
     const [selectedRows, setSelectedRows] = useState<number[]>([]);
+
+    // Load filters from localStorage on component mount
+    useEffect(() => {
+        if (!filtersLoaded) {
+            const savedFilters = loadFilters();
+
+            if (savedFilters.globalSearch)
+                setGlobalSearch(savedFilters.globalSearch);
+            if (savedFilters.selectedStatuses)
+                setSelectedStatuses(savedFilters.selectedStatuses);
+            if (savedFilters.selectedSources)
+                setSelectedSources(savedFilters.selectedSources);
+            if (savedFilters.selectedUsers)
+                setSelectedUsers(savedFilters.selectedUsers);
+            if (savedFilters.selectedTowns)
+                setSelectedTowns(savedFilters.selectedTowns);
+            if (savedFilters.selectedOccupations)
+                setSelectedOccupations(savedFilters.selectedOccupations);
+            if (savedFilters.selectedCompanies)
+                setSelectedCompanies(savedFilters.selectedCompanies);
+            if (savedFilters.selectedInterests)
+                setSelectedInterests(savedFilters.selectedInterests);
+            if (
+                savedFilters.createdDateRange?.from ||
+                savedFilters.createdDateRange?.to
+            )
+                setCreatedDateRange(savedFilters.createdDateRange);
+            if (
+                savedFilters.updatedDateRange?.from ||
+                savedFilters.updatedDateRange?.to
+            )
+                setUpdatedDateRange(savedFilters.updatedDateRange);
+            if (savedFilters.hasNotes !== undefined)
+                setHasNotes(savedFilters.hasNotes);
+            if (savedFilters.hasCalls !== undefined)
+                setHasCalls(savedFilters.hasCalls);
+            if (savedFilters.hasReminders !== undefined)
+                setHasReminders(savedFilters.hasReminders);
+            if (savedFilters.hasCompletedReminders !== undefined)
+                setHasCompletedReminders(savedFilters.hasCompletedReminders);
+            if (savedFilters.sortField)
+                setSortField(savedFilters.sortField as SortField);
+            if (savedFilters.sortDirection)
+                setSortDirection(savedFilters.sortDirection);
+            if (savedFilters.pageSize) setPageSize(savedFilters.pageSize);
+            if (savedFilters.currentPage)
+                setCurrentPage(savedFilters.currentPage);
+
+            setFiltersLoaded(true);
+        }
+    }, [filtersLoaded, loadFilters]);
+
+    // Setup logout listener on mount
+    useEffect(() => {
+        return setupLogoutListener();
+    }, [setupLogoutListener]);
+
+    // Save filters to localStorage whenever they change
+    useEffect(() => {
+        if (filtersLoaded) {
+            saveFilters({
+                globalSearch,
+                selectedStatuses,
+                selectedSources,
+                selectedUsers,
+                selectedTowns,
+                selectedOccupations,
+                selectedCompanies,
+                selectedInterests,
+                createdDateRange,
+                updatedDateRange,
+                hasNotes,
+                hasCalls,
+                hasReminders,
+                hasCompletedReminders,
+                sortField,
+                sortDirection,
+                pageSize,
+                currentPage,
+            });
+        }
+    }, [
+        filtersLoaded,
+        saveFilters,
+        globalSearch,
+        selectedStatuses,
+        selectedSources,
+        selectedUsers,
+        selectedTowns,
+        selectedOccupations,
+        selectedCompanies,
+        selectedInterests,
+        createdDateRange,
+        updatedDateRange,
+        hasNotes,
+        hasCalls,
+        hasReminders,
+        hasCompletedReminders,
+        sortField,
+        sortDirection,
+        pageSize,
+        currentPage,
+    ]);
 
     // Get unique values for filters
     const uniqueTowns = useMemo(
@@ -490,6 +602,8 @@ export function LeadsTable({
         setHasReminders(null);
         setHasCompletedReminders(null);
         setCurrentPage(1);
+        // Clear filters from localStorage
+        clearFilters();
     };
 
     const activeFiltersCount = [
@@ -559,7 +673,7 @@ export function LeadsTable({
     };
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-2">
             {/* Top Controls */}
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 {/* Search */}
@@ -577,8 +691,17 @@ export function LeadsTable({
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex-1 flex-wrap items-center gap-2">
                     {/* Advanced Filters */}
+                    <Button
+                        onClick={() => router.get('/leads/upload')}
+                        className="mx-2 my-2 w-3/12"
+                    >
+                        Add New
+                    </Button>
+                    <Button onClick={() => router.get('/lead/FollowUp')}>
+                        Follow Up
+                    </Button>
                     <Popover>
                         <PopoverTrigger asChild>
                             <Button
@@ -1414,7 +1537,7 @@ export function LeadsTable({
 
             {/* Table */}
             <div className="rounded-md border">
-                <ScrollArea className="h-[600px]">
+                <ScrollArea className="h-[800px]">
                     <Table>
                         <TableHeader className="sticky top-0 z-10 bg-background">
                             <TableRow>

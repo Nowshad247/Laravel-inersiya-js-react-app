@@ -11,7 +11,7 @@ export default function AddLead({
     leadStatuses,
     assignedTos,
     townNames,
-    interests,
+    interests: initialInterests,
 }: {
     leadSources: LeadSource[];
     leadStatuses: LeadStatus[];
@@ -42,7 +42,16 @@ export default function AddLead({
         reminder_at: '',
     });
 
-    const [filteredInterests, setFilteredInterests] = useState<string[]>([]);
+    const [interests, setInterests] = useState<string[]>(initialInterests);
+    const [statuses, setStatuses] = useState<LeadStatus[]>(leadStatuses);
+    const [sources, setSources] = useState<LeadSource[]>(leadSources);
+    const [towns, setTowns] = useState<string[]>(townNames);
+
+    const [showAddModal, setShowAddModal] = useState<
+        'interest' | 'status' | 'source' | 'town' | null
+    >(null);
+    const [newValue, setNewValue] = useState('');
+
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         post('/leads/create', {
@@ -50,11 +59,36 @@ export default function AddLead({
         });
     };
 
-    const handleSearch = (query: string) => {
-        const filteredInterests = interests.filter((interest) =>
-            interest.toLowerCase().includes(query.toLowerCase()),
-        );
-        setFilteredInterests(filteredInterests);
+    const handleFieldChange = (
+        field: 'interest' | 'status' | 'source' | 'town',
+    ) => {
+        return (e: React.ChangeEvent<HTMLSelectElement>) => {
+            const value = e.target.value;
+            if (value === 'add_new') {
+                setShowAddModal(field);
+            } else if (field === 'status') {
+                setData('status_id', value);
+            } else if (field === 'source') {
+                setData('source_id', value);
+            } else if (field === 'town') {
+                setData('town', value);
+            } else if (field === 'interest') {
+                setData('interest', value);
+            }
+        };
+    };
+
+    const handleAddNewValue = () => {
+        if (!newValue.trim()) return;
+
+        if (showAddModal === 'interest') {
+            const updatedInterests = [...interests, newValue.trim()];
+            setInterests(updatedInterests);
+            setData('interest', newValue.trim());
+        }
+
+        setNewValue('');
+        setShowAddModal(null);
     };
 
     return (
@@ -136,12 +170,10 @@ export default function AddLead({
                             required={true}
                             className="w-full rounded-md border px-3 py-2"
                             value={data.status_id}
-                            onChange={(e) =>
-                                setData('status_id', e.target.value)
-                            }
+                            onChange={handleFieldChange('status')}
                         >
                             <option value="">Select Status</option>
-                            {leadStatuses.map((status) => (
+                            {statuses.map((status) => (
                                 <option key={status.id} value={status.id}>
                                     {status.name}
                                 </option>
@@ -159,11 +191,10 @@ export default function AddLead({
                         <select
                             className="w-full rounded-md border px-3 py-2"
                             value={data.source_id}
-                            onChange={(e) =>
-                                setData('source_id', e.target.value)
-                            }
+                            onChange={handleFieldChange('source')}
                         >
-                            {leadSources.map((source) => (
+                            <option value="">Select Source</option>
+                            {sources.map((source) => (
                                 <option key={source.id} value={source.id}>
                                     {source.name}
                                 </option>
@@ -210,13 +241,15 @@ export default function AddLead({
                         <select
                             className="w-full rounded-md border px-3 py-2"
                             value={data.town}
-                            onChange={(e) => setData('town', e.target.value)}
+                            onChange={handleFieldChange('town')}
                         >
-                            {townNames.map((town) => (
+                            <option value="">Select Town</option>
+                            {towns.map((town) => (
                                 <option key={town} value={town}>
                                     {town}
                                 </option>
                             ))}
+                            <option value="add_new">Add New Town</option>
                         </select>
                         {errors.town && (
                             <p className="text-sm text-red-600">
@@ -256,47 +289,24 @@ export default function AddLead({
                         )}
                     </div>
                     <div>
-                        <Label id="interest">interest</Label>
-                        <div className="relative w-full">
-                            <Input
-                                id="interest"
-                                value={data.interest}
-                                autoComplete="off"
-                                onChange={(e) => {
-                                    const value = e.target.value;
-                                    setData('interest', value);
-                                    handleSearch(value);
-                                }}
-                            />
-
-                            {filteredInterests.length > 0 && (
-                                <div className="absolute bottom-full z-50 mb-1 max-h-48 w-full overflow-y-auto rounded-md border bg-white shadow-lg">
-                                    {filteredInterests.map((item, index) => (
-                                        <div
-                                            key={index}
-                                            className="cursor-pointer px-3 py-2 text-sm hover:bg-gray-100"
-                                            onClick={() => {
-                                                setData('interest', item);
-                                                setFilteredInterests([]);
-                                            }}
-                                        >
-                                            {item}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                    <div>
-                        <Label htmlFor="company">Company</Label>
-                        <Input
-                            id="company"
-                            value={data.company}
-                            onChange={(e) => setData('company', e.target.value)}
-                        />
-                        {errors.company && (
+                        <Label htmlFor="interest">Interest</Label>
+                        <select
+                            id="interest"
+                            className="w-full rounded-md border px-3 py-2"
+                            value={data.interest}
+                            onChange={handleFieldChange('interest')}
+                        >
+                            <option value="">Select Interest</option>
+                            {interests.map((interest) => (
+                                <option key={interest} value={interest}>
+                                    {interest}
+                                </option>
+                            ))}
+                            <option value="add_new">Add New Interest</option>
+                        </select>
+                        {errors.interest && (
                             <p className="text-sm text-red-600">
-                                {errors.company}
+                                {errors.interest}
                             </p>
                         )}
                     </div>
@@ -330,6 +340,49 @@ export default function AddLead({
                     </Button>
                 </div>
             </form>
+
+            {/* Add New Modal */}
+            {showAddModal && (
+                <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
+                    <div className="rounded-lg bg-white p-6 shadow-lg">
+                        <h2 className="mb-4 text-lg font-semibold">
+                            {showAddModal === 'interest' && 'Add New Interest'}
+                            {showAddModal === 'status' && 'Add New Status'}
+                            {showAddModal === 'source' && 'Add New Source'}
+                            {showAddModal === 'town' && 'Add New Town'}
+                        </h2>
+                        <Input
+                            type="text"
+                            placeholder={`Enter new ${showAddModal}`}
+                            value={newValue}
+                            onChange={(e) => setNewValue(e.target.value)}
+                            onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                    handleAddNewValue();
+                                }
+                            }}
+                        />
+                        <div className="mt-6 flex gap-2">
+                            <Button
+                                onClick={handleAddNewValue}
+                                className="flex-1"
+                            >
+                                Add
+                            </Button>
+                            <Button
+                                onClick={() => {
+                                    setShowAddModal(null);
+                                    setNewValue('');
+                                }}
+                                variant="outline"
+                                className="flex-1"
+                            >
+                                Cancel
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }

@@ -36,6 +36,16 @@ const sidebarNavItems: NavItem[] = [
         href: '/admin/settings',
         icon: null,
     },
+    {
+        title: 'Website User',
+        href: '/users',
+        icon: null,
+    },
+    {
+        title: 'Users Permissions',
+        href: '/userspermissions',
+        icon: null,
+    },
 ];
 
 export default function SettingsLayout({ children }: PropsWithChildren) {

@@ -111,7 +111,7 @@ export default function Dashboard({
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Dashboard" />
-            <div className="flex">
+            <div className="flex flex-col gap-4 md:flex-row md:gap-6">
                 <DashboardCard
                     title="Total Students"
                     value={totalStudent}
@@ -129,8 +129,7 @@ export default function Dashboard({
                 ></DashboardCard>
             </div>
             <div className="my-2">
-                <h2 className="text-lg font-medium">Leads</h2>
-                <div className="flex">
+                <div className="flex flex-col gap-4 md:flex-row md:gap-6">
                     <DashboardCard
                         title="Total Leads"
                         value={totalLeads}
@@ -155,8 +154,8 @@ export default function Dashboard({
             </div>
             <div className="m-2">
                 <h2 className="mb-4 text-lg font-medium">Upcoming Batches</h2>
-                <div className="mb-4 flex flex-wrap gap-4">
-                    <div className="w-48">
+                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
+                    <div className="w-full sm:w-auto sm:min-w-48">
                         <Select
                             value={selectedStatus}
                             onValueChange={setSelectedStatus}
@@ -177,7 +176,7 @@ export default function Dashboard({
                             </SelectContent>
                         </Select>
                     </div>
-                    <div className="w-48">
+                    <div className="w-full sm:w-auto sm:min-w-48">
                         <Select
                             value={selectedMonth}
                             onValueChange={setSelectedMonth}
@@ -197,7 +196,7 @@ export default function Dashboard({
                             </SelectContent>
                         </Select>
                     </div>
-                    <div className="w-48">
+                    <div className="w-full sm:w-auto sm:min-w-48">
                         <Select
                             value={selectedCourse}
                             onValueChange={setSelectedCourse}
