@@ -108,7 +108,7 @@ interface CourseBreakdown {
     totalDue: number;
 }
 
-interface PageProps {
+interface PageProps extends Record<string, unknown> {
     student: StudentInfo;
     summary: BillingSummary;
     nextPayment: NextPayment | null;
