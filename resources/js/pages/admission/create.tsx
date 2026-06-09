@@ -4,9 +4,23 @@ import { Label } from '@/components/ui/label';
 import PublicAppLayout from '@/layouts/publicAppLayout';
 import { Batch } from '@/types/Batch';
 import { Course } from '@/types/Course';
-import { Head, useForm, usePage } from '@inertiajs/react';
-import { CheckCircle2 } from 'lucide-react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
+
+interface SiteSettings {
+    site_name?: string;
+    site_title?: string;
+    site_description?: string;
+    site_keywords?: string;
+    site_author?: string;
+    site_logo?: string | null;
+    contact_email?: string;
+    address?: string;
+    facebook_url?: string;
+    twitter_url?: string;
+    linkedin_url?: string;
+    instagram_url?: string;
+}
 
 interface Props {
     batchs: Batch[];
@@ -14,13 +28,15 @@ interface Props {
 }
 
 export default function AdmissionCreate({ batchs, courses }: Props) {
-    const { flash } = usePage<{
+    const { auth, flash, settings, name } = usePage<{
         flash: { success?: string; admission_id?: number };
+        settings: SiteSettings;
+        name: string;
     }>().props;
     const [selectedCourseId, setSelectedCourseId] = useState<number | null>(
         null,
     );
-
+    const isLoggedIn = !!auth.user;
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         father_name: '',
@@ -66,13 +82,68 @@ export default function AdmissionCreate({ batchs, courses }: Props) {
         }
     }, [selectedCourseId, setData]);
 
+    const siteName: string = settings?.site_name || name;
+    const siteTitle: string = settings?.site_title || siteName;
+    const siteDescription: string = settings?.site_description || '';
+    const siteKeywords: string = settings?.site_keywords || '';
+    const siteAuthor: string = settings?.site_author || '';
+
     return (
         <PublicAppLayout
-            title="Admission Create"
-            siteName="Admission"
-            description="Submit your admission application"
+            title={siteTitle}
+            description={siteDescription}
+            keywords={siteKeywords}
+            author={siteAuthor}
+            siteName={siteName}
+            siteLogo={settings?.site_logo ?? undefined}
+            siteAuthor={siteAuthor}
+            contactEmail={settings?.contact_email}
+            address={settings?.address}
+            facebookUrl={settings?.facebook_url}
+            twitterUrl={settings?.twitter_url}
+            linkedinUrl={settings?.linkedin_url}
+            instagramUrl={settings?.instagram_url}
         >
             <Head title="Admission Create" />
+
+            <header className="border-b bg-white dark:bg-[#0f0f0f]">
+                <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+                    <div className="flex items-center gap-3">
+                        {settings?.site_logo ? (
+                            <img
+                                src={settings.site_logo}
+                                alt={`${siteName} logo`}
+                                className="h-8 w-auto"
+                            />
+                        ) : null}
+                        <h2 className="text-lg font-semibold">{siteName}</h2>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                        <Link
+                            href="/admission"
+                            className="text-sm font-medium text-blue-600 hover:underline"
+                        >
+                            Admission
+                        </Link>
+                        {isLoggedIn ? (
+                            <Link
+                                href="/dashboard"
+                                className="text-sm font-medium text-blue-600 hover:underline"
+                            >
+                                Dashboard
+                            </Link>
+                        ) : (
+                            <Link
+                                href="/login"
+                                className="text-sm font-medium text-blue-600 hover:underline"
+                            >
+                                Login
+                            </Link>
+                        )}
+                    </div>
+                </div>
+            </header>
 
             <div className="m-6 p-6">
                 {flash?.success && (
