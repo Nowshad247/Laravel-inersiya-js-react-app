@@ -26,13 +26,14 @@ Route::get('/admission', [AdmissionController::class, 'index'])->name('admission
 Route::get('/admission/create', [AdmissionController::class, 'create'])->name('admission.create');
 Route::post('/admission/create', [AdmissionController::class, 'store'])->name('admission.store');
 Route::get('/admission/{admission}', [AdmissionController::class, 'show'])->name('admission.show')->middleware('permission:create_students');
+
+
+
 Route::post('/admission/{admission}/approve', [AdmissionController::class, 'approve'])->name('admission.approve')->middleware('permission:create_students');
 //public routes
 // Certificate Varificattion 
 Route::get('/certificate', [VarifyCertificate::class, 'index'])->middleware('throttle:10,1');
 Route::post('/certificate', [VarifyCertificate::class, 'show'])->middleware('throttle:10,1');
-
-
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     // Profile picture upload
@@ -61,6 +62,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/student/edit/{id}', [StudentController::class, 'edit'])->name('student.edit')->middleware('permission:edit_students');
     Route::put('/students/edit/{id}', [StudentController::class, 'update'])->name('student.update')->middleware('permission:edit_students');
     Route::delete('/student/{id}', [StudentController::class, 'destroy'])->name('student.delete')->middleware('permission:delete_students');
+
+    Route::delete('/admission/{admission}/delete', [AdmissionController::class, 'destroy'])->name('admission.destroy')->middleware('permission:delete_students');
+
     //Student Profile View Route 
     Route::get('/student/profile/{id}', [StudentController::class, 'studentDetails'])->name('student.profile')->middleware('permission:view_students');
 

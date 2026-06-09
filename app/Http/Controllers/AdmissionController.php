@@ -185,4 +185,10 @@ class AdmissionController extends Controller
             ->with('success', 'Admission submitted successfully.')
             ->with('admission_id', $admission->id);
     }
+
+    public function destroy(Admission $admission)
+    {
+        $admission->delete();
+        return redirect()->route('student.create')->with('success', 'Admission deleted successfully.');
+    }
 }
