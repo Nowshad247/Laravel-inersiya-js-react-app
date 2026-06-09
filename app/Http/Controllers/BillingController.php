@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Batch;
 use App\Models\InstallmentSchedule;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
@@ -39,19 +40,23 @@ class BillingController extends Controller
             ->where('status', 'verified')
             ->sum('amount');
 
-        $invoices = Invoice::with(['student', 'course'])
+        $invoices = Invoice::with(['student.batch.course', 'course'])
             ->orderBy('issue_date', 'desc')
             ->get()
             ->map(function (Invoice $invoice) {
+                $courseName = $invoice->course?->name
+                    ?? $invoice->student?->batch?->course?->name
+                    ?? 'Unknown Course';
+
                 return [
                     'id'        => $invoice->id,
                     'invoiceId' => $invoice->invoice_number,
                     'student'   => $invoice->student?->name ?? 'Unknown Student',
                     'studentId' => $invoice->student_id,
-                    'course'    => $invoice->course?->name ?? 'Unknown Course',
+                    'course'    => $courseName,
                     'dateIssued'=> $invoice->issue_date?->format('Y-m-d') ?? '',
                     'dueDate'   => $invoice->due_date?->format('Y-m-d') ?? '',
-                    'amount'    => '৳' . number_format($invoice->total_amount ?? 0, 2),
+                    'amount'    => 'TK' . number_format($invoice->total_amount ?? 0, 2),
                     'status'    => ucfirst($invoice->status ?? 'pending'),
                 ];
             })
@@ -70,19 +75,23 @@ class BillingController extends Controller
 
     public function invoices()
     {
-        $invoices = Invoice::with(['student', 'course'])
+        $invoices = Invoice::with(['student.batch.course', 'course'])
             ->orderBy('issue_date', 'desc')
             ->get()
             ->map(function (Invoice $invoice) {
+                $courseName = $invoice->course?->name
+                    ?? $invoice->student?->batch?->course?->name
+                    ?? 'Unknown Course';
+
                 return [
                     'id'         => $invoice->id,
                     'invoiceId'  => $invoice->invoice_number,
                     'student'    => $invoice->student?->name ?? 'Unknown Student',
                     'studentId'  => $invoice->student_id,
-                    'course'     => $invoice->course?->name ?? 'Unknown Course',
+                    'course'     => $courseName,
                     'dateIssued' => $invoice->issue_date?->format('Y-m-d') ?? '',
                     'dueDate'    => $invoice->due_date?->format('Y-m-d') ?? '',
-                    'amount'     => '৳' . number_format($invoice->total_amount ?? 0, 2),
+                    'amount'     => 'TK' . number_format($invoice->total_amount ?? 0, 2),
                     'status'     => ucfirst($invoice->status ?? 'pending'),
                 ];
             })
@@ -120,7 +129,7 @@ class BillingController extends Controller
             ->get()
             ->count();
 
-        $activeDues = Invoice::with(['student', 'course'])
+        $activeDues = Invoice::with(['student.batch.course', 'course'])
             ->where('due_amount', '>', 0)
             ->whereNotIn('status', $excludedStatuses)
             ->orderBy('due_date', 'asc')
@@ -128,13 +137,16 @@ class BillingController extends Controller
             ->map(function (Invoice $invoice) use ($now) {
                 $dueDate     = $invoice->due_date;
                 $daysOverdue = ($dueDate && $dueDate->lt($now)) ? (int) $dueDate->diffInDays($now) : 0;
+                $courseName  = $invoice->course?->name
+                    ?? $invoice->student?->batch?->course?->name
+                    ?? 'Unknown Course';
 
                 return [
                     'id'          => $invoice->id,
                     'invoiceId'   => $invoice->invoice_number,
                     'student'     => $invoice->student?->name ?? 'Unknown Student',
                     'studentId'   => $invoice->student_id,
-                    'course'      => $invoice->course?->name ?? 'Unknown Course',
+                    'course'      => $courseName,
                     'dueDate'     => $invoice->due_date?->format('Y-m-d') ?? '',
                     'totalAmount' => (float) ($invoice->total_amount ?? 0),
                     'paidAmount'  => (float) ($invoice->paid_amount ?? 0),
@@ -524,14 +536,35 @@ class BillingController extends Controller
             $dbStatus = 'sent';
         }
 
+        // Resolve batch_id and course_id from submitted batch_ids or student's default batch
+        $batchIds  = $request->input('batch_ids', []);
+        $firstBatchId = is_array($batchIds) && count($batchIds) > 0 ? (int) $batchIds[0] : null;
+        $resolvedBatchId  = null;
+        $resolvedCourseId = null;
+
+        if ($firstBatchId) {
+            $batch = Batch::with('course')->find($firstBatchId);
+            $resolvedBatchId  = $batch?->id;
+            $resolvedCourseId = $batch?->course?->id;
+        }
+
+        if (!$resolvedCourseId) {
+            $student = Student::with('batch.course')->find($request->integer('student_id'));
+            $resolvedBatchId  = $resolvedBatchId ?? $student?->batch?->id;
+            $resolvedCourseId = $student?->batch?->course?->id;
+        }
+
         $invoice = DB::transaction(function () use (
             $request, $action, $feeItems,
             $subtotal, $discountAmt, $taxAmt, $vatAmt, $extras,
-            $grandTotal, $paidAmount, $dueAmount, $dbStatus
+            $grandTotal, $paidAmount, $dueAmount, $dbStatus,
+            $resolvedBatchId, $resolvedCourseId
         ) {
             $inv = Invoice::create([
                 'invoice_number'  => 'TMP',
                 'student_id'      => $request->integer('student_id'),
+                'batch_id'        => $resolvedBatchId,
+                'course_id'       => $resolvedCourseId,
                 'status'          => $dbStatus,
                 'issue_date'      => $request->input('invoice_date'),
                 'due_date'        => $request->input('due_date'),

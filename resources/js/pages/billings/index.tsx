@@ -33,6 +33,7 @@ export default function Index() {
         invoices: InvoiceRow[];
         stats: BillingStats;
     }>().props;
+    console.log(invoices);
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Billing Dashboard" />

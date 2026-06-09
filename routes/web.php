@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdmissionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BatchController;
 use App\Http\Controllers\BillingController;
@@ -21,6 +22,11 @@ use BaconQrCode\Renderer\Module\RoundnessModule;
 
 Route::get('/', [HomePageController::class, 'index'])->name('home');
 
+Route::get('/admission', [AdmissionController::class, 'index'])->name('admission');
+Route::get('/admission/create', [AdmissionController::class, 'create'])->name('admission.create');
+Route::post('/admission/create', [AdmissionController::class, 'store'])->name('admission.store');
+Route::get('/admission/{admission}', [AdmissionController::class, 'show'])->name('admission.show')->middleware('permission:create_students');
+Route::post('/admission/{admission}/approve', [AdmissionController::class, 'approve'])->name('admission.approve')->middleware('permission:create_students');
 //public routes
 // Certificate Varificattion 
 Route::get('/certificate', [VarifyCertificate::class, 'index'])->middleware('throttle:10,1');

@@ -246,6 +246,7 @@ export default function CreateInvoice() {
     const dropdownRef = useRef<HTMLDivElement>(null);
     const searchRef = useRef<HTMLInputElement>(null);
     const isSelectingRef = useRef(false);
+    const autoSelectRef = useRef(false);
 
     // Batches
     const [selectedBatchIds, setSelectedBatchIds] = useState<Set<number>>(
@@ -340,6 +341,16 @@ export default function CreateInvoice() {
         return () => document.removeEventListener('mousedown', handler);
     }, []);
 
+    // ── Pre-fill from ?uid= query param (e.g. redirect from admission approval) ─
+
+    useEffect(() => {
+        const uid = new URLSearchParams(window.location.search).get('uid');
+        if (uid) {
+            autoSelectRef.current = true;
+            setSearchQuery(uid);
+        }
+    }, []);
+
     // ── Debounced student search ───────────────────────────────────────────────
 
     useEffect(() => {
@@ -358,8 +369,13 @@ export default function CreateInvoice() {
                 );
                 if (res.ok) {
                     const data: StudentResult[] = await res.json();
-                    setSearchResults(data);
-                    setShowDropdown(data.length > 0);
+                    if (autoSelectRef.current && data.length > 0) {
+                        autoSelectRef.current = false;
+                        selectStudent(data[0].id);
+                    } else {
+                        setSearchResults(data);
+                        setShowDropdown(data.length > 0);
+                    }
                 }
             } catch {
                 /* silent */

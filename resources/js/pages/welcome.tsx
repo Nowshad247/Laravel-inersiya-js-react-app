@@ -1,7 +1,8 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import PublicAppLayout from '@/layouts/publicAppLayout';
 import { CertificateResult } from '@/types/CertificateResult';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Link, useForm, usePage } from '@inertiajs/react';
 import { useMemo } from 'react';
 
 const UID_REGEX = /^SDC-[A-Z0-9-]{2,10}-\d{4}-\d{4}-[A-Z]-\d+$/;
@@ -65,17 +66,21 @@ export default function Welcome() {
     const siteAuthor: string = settings?.site_author || '';
 
     return (
-        <>
-            <Head title={siteTitle}>
-                {siteDescription && (
-                    <meta name="description" content={siteDescription} />
-                )}
-                {siteKeywords && (
-                    <meta name="keywords" content={siteKeywords} />
-                )}
-                {siteAuthor && <meta name="author" content={siteAuthor} />}
-            </Head>
-
+        <PublicAppLayout
+            title={siteTitle}
+            description={siteDescription}
+            keywords={siteKeywords}
+            author={siteAuthor}
+            siteName={siteName}
+            siteLogo={settings?.site_logo}
+            siteAuthor={siteAuthor}
+            contactEmail={settings?.contact_email}
+            address={settings?.address}
+            facebookUrl={settings?.facebook_url}
+            twitterUrl={settings?.twitter_url}
+            linkedinUrl={settings?.linkedin_url}
+            instagramUrl={settings?.instagram_url}
+        >
             {/* Header */}
             <header className="border-b bg-white dark:bg-[#0f0f0f]">
                 <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
@@ -90,21 +95,29 @@ export default function Welcome() {
                         <h2 className="text-lg font-semibold">{siteName}</h2>
                     </div>
 
-                    {isLoggedIn ? (
+                    <div className="flex items-center gap-4">
                         <Link
-                            href="/dashboard"
+                            href="/admission"
                             className="text-sm font-medium text-blue-600 hover:underline"
                         >
-                            Dashboard
+                            Admission
                         </Link>
-                    ) : (
-                        <Link
-                            href="/login"
-                            className="text-sm font-medium text-blue-600 hover:underline"
-                        >
-                            Login
-                        </Link>
-                    )}
+                        {isLoggedIn ? (
+                            <Link
+                                href="/dashboard"
+                                className="text-sm font-medium text-blue-600 hover:underline"
+                            >
+                                Dashboard
+                            </Link>
+                        ) : (
+                            <Link
+                                href="/login"
+                                className="text-sm font-medium text-blue-600 hover:underline"
+                            >
+                                Login
+                            </Link>
+                        )}
+                    </div>
                 </div>
             </header>
 
@@ -206,95 +219,6 @@ export default function Welcome() {
                     )}
                 </div>
             </main>
-
-            <footer className="border-t bg-white dark:bg-[#0f0f0f]">
-                <div className="mx-auto grid max-w-6xl gap-6 px-6 py-10 md:grid-cols-3">
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-3">
-                            {settings?.site_logo ? (
-                                <img
-                                    src={settings.site_logo}
-                                    alt={`${siteName} logo`}
-                                    className="h-10 w-auto"
-                                />
-                            ) : null}
-                            <div className="grid">
-                                <span className="text-sm font-semibold">
-                                    {siteName}
-                                </span>
-                                {siteAuthor ? (
-                                    <span className="text-sm text-neutral-600 dark:text-neutral-300">
-                                        {siteAuthor}
-                                    </span>
-                                ) : null}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="space-y-2 text-sm text-neutral-700 dark:text-neutral-200">
-                        {settings?.contact_email ? (
-                            <div>
-                                <span className="font-medium">Email:</span>{' '}
-                                <a
-                                    href={`mailto:${settings.contact_email}`}
-                                    className="text-blue-600 hover:underline"
-                                >
-                                    {settings.contact_email}
-                                </a>
-                            </div>
-                        ) : null}
-                        {settings?.address ? (
-                            <div>
-                                <span className="font-medium">Address:</span>{' '}
-                                <span>{settings.address}</span>
-                            </div>
-                        ) : null}
-                    </div>
-
-                    <div className="flex flex-wrap gap-4 text-sm">
-                        {settings?.facebook_url ? (
-                            <a
-                                href={settings.facebook_url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-blue-600 hover:underline"
-                            >
-                                Facebook
-                            </a>
-                        ) : null}
-                        {settings?.twitter_url ? (
-                            <a
-                                href={settings.twitter_url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-blue-600 hover:underline"
-                            >
-                                Twitter
-                            </a>
-                        ) : null}
-                        {settings?.linkedin_url ? (
-                            <a
-                                href={settings.linkedin_url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-blue-600 hover:underline"
-                            >
-                                LinkedIn
-                            </a>
-                        ) : null}
-                        {settings?.instagram_url ? (
-                            <a
-                                href={settings.instagram_url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="text-blue-600 hover:underline"
-                            >
-                                Instagram
-                            </a>
-                        ) : null}
-                    </div>
-                </div>
-            </footer>
-        </>
+        </PublicAppLayout>
     );
 }

@@ -24,6 +24,7 @@ export default function AddLead({
         email: '',
         phone: '',
         whatsapp_number: '',
+        gender: '',
         status_id: '',
         source_id: '',
         assigned_to: '',
@@ -122,6 +123,27 @@ export default function AddLead({
                         {errors.email && (
                             <p className="text-sm text-red-600">
                                 {errors.email}
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Gender field (optional) */}
+                    <div>
+                        <Label htmlFor="gender">Gender</Label>
+                        <select
+                            id="gender"
+                            value={data.gender}
+                            onChange={(e) => setData('gender', e.target.value)}
+                            className="w-full rounded-md border px-3 py-2"
+                        >
+                            <option value="">Select Gender</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="other">other</option>
+                        </select>
+                        {errors.gender && (
+                            <p className="text-sm text-red-600">
+                                {errors.gender}
                             </p>
                         )}
                     </div>

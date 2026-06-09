@@ -103,23 +103,21 @@ export default function StudentEdit({
             forceFormData: true,
         });
     };
-
-    // ✅ reset batch only when user changes course
     useEffect(() => {
-        if (isFirstLoad.current) {
-            isFirstLoad.current = false;
-            return;
+        if (!isFirstLoad.current) {
+            if (selectedCourseId) {
+                setData('course_ids', [selectedCourseId]);
+                const matchingBatch = batches.find(
+                    (batch) =>
+                        Number(batch.course_id) === Number(selectedCourseId),
+                );
+                setData('batch_id', matchingBatch?.id ?? null);
+            } else {
+                setData('course_ids', []);
+                setData('batch_id', null);
+            }
         }
-        setData('batch_id', student.batch_id);
-    }, [selectedCourseId]);
-
-    useEffect(() => {
-        if (selectedCourseId) {
-            setData('course_ids', [selectedCourseId]);
-        } else {
-            setData('course_ids', []);
-        }
-    }, [selectedCourseId]);
+    }, [selectedCourseId, batches, setData]);
 
     function back() {
         throw new Error('Function not implemented.');
@@ -329,7 +327,19 @@ export default function StudentEdit({
                         {/* BATCH */}
                         <div>
                             <Label>Select Batch</Label>
-                            <select>
+                            <select
+                                className="w-full rounded border p-2"
+                                value={data.batch_id ?? ''}
+                                onChange={(e) =>
+                                    setData(
+                                        'batch_id',
+                                        e.target.value
+                                            ? Number(e.target.value)
+                                            : null,
+                                    )
+                                }
+                            >
+                                <option value="">-- Select Batch --</option>
                                 {batches.map((batch) => {
                                     if (
                                         selectedCourseId &&

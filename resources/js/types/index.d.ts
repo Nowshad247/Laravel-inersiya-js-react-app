@@ -71,3 +71,13 @@ export interface AssignPermission {
     permissions: Permission[];
     role_permissions: string[];
 }
+
+export interface Admission {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
+    approved_status: 'active' | 'inactive' | string;
+    batch_id: number | null;
+    batch?: { id: number; name: string };
+}

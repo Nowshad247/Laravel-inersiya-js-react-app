@@ -372,6 +372,7 @@ class LeadController extends Controller
             'occupation' => ['nullable', 'string', 'max:255'],
             'interest' => ['nullable', 'string', 'max:255'],
             'company' => ['nullable', 'string', 'max:255'],
+            'gender' => ['nullable', 'in:Male,Female,other'],
         ]);
 
         if (empty($validated['status_id'])) {
@@ -585,6 +586,7 @@ class LeadController extends Controller
         'occupation' => ['nullable', 'string', 'max:255'],
         'interest' => ['nullable', 'string', 'max:255'],
         'company' => ['nullable', 'string', 'max:255'],
+        'gender' => ['nullable', 'in:Male,Female,other'],
     ]);
 
     // 3. Find lead

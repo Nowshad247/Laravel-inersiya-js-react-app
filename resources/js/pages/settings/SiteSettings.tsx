@@ -1,5 +1,3 @@
-import { Form, Head } from '@inertiajs/react';
-
 import HeadingSmall from '@/components/heading-small';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -14,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { type BreadcrumbItem } from '@/types';
+import { Form, Head } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
 import AppLayout from '@/layouts/app-layout';

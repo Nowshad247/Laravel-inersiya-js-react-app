@@ -22,6 +22,10 @@ export const columns: ColumnDef<Student>[] = [
         header: 'student_uid',
     },
     {
+        accessorKey: 'phone',
+        header: 'Phone',
+    },
+    {
         accessorKey: 'batch_id',
         header: 'Batch Name',
         cell: ({ row }) => row.original.batch?.name ?? '—',

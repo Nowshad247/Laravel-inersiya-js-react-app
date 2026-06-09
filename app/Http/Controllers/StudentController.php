@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admission;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Models\Batch;
@@ -38,11 +39,14 @@ class StudentController extends Controller
      */
     public function create()
     {
+        $admissions = Admission::with('batch')->latest()->get();
+
         $batchs = Batch::all();
         $courses = Course::all();
         return Inertia('student/create', [
             'batchs' => $batchs,
             'courses' => $courses,
+            'admissions' => $admissions,
         ]);
     }
 
