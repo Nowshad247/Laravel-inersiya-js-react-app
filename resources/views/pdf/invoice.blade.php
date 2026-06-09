@@ -114,15 +114,15 @@ body { font-family: 'DejaVu Sans', sans-serif; font-size:12px; color:#1e293b; ba
             <tr><td colspan="2"><hr style="border:none;border-top:1px solid #e2e8f0;margin:6px 0;"></td></tr>
             <tr>
               <td style="color:#64748b;padding:2px 0;">Grand Total:</td>
-              <td style="text-align:right;font-weight:bold;">৳{{ number_format($invoice->total_amount, 2) }}</td>
+              <td style="text-align:right;font-weight:bold;">TK{{ number_format($invoice->total_amount, 2) }}</td>
             </tr>
             <tr>
               <td style="color:#16a34a;padding:2px 0;">Paid:</td>
-              <td style="text-align:right;color:#16a34a;font-weight:600;">৳{{ number_format($invoice->paid_amount, 2) }}</td>
+              <td style="text-align:right;color:#16a34a;font-weight:600;">TK{{ number_format($invoice->paid_amount, 2) }}</td>
             </tr>
             <tr>
               <td style="color:#dc2626;font-weight:bold;padding:2px 0;">Due:</td>
-              <td style="text-align:right;color:#dc2626;font-weight:bold;">৳{{ number_format($invoice->due_amount, 2) }}</td>
+              <td style="text-align:right;color:#dc2626;font-weight:bold;">TK{{ number_format($invoice->due_amount, 2) }}</td>
             </tr>
           </table>
         </div>
@@ -149,8 +149,8 @@ body { font-family: 'DejaVu Sans', sans-serif; font-size:12px; color:#1e293b; ba
         <td><div class="ft">{{ $item->fee_type }}</div></td>
         <td><div class="fd">{{ $item->description }}</div></td>
         <td class="r">{{ $item->quantity }}</td>
-        <td class="r">৳{{ number_format($item->unit_price, 2) }}</td>
-        <td class="r">৳{{ number_format($item->total, 2) }}</td>
+        <td class="r">TK{{ number_format($item->unit_price, 2) }}</td>
+        <td class="r">TK{{ number_format($item->total, 2) }}</td>
       </tr>
       @endforeach
     </tbody>
@@ -162,16 +162,16 @@ body { font-family: 'DejaVu Sans', sans-serif; font-size:12px; color:#1e293b; ba
       <td width="55%"></td>
       <td width="45%">
         <table class="sum-tbl">
-          <tr class="sum-row"><td>Subtotal</td><td style="text-align:right;">৳{{ number_format($invoice->sub_total, 2) }}</td></tr>
+          <tr class="sum-row"><td>Subtotal</td><td style="text-align:right;">TK{{ number_format($invoice->sub_total, 2) }}</td></tr>
           @if($invoice->discount_amount > 0)
-          <tr class="sum-row"><td>Discount</td><td style="text-align:right;color:#16a34a;">−৳{{ number_format($invoice->discount_amount, 2) }}</td></tr>
+          <tr class="sum-row"><td>Discount</td><td style="text-align:right;color:#16a34a;">−TK{{ number_format($invoice->discount_amount, 2) }}</td></tr>
           @endif
           @if($invoice->tax_amount > 0)
-          <tr class="sum-row"><td>Tax & Charges</td><td style="text-align:right;">৳{{ number_format($invoice->tax_amount, 2) }}</td></tr>
+          <tr class="sum-row"><td>Tax & Charges</td><td style="text-align:right;">TK{{ number_format($invoice->tax_amount, 2) }}</td></tr>
           @endif
-          <tr class="sum-tot"><td>Grand Total</td><td style="text-align:right;">৳{{ number_format($invoice->total_amount, 2) }}</td></tr>
-          <tr class="sum-row"><td style="color:#16a34a;">Paid</td><td style="text-align:right;color:#16a34a;font-weight:600;">৳{{ number_format($invoice->paid_amount, 2) }}</td></tr>
-          <tr class="sum-due"><td>Due Amount</td><td style="text-align:right;">৳{{ number_format($invoice->due_amount, 2) }}</td></tr>
+          <tr class="sum-tot"><td>Grand Total</td><td style="text-align:right;">TK{{ number_format($invoice->total_amount, 2) }}</td></tr>
+          <tr class="sum-row"><td style="color:#16a34a;">Paid</td><td style="text-align:right;color:#16a34a;font-weight:600;">TK{{ number_format($invoice->paid_amount, 2) }}</td></tr>
+          <tr class="sum-due"><td>Due Amount</td><td style="text-align:right;">TK{{ number_format($invoice->due_amount, 2) }}</td></tr>
         </table>
       </td>
     </tr>
@@ -182,7 +182,7 @@ body { font-family: 'DejaVu Sans', sans-serif; font-size:12px; color:#1e293b; ba
     <div class="info-lbl" style="margin-bottom:8px;">Payment Records</div>
     @foreach($payments as $p)
     <div style="font-size:12px;margin-bottom:3px;">
-      <strong>৳{{ number_format($p->amount, 2) }}</strong>
+      <strong>TK{{ number_format($p->amount, 2) }}</strong>
       via {{ ucfirst($p->method ?? 'N/A') }}
       @if($p->transaction_id) · TXN: {{ $p->transaction_id }}@endif
       @if($p->payment_date) · {{ $p->payment_date->format('d M Y') }}@endif

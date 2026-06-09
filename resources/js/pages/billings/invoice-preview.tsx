@@ -115,9 +115,15 @@ export default function InvoicePreview({
         <AppLayout breadcrumbs={breadcrumbs}>
             <style>{`
                 @media print {
-                    body > * { display: none !important; }
-                    #invoice-content { display: block !important; }
-                    #invoice-content * { visibility: visible !important; }
+                    body * { visibility: hidden; }
+                    #invoice-content,
+                    #invoice-content * { visibility: visible; }
+                    #invoice-content {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                    }
                 }
             `}</style>
 
