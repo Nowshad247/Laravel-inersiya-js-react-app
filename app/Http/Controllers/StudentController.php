@@ -28,9 +28,70 @@ class StudentController extends Controller
     // Singel Student Profile info 
     public function studentDetails(Student $id)
     {
-        $studentData = Student::with(['batch', 'courses'])->findOrFail($id->id);
+        $studentData = Student::with(['batch.course', 'courses', 'invoices.items', 'payments.invoice'])
+            ->findOrFail($id->id);
+
+        $invoices = $studentData->invoices()->with(['items', 'course'])->get();
+        $payments = $studentData->payments()->with('invoice')->get();
+
+        $activeInvoices = $invoices->whereNotIn('status', ['draft', 'cancelled']);
+        $summary = [
+            'totalBilled' => (float) $activeInvoices->sum('total_amount'),
+            'totalPaid' => (float) $activeInvoices->sum('paid_amount'),
+            'totalDue' => (float) $activeInvoices->sum('due_amount'),
+            'invoiceCount' => (int) $activeInvoices->count(),
+        ];
+
+        $latestInvoice = $invoices->sortByDesc('id')->first();
+
         return Inertia::render('student/studentProfile', [
-            'studentData' => $studentData,
+            'studentData' => [
+                'id' => $studentData->id,
+                'name' => $studentData->name,
+                'student_uid' => $studentData->student_uid,
+                'email' => $studentData->email,
+                'phone' => $studentData->phone,
+                'address' => $studentData->address,
+                'status' => $studentData->status,
+                'guardian_name' => $studentData->guardian_name,
+                'guardian_phone' => $studentData->guardian_phone,
+                'batch' => $studentData->batch ? [
+                    'id' => $studentData->batch->id,
+                    'name' => $studentData->batch->name,
+                    'batch_code' => $studentData->batch->batch_code,
+                    'course' => $studentData->batch->course,
+                ] : null,
+                'courses' => $studentData->courses->map(fn($course) => [
+                    'id' => $course->id,
+                    'name' => $course->name,
+                    'course_code' => $course->course_code,
+                ])->values(),
+            ],
+            'billing' => [
+                'summary' => $summary,
+                'invoices' => $invoices->map(fn($invoice) => [
+                    'id' => $invoice->id,
+                    'invoice_number' => $invoice->invoice_number,
+                    'issue_date' => $invoice->issue_date?->format('Y-m-d') ?? '',
+                    'due_date' => $invoice->due_date?->format('Y-m-d') ?? '',
+                    'course' => $invoice->course?->name ?? 'General',
+                    'total_amount' => (float) $invoice->total_amount,
+                    'paid_amount' => (float) $invoice->paid_amount,
+                    'due_amount' => (float) $invoice->due_amount,
+                    'status' => ucfirst($invoice->status ?? 'pending'),
+                ])->values(),
+                'payments' => $payments->map(fn($payment) => [
+                    'id' => $payment->id,
+                    'invoice_number' => $payment->invoice?->invoice_number ?? '—',
+                    'amount' => (float) $payment->amount,
+                    'method' => $payment->method ?? '—',
+                    'status' => ucfirst($payment->status ?? 'completed'),
+                    'payment_date' => $payment->payment_date?->format('Y-m-d H:i') ?? '',
+                    'transaction_id' => $payment->transaction_id ?? '—',
+                    'note' => $payment->note ?? '',
+                ])->values(),
+                'latest_invoice_id' => $latestInvoice?->id ?? null,
+            ],
         ]);
     }
 
