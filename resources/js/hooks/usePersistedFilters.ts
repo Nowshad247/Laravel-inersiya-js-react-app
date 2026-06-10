@@ -14,6 +14,7 @@ interface FilterState {
     selectedOccupations: string[];
     selectedCompanies: string[];
     selectedInterests: string[];
+    selectedGenders: string[];
     createdDateRange: DateRange;
     updatedDateRange: DateRange;
     hasNotes: boolean | null;

@@ -78,6 +78,7 @@ export interface Lead {
     email: string;
     phone: string;
     whatsapp_number: string;
+    gender?: string | null;
     status_id: number;
     source_id: number;
     assigned_to: number;

@@ -82,6 +82,7 @@ type SortField =
     | 'occupation'
     | 'company'
     | 'interest'
+    | 'gender'
     | 'created_at'
     | 'updated_at';
 
@@ -99,6 +100,7 @@ interface ColumnVisibility {
     occupation: boolean;
     company: boolean;
     interest: boolean;
+    gender: boolean;
     createdAt: boolean;
     updatedAt: boolean;
     notes: boolean;
@@ -161,6 +163,7 @@ export function LeadsTable({
     );
     const [selectedCompanies, setSelectedCompanies] = useState<string[]>([]);
     const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+    const [selectedGenders, setSelectedGenders] = useState<string[]>([]);
     const [createdDateRange, setCreatedDateRange] = useState<DateRange>({
         from: undefined,
         to: undefined,
@@ -199,6 +202,7 @@ export function LeadsTable({
         occupation: false,
         company: false,
         interest: true,
+        gender: false,
         createdAt: false,
         updatedAt: false,
         notes: true,
@@ -230,6 +234,8 @@ export function LeadsTable({
                 setSelectedCompanies(savedFilters.selectedCompanies);
             if (savedFilters.selectedInterests)
                 setSelectedInterests(savedFilters.selectedInterests);
+            if (savedFilters.selectedGenders)
+                setSelectedGenders(savedFilters.selectedGenders);
             if (
                 savedFilters.createdDateRange?.from ||
                 savedFilters.createdDateRange?.to
@@ -277,6 +283,7 @@ export function LeadsTable({
                 selectedOccupations,
                 selectedCompanies,
                 selectedInterests,
+                selectedGenders,
                 createdDateRange,
                 updatedDateRange,
                 hasNotes,
@@ -300,6 +307,7 @@ export function LeadsTable({
         selectedOccupations,
         selectedCompanies,
         selectedInterests,
+        selectedGenders,
         createdDateRange,
         updatedDateRange,
         hasNotes,
@@ -341,6 +349,13 @@ export function LeadsTable({
                 ...new Set(
                     allLeads.map((l) => l.profile?.interest).filter(Boolean),
                 ),
+            ].sort() as string[],
+        [allLeads],
+    );
+    const uniqueGenders = useMemo(
+        () =>
+            [
+                ...new Set(allLeads.map((l) => l.gender).filter(Boolean)),
             ].sort() as string[],
         [allLeads],
     );
@@ -418,6 +433,13 @@ export function LeadsTable({
                 (lead) =>
                     lead.profile &&
                     selectedInterests.includes(lead.profile.interest),
+            );
+        }
+
+        // Gender filter
+        if (selectedGenders.length > 0) {
+            data = data.filter((lead) =>
+                selectedGenders.includes(lead.gender ?? ''),
             );
         }
 
@@ -516,6 +538,10 @@ export function LeadsTable({
                         aVal = a.profile?.interest;
                         bVal = b.profile?.interest;
                         break;
+                    case 'gender':
+                        aVal = a.gender ?? undefined;
+                        bVal = b.gender ?? undefined;
+                        break;
                     default:
                         aVal = a[sortField as keyof Lead] as string | number;
                         bVal = b[sortField as keyof Lead] as string | number;
@@ -547,6 +573,7 @@ export function LeadsTable({
         selectedOccupations,
         selectedCompanies,
         selectedInterests,
+        selectedGenders,
         createdDateRange,
         updatedDateRange,
         hasNotes,
@@ -595,6 +622,7 @@ export function LeadsTable({
         setSelectedOccupations([]);
         setSelectedCompanies([]);
         setSelectedInterests([]);
+        setSelectedGenders([]);
         setCreatedDateRange({ from: undefined, to: undefined });
         setUpdatedDateRange({ from: undefined, to: undefined });
         setHasNotes(null);
@@ -614,6 +642,7 @@ export function LeadsTable({
         selectedOccupations.length > 0,
         selectedCompanies.length > 0,
         selectedInterests.length > 0,
+        selectedGenders.length > 0,
         createdDateRange.from || createdDateRange.to,
         updatedDateRange.from || updatedDateRange.to,
         hasNotes !== null,
@@ -1040,6 +1069,45 @@ export function LeadsTable({
                                                         </SelectItem>
                                                     ),
                                                 )}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+
+                                    {/* Gender Filter */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium">
+                                            Gender
+                                        </label>
+                                        <Select
+                                            value={selectedGenders.join(',')}
+                                            onValueChange={(value) => {
+                                                if (value === 'all') {
+                                                    setSelectedGenders([]);
+                                                } else {
+                                                    setSelectedGenders(
+                                                        value
+                                                            ? value.split(',')
+                                                            : [],
+                                                    );
+                                                }
+                                                setCurrentPage(1);
+                                            }}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Select gender" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="all">
+                                                    All genders
+                                                </SelectItem>
+                                                {uniqueGenders.map((gender) => (
+                                                    <SelectItem
+                                                        key={gender}
+                                                        value={gender}
+                                                    >
+                                                        {gender}
+                                                    </SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -1491,6 +1559,18 @@ export function LeadsTable({
                             />
                         </Badge>
                     )}
+                    {selectedGenders.length > 0 && (
+                        <Badge variant="secondary" className="gap-1">
+                            Gender: {selectedGenders.join(', ')}
+                            <X
+                                className="h-3 w-3 cursor-pointer"
+                                onClick={() => {
+                                    setSelectedGenders([]);
+                                    setCurrentPage(1);
+                                }}
+                            />
+                        </Badge>
+                    )}
                     {(createdDateRange.from || createdDateRange.to) && (
                         <Badge variant="secondary" className="gap-1">
                             Created:{' '}
@@ -1656,6 +1736,16 @@ export function LeadsTable({
                                 )}
                                 {columnVisibility.interest && (
                                     <TableHead>Interest</TableHead>
+                                )}
+                                {columnVisibility.gender && (
+                                    <TableHead
+                                        className="cursor-pointer select-none"
+                                        onClick={() => handleSort('gender')}
+                                    >
+                                        <div className="flex items-center">
+                                            Gender {getSortIcon('gender')}
+                                        </div>
+                                    </TableHead>
                                 )}
                                 {columnVisibility.createdAt && (
                                     <TableHead
@@ -1833,6 +1923,11 @@ export function LeadsTable({
                                         {columnVisibility.interest && (
                                             <TableCell>
                                                 {lead.profile?.interest}
+                                            </TableCell>
+                                        )}
+                                        {columnVisibility.gender && (
+                                            <TableCell>
+                                                {lead.gender || '—'}
                                             </TableCell>
                                         )}
                                         {columnVisibility.createdAt && (
