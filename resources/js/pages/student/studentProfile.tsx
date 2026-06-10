@@ -55,16 +55,22 @@ interface CourseRecord {
 interface StudentRecord {
     id: number;
     name: string;
+    father_name?: string | null;
+    mother_name?: string | null;
     student_uid?: string | null;
     email?: string | null;
     phone?: string | null;
     address?: string | null;
     status?: string | null;
     guardian_name?: string | null;
+    guardian_phone?: string | null;
+    guardian_relation?: string | null;
     batch?: {
         id: number;
         name: string;
         batch_code?: string | null;
+        start_date?: string | null;
+        end_date?: string | null;
         course?: { name?: string | null } | null;
     } | null;
     courses?: CourseRecord[];
@@ -135,6 +141,18 @@ export default function Index({
                                 </dd>
                             </div>
                             <div>
+                                <dt className="text-slate-500">Father</dt>
+                                <dd className="font-medium">
+                                    {studentData.father_name ?? '—'}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt className="text-slate-500">Mother</dt>
+                                <dd className="font-medium">
+                                    {studentData.mother_name ?? '—'}
+                                </dd>
+                            </div>
+                            <div>
                                 <dt className="text-slate-500">UID</dt>
                                 <dd className="font-medium">
                                     {studentData.student_uid ?? '—'}
@@ -171,9 +189,40 @@ export default function Index({
                                 </dd>
                             </div>
                             <div>
+                                <dt className="text-slate-500">Batch Code</dt>
+                                <dd className="font-medium">
+                                    {studentData.batch?.batch_code ?? '—'}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt className="text-slate-500">Batch Period</dt>
+                                <dd className="font-medium">
+                                    {studentData.batch?.start_date &&
+                                    studentData.batch?.end_date
+                                        ? `${studentData.batch.start_date} to ${studentData.batch.end_date}`
+                                        : '—'}
+                                </dd>
+                            </div>
+                            <div>
                                 <dt className="text-slate-500">Guardian</dt>
                                 <dd className="font-medium">
                                     {studentData.guardian_name ?? '—'}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt className="text-slate-500">
+                                    Guardian Phone
+                                </dt>
+                                <dd className="font-medium">
+                                    {studentData.guardian_phone ?? '—'}
+                                </dd>
+                            </div>
+                            <div>
+                                <dt className="text-slate-500">
+                                    Guardian Relation
+                                </dt>
+                                <dd className="font-medium">
+                                    {studentData.guardian_relation ?? '—'}
                                 </dd>
                             </div>
                         </dl>

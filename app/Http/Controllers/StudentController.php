@@ -48,6 +48,8 @@ class StudentController extends Controller
             'studentData' => [
                 'id' => $studentData->id,
                 'name' => $studentData->name,
+                'father_name' => $studentData->father_name,
+                'mother_name' => $studentData->mother_name,
                 'student_uid' => $studentData->student_uid,
                 'email' => $studentData->email,
                 'phone' => $studentData->phone,
@@ -55,10 +57,13 @@ class StudentController extends Controller
                 'status' => $studentData->status,
                 'guardian_name' => $studentData->guardian_name,
                 'guardian_phone' => $studentData->guardian_phone,
+                'guardian_relation' => $studentData->guardian_relation,
                 'batch' => $studentData->batch ? [
                     'id' => $studentData->batch->id,
                     'name' => $studentData->batch->name,
                     'batch_code' => $studentData->batch->batch_code,
+                    'start_date' => $studentData->batch->start_date?->format('Y-m-d'),
+                    'end_date' => $studentData->batch->end_date?->format('Y-m-d'),
                     'course' => $studentData->batch->course,
                 ] : null,
                 'courses' => $studentData->courses->map(fn($course) => [
