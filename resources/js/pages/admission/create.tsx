@@ -5,6 +5,7 @@ import PublicAppLayout from '@/layouts/publicAppLayout';
 import { Batch } from '@/types/Batch';
 import { Course } from '@/types/Course';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { CheckCircle2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface SiteSettings {
@@ -29,6 +30,7 @@ interface Props {
 
 export default function AdmissionCreate({ batchs, courses }: Props) {
     const { auth, flash, settings, name } = usePage<{
+        auth: { user?: { id?: number } | null };
         flash: { success?: string; admission_id?: number };
         settings: SiteSettings;
         name: string;
