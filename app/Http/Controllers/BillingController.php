@@ -737,6 +737,60 @@ class BillingController extends Controller
     }
 
     /**
+     * Record a payment against an existing invoice and reconcile its balance.
+     */
+    public function recordPayment(Request $request, int $id)
+    {
+        $invoice = Invoice::findOrFail($id);
+
+        $request->validate([
+            'amount'         => ['required', 'numeric', 'min:0.01', 'max:' . $invoice->due_amount],
+            'method'         => ['required', 'string', 'max:50'],
+            'transaction_id' => ['nullable', 'string', 'max:255'],
+            'payment_date'   => ['nullable', 'date'],
+            'note'           => ['nullable', 'string', 'max:500'],
+        ]);
+
+        DB::transaction(function () use ($request, $invoice) {
+            $amount = min((float) $request->input('amount'), (float) $invoice->due_amount);
+
+            Payment::create([
+                'invoice_id'     => $invoice->id,
+                'student_id'     => $invoice->student_id,
+                'amount'         => $amount,
+                'method'         => $request->input('method'),
+                'status'         => 'verified',
+                'transaction_id' => $request->input('transaction_id'),
+                'payment_date'   => $request->filled('payment_date')
+                    ? Carbon::parse($request->input('payment_date'))
+                    : now(),
+                'note'           => $request->input('note'),
+            ]);
+
+            $newPaid = round((float) $invoice->paid_amount + $amount, 2);
+            $newDue  = round(max(0, (float) $invoice->total_amount - $newPaid), 2);
+
+            if ($newDue <= 0) {
+                $newStatus = 'paid';
+            } elseif ($newPaid > 0) {
+                $newStatus = 'sent';
+            } else {
+                $newStatus = $invoice->status;
+            }
+
+            $invoice->update([
+                'paid_amount' => $newPaid,
+                'due_amount'  => $newDue,
+                'status'      => $newStatus,
+                'paid_date'   => $newDue <= 0 ? now() : null,
+            ]);
+        });
+
+        return redirect()->route('billings.invoice.preview', $invoice->id)
+            ->with('success', 'Payment of TK' . number_format($request->input('amount'), 2) . ' recorded successfully.');
+    }
+
+    /**
      * Display the specified resource.
      */
     public function show(string $id)

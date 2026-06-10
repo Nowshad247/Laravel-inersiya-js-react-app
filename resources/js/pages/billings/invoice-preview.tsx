@@ -1,9 +1,26 @@
 import BillingTabs from '@/components/BillingTabs';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import AppLayout from '@/layouts/app-layout';
 import type { BreadcrumbItem } from '@/types';
-import { usePage } from '@inertiajs/react';
-import { ArrowLeft, Download, Pencil, Printer } from 'lucide-react';
+import { useForm, usePage } from '@inertiajs/react';
+import {
+    ArrowLeft,
+    CreditCard,
+    Download,
+    Pencil,
+    Printer,
+    X,
+} from 'lucide-react';
+import { useState } from 'react';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -99,6 +116,26 @@ export default function InvoicePreview({
     const { props } = usePage<{ flash?: { success?: string } }>();
     const flash = props.flash;
 
+    const [showPayForm, setShowPayForm] = useState(false);
+
+    const { data, setData, post, processing, errors, reset } = useForm({
+        amount: '' as number | '',
+        method: '',
+        transaction_id: '',
+        payment_date: new Date().toISOString().split('T')[0],
+        note: '',
+    });
+
+    function submitPayment(e: React.FormEvent) {
+        e.preventDefault();
+        post(`/billings/invoice/${invoice.id}/pay`, {
+            onSuccess: () => {
+                setShowPayForm(false);
+                reset();
+            },
+        });
+    }
+
     const breadcrumbs: BreadcrumbItem[] = [
         { title: 'Billing Dashboard', href: '/billings' },
         { title: 'Invoices', href: '/billings/invoices' },
@@ -164,6 +201,16 @@ export default function InvoicePreview({
                         </Button>
                     </a>
 
+                    {invoice.due_amount > 0 && (
+                        <Button
+                            className="gap-2 bg-emerald-600 hover:bg-emerald-700"
+                            onClick={() => setShowPayForm((v) => !v)}
+                        >
+                            <CreditCard className="h-4 w-4" />
+                            {showPayForm ? 'Cancel Payment' : 'Record Payment'}
+                        </Button>
+                    )}
+
                     <Button
                         variant="outline"
                         className="ml-auto gap-2"
@@ -173,6 +220,164 @@ export default function InvoicePreview({
                         Edit
                     </Button>
                 </div>
+
+                {/* Record Payment panel — shown when due > 0 and button clicked */}
+                {showPayForm && invoice.due_amount > 0 && (
+                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm print:hidden">
+                        <div className="mb-4 flex items-center justify-between">
+                            <div>
+                                <h3 className="text-sm font-semibold text-slate-800">
+                                    Record Payment
+                                </h3>
+                                <p className="text-xs text-slate-500">
+                                    Outstanding due:{' '}
+                                    <span className="font-mono font-bold text-rose-600">
+                                        TK
+                                        {invoice.due_amount.toLocaleString(
+                                            'en-BD',
+                                            { minimumFractionDigits: 2 },
+                                        )}
+                                    </span>
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setShowPayForm(false)}
+                                className="rounded-lg p-1 text-slate-400 hover:text-slate-600"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+
+                        <form
+                            onSubmit={submitPayment}
+                            className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                        >
+                            <div>
+                                <Label className="mb-1 text-xs font-semibold tracking-widest text-slate-400 uppercase">
+                                    Amount (TK) *
+                                </Label>
+                                <Input
+                                    type="number"
+                                    min={0.01}
+                                    max={invoice.due_amount}
+                                    step="0.01"
+                                    placeholder={`Max ${invoice.due_amount.toFixed(2)}`}
+                                    value={data.amount}
+                                    onChange={(e) =>
+                                        setData(
+                                            'amount',
+                                            e.target.value
+                                                ? Number(e.target.value)
+                                                : '',
+                                        )
+                                    }
+                                />
+                                {errors.amount && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.amount}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div>
+                                <Label className="mb-1 text-xs font-semibold tracking-widest text-slate-400 uppercase">
+                                    Payment Method *
+                                </Label>
+                                <Select
+                                    value={data.method}
+                                    onValueChange={(v) => setData('method', v)}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select method" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="cash">
+                                            Cash
+                                        </SelectItem>
+                                        <SelectItem value="bank">
+                                            Bank Transfer
+                                        </SelectItem>
+                                        <SelectItem value="card">
+                                            Card
+                                        </SelectItem>
+                                        <SelectItem value="bkash">
+                                            bKash
+                                        </SelectItem>
+                                        <SelectItem value="nagad">
+                                            Nagad
+                                        </SelectItem>
+                                        <SelectItem value="sslcommerz">
+                                            SSLCommerz
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                {errors.method && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.method}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div>
+                                <Label className="mb-1 text-xs font-semibold tracking-widest text-slate-400 uppercase">
+                                    Payment Date
+                                </Label>
+                                <Input
+                                    type="date"
+                                    value={data.payment_date}
+                                    onChange={(e) =>
+                                        setData('payment_date', e.target.value)
+                                    }
+                                />
+                            </div>
+
+                            <div>
+                                <Label className="mb-1 text-xs font-semibold tracking-widest text-slate-400 uppercase">
+                                    Transaction ID
+                                </Label>
+                                <Input
+                                    placeholder="TXN-XXXXXXXXX"
+                                    value={data.transaction_id}
+                                    onChange={(e) =>
+                                        setData(
+                                            'transaction_id',
+                                            e.target.value,
+                                        )
+                                    }
+                                />
+                            </div>
+
+                            <div className="sm:col-span-2 lg:col-span-2">
+                                <Label className="mb-1 text-xs font-semibold tracking-widest text-slate-400 uppercase">
+                                    Note
+                                </Label>
+                                <Input
+                                    placeholder="Optional note"
+                                    value={data.note}
+                                    onChange={(e) =>
+                                        setData('note', e.target.value)
+                                    }
+                                />
+                            </div>
+
+                            <div className="flex items-end sm:col-span-2 lg:col-span-3">
+                                <Button
+                                    type="submit"
+                                    disabled={
+                                        processing ||
+                                        !data.amount ||
+                                        !data.method
+                                    }
+                                    className="gap-2 bg-emerald-600 hover:bg-emerald-700"
+                                >
+                                    <CreditCard className="h-4 w-4" />
+                                    {processing ? 'Saving…' : 'Confirm Payment'}
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
+                )}
 
                 {/* Invoice content */}
                 <div

@@ -95,6 +95,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/api/billing/student/{id}', [BillingController::class, 'getStudentInfo'])->name('billing.student-info')->middleware('permission:create_billing');
     Route::post('/billings/invoice/store', [BillingController::class, 'store'])->name('billings.invoice.store')->middleware('permission:create_billing');
     Route::get('/billings/invoice/{id}/preview', [BillingController::class, 'preview'])->name('billings.invoice.preview')->middleware('permission:view_billing');
+    Route::post('/billings/invoice/{id}/pay', [BillingController::class, 'recordPayment'])->name('billings.invoice.pay')->middleware('permission:create_billing');
     Route::get('/billings/invoice/{id}/pdf', [BillingController::class, 'downloadPdf'])->name('billings.invoice.pdf')->middleware('permission:view_billing')->withoutMiddleware([HandleInertiaRequests::class]);
     Route::get('/billings/collections', [BillingController::class, 'collections'])->name('billings.collections')->middleware('permission:view_billing');
     Route::get('/billings/collections/export', [BillingController::class, 'exportDueReport'])->name('billings.collections.export')->middleware('permission:view_billing')->withoutMiddleware([HandleInertiaRequests::class]);
