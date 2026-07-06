@@ -170,6 +170,14 @@ class BillingReportsController extends Controller
             ->map(fn($r) => ['batch' => Batch::find($r->batch_id)?->name ?? '—', 'total' => (float)$r->total, 'paid' => (float)$r->paid, 'due' => (float)$r->due, 'count' => (int)$r->count])
             ->toArray();
 
+        $byFeeType = $base()
+            ->selectRaw("COALESCE(fee_type, 'General') as fee_type, SUM(total_amount) as total, SUM(paid_amount) as paid, SUM(due_amount) as due, COUNT(*) as count")
+            ->groupBy('fee_type')
+            ->orderByDesc('total')
+            ->get()
+            ->map(fn($r) => ['feeType' => $r->fee_type, 'total' => (float)$r->total, 'paid' => (float)$r->paid, 'due' => (float)$r->due, 'count' => (int)$r->count])
+            ->toArray();
+
         $byMonth = Invoice::whereNotIn('status', ['draft', 'cancelled'])
             ->where('issue_date', '>=', Carbon::now()->subMonths(11)->startOfMonth())
             ->selectRaw("DATE_FORMAT(issue_date, '%Y-%m') as month, SUM(total_amount) as total, SUM(paid_amount) as paid, COUNT(*) as count")
@@ -179,7 +187,7 @@ class BillingReportsController extends Controller
             ->map(fn($r) => ['month' => $r->month, 'total' => (float)$r->total, 'paid' => (float)$r->paid, 'count' => (int)$r->count])
             ->toArray();
 
-        return compact('summary', 'byPeriod', 'byCourse', 'byBatch', 'byMonth');
+        return compact('summary', 'byPeriod', 'byCourse', 'byBatch', 'byFeeType', 'byMonth');
     }
 
     // ── Payment data ──────────────────────────────────────────────────────────
@@ -411,7 +419,26 @@ class BillingReportsController extends Controller
 
     private function filterOptions(): array
     {
+        // Generate available months for the last 24 months
+        $months = [];
+        for ($i = 23; $i >= 0; $i--) {
+            $date = Carbon::now()->subMonths($i);
+            $months[] = [
+                'value' => $date->format('Y-m'),
+                'label' => $date->format('F Y'),
+            ];
+        }
+
+        // Get distinct fee types
+        $feeTypes = Invoice::selectRaw('DISTINCT COALESCE(fee_type, "General") as fee_type')
+            ->orderBy('fee_type')
+            ->pluck('fee_type')
+            ->map(fn($f) => ['value' => $f, 'label' => $f])
+            ->toArray();
+
         return [
+            'months' => $months,
+            'feeTypes' => $feeTypes,
             'students' => Student::select('id', 'name', 'student_uid')->orderBy('name')->limit(200)->get()
                 ->map(fn($s) => ['value' => $s->id, 'label' => $s->name . ($s->student_uid ? " ({$s->student_uid})" : '')])
                 ->toArray(),
@@ -454,11 +481,23 @@ class BillingReportsController extends Controller
 
     private function exportInvoices($fh, ?Carbon $from, ?Carbon $to, array $f): void
     {
-        fputcsv($fh, ['Invoice #', 'Student', 'Course', 'Issue Date', 'Due Date', 'Total (BDT)', 'Paid (BDT)', 'Due (BDT)', 'Status']);
+        fputcsv($fh, ['Invoice #', 'Student', 'Student UID', 'Course', 'Fee Type', 'Issue Date', 'Due Date', 'Total (BDT)', 'Paid (BDT)', 'Due (BDT)', 'Status']);
         $this->applyInvoiceFilters(Invoice::with(['student', 'course']), $from, $to, $f)
             ->orderBy('issue_date', 'desc')->lazy()
             ->each(function ($inv) use ($fh) {
-                fputcsv($fh, [$inv->invoice_number, $inv->student?->name ?? '', $inv->course?->name ?? '', $inv->issue_date?->format('Y-m-d'), $inv->due_date?->format('Y-m-d'), number_format($inv->total_amount, 2), number_format($inv->paid_amount, 2), number_format($inv->due_amount, 2), $inv->status]);
+                fputcsv($fh, [
+                    $inv->invoice_number,
+                    $inv->student?->name ?? '',
+                    $inv->student?->student_uid ?? '',
+                    $inv->course?->name ?? '',
+                    $inv->fee_type ?? 'General',
+                    $inv->issue_date?->format('Y-m-d'),
+                    $inv->due_date?->format('Y-m-d'),
+                    number_format($inv->total_amount, 2),
+                    number_format($inv->paid_amount, 2),
+                    number_format($inv->due_amount, 2),
+                    $inv->status
+                ]);
             });
     }
 
@@ -476,5 +515,203 @@ class BillingReportsController extends Controller
         foreach ($this->dueCollectionData($from, $to, $f)['byCourse'] as $row) {
             fputcsv($fh, [$row['course'], $row['count'], number_format($row['due'], 2)]);
         }
+    }
+
+    /**
+     * Comprehensive CSV export with all invoice details including fee types, items, and payments
+     */
+    public function exportComprehensive(Request $request)
+    {
+        ['from' => $from, 'to' => $to] = $this->resolvePeriod($request);
+
+        $f = [
+            'period'         => $request->get('period', 'monthly'),
+            'date_from'      => $from?->format('Y-m-d'),
+            'date_to'        => $to?->format('Y-m-d'),
+            'student_id'     => $request->integer('student_id') ?: null,
+            'course_id'      => $request->integer('course_id')  ?: null,
+            'batch_id'       => $request->integer('batch_id')   ?: null,
+            'payment_method' => $request->get('payment_method'),
+            'status'         => $request->get('status'),
+        ];
+
+        $filename = "billing_comprehensive_" . $f['period'] . "_" . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($from, $to, $f) {
+            $fh = fopen('php://output', 'w');
+            fwrite($fh, "\xEF\xBB\xBF");
+
+            // Headers for comprehensive report
+            fputcsv($fh, [
+                'Invoice #',
+                'Student Name',
+                'Student UID',
+                'Phone',
+                'Email',
+                'Course',
+                'Batch',
+                'Fee Type',
+                'Issue Date',
+                'Due Date',
+                'Subtotal (BDT)',
+                'Discount (BDT)',
+                'Tax (BDT)',
+                'Total (BDT)',
+                'Paid (BDT)',
+                'Due (BDT)',
+                'Status',
+                'Payment Method',
+                'Last Payment Date',
+                'Days Overdue',
+                'Created At'
+            ]);
+
+            $now = Carbon::now();
+
+            // Fetch invoices with all relationships
+            $this->applyInvoiceFilters(
+                Invoice::with(['student', 'course', 'batch', 'payments']),
+                $from,
+                $to,
+                $f
+            )->orderBy('issue_date', 'desc')->lazy()
+                ->each(function ($inv) use ($fh, $now) {
+                    $daysOverdue = 0;
+                    if ($inv->due_date && $inv->due_date < $now && $inv->due_amount > 0) {
+                        $daysOverdue = (int) $inv->due_date->diffInDays($now);
+                    }
+
+                    $lastPaymentDate = $inv->payments->sortByDesc('payment_date')->first()?->payment_date?->format('Y-m-d') ?? '—';
+
+                    fputcsv($fh, [
+                        $inv->invoice_number,
+                        $inv->student?->name ?? '—',
+                        $inv->student?->student_uid ?? '—',
+                        $inv->student?->phone ?? '—',
+                        $inv->student?->email ?? '—',
+                        $inv->course?->name ?? '—',
+                        $inv->batch?->name ?? '—',
+                        $inv->fee_type ?? 'General',
+                        $inv->issue_date?->format('Y-m-d') ?? '—',
+                        $inv->due_date?->format('Y-m-d') ?? '—',
+                        number_format($inv->sub_total ?? 0, 2),
+                        number_format($inv->discount_amount ?? 0, 2),
+                        number_format($inv->tax_amount ?? 0, 2),
+                        number_format($inv->total_amount ?? 0, 2),
+                        number_format($inv->paid_amount ?? 0, 2),
+                        number_format($inv->due_amount ?? 0, 2),
+                        ucfirst($inv->status ?? ''),
+                        $inv->meta['payment_method'] ?? '—',
+                        $lastPaymentDate,
+                        $daysOverdue,
+                        $inv->created_at?->format('Y-m-d H:i') ?? '—'
+                    ]);
+                });
+
+            fclose($fh);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
+     * Export by Fee Type - aggregated data for each fee type
+     */
+    public function exportByFeeType(Request $request)
+    {
+        ['from' => $from, 'to' => $to] = $this->resolvePeriod($request);
+
+        $f = [
+            'period'         => $request->get('period', 'monthly'),
+            'date_from'      => $from?->format('Y-m-d'),
+            'date_to'        => $to?->format('Y-m-d'),
+            'student_id'     => $request->integer('student_id') ?: null,
+            'course_id'      => $request->integer('course_id')  ?: null,
+            'batch_id'       => $request->integer('batch_id')   ?: null,
+            'status'         => $request->get('status'),
+        ];
+
+        $filename = "billing_by_fee_type_" . $f['period'] . "_" . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($from, $to, $f) {
+            $fh = fopen('php://output', 'w');
+            fwrite($fh, "\xEF\xBB\xBF");
+
+            fputcsv($fh, ['Fee Type', 'Count', 'Total (BDT)', 'Paid (BDT)', 'Due (BDT)', 'Avg (BDT)']);
+
+            $this->applyInvoiceFilters(Invoice::query(), $from, $to, $f)
+                ->selectRaw("COALESCE(fee_type, 'General') as fee_type, COUNT(*) as count, SUM(total_amount) as total, SUM(paid_amount) as paid, SUM(due_amount) as due")
+                ->groupBy('fee_type')
+                ->orderByDesc('total')
+                ->get()
+                ->each(function ($row) use ($fh) {
+                    $avg = $row->count > 0 ? $row->total / $row->count : 0;
+                    fputcsv($fh, [
+                        $row->fee_type,
+                        $row->count,
+                        number_format($row->total ?? 0, 2),
+                        number_format($row->paid ?? 0, 2),
+                        number_format($row->due ?? 0, 2),
+                        number_format($avg, 2)
+                    ]);
+                });
+
+            fclose($fh);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
+     * Export detailed payment records with invoice references
+     */
+    public function exportPaymentDetails(Request $request)
+    {
+        ['from' => $from, 'to' => $to] = $this->resolvePeriod($request);
+
+        $f = [
+            'period'         => $request->get('period', 'monthly'),
+            'date_from'      => $from?->format('Y-m-d'),
+            'date_to'        => $to?->format('Y-m-d'),
+            'student_id'     => $request->integer('student_id') ?: null,
+            'payment_method' => $request->get('payment_method'),
+        ];
+
+        $filename = "billing_payments_detail_" . $f['period'] . "_" . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($from, $to, $f) {
+            $fh = fopen('php://output', 'w');
+            fwrite($fh, "\xEF\xBB\xBF");
+
+            fputcsv($fh, [
+                'Payment Date',
+                'Invoice #',
+                'Student Name',
+                'Student UID',
+                'Amount (BDT)',
+                'Method',
+                'Status',
+                'Transaction ID',
+                'Note'
+            ]);
+
+            $this->applyPaymentFilters(
+                Payment::with(['student', 'invoice']),
+                $from,
+                $to,
+                $f
+            )->orderBy('payment_date', 'desc')->lazy()
+                ->each(function ($payment) use ($fh) {
+                    fputcsv($fh, [
+                        $payment->payment_date?->format('Y-m-d H:i') ?? '—',
+                        $payment->invoice?->invoice_number ?? '—',
+                        $payment->student?->name ?? '—',
+                        $payment->student?->student_uid ?? '—',
+                        number_format($payment->amount ?? 0, 2),
+                        ucfirst($payment->method ?? ''),
+                        ucfirst($payment->status ?? ''),
+                        $payment->transaction_id ?? '—',
+                        $payment->note ?? ''
+                    ]);
+                });
+
+            fclose($fh);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 }

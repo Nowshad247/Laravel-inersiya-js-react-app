@@ -15,6 +15,7 @@ class Invoice extends Model
         'student_id',
         'batch_id',
         'course_id',
+        'fee_type',
         'status',
         'issue_date',
         'due_date',

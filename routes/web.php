@@ -102,6 +102,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/billings/student/{id}', [BillingController::class, 'studentBilling'])->name('billings.student')->middleware('permission:view_billing');
     Route::get('/billings/reports', [BillingReportsController::class, 'index'])->name('billings.reports')->middleware('permission:view_billing');
     Route::get('/billings/reports/export', [BillingReportsController::class, 'export'])->name('billings.reports.export')->middleware('permission:view_billing')->withoutMiddleware([HandleInertiaRequests::class]);
+    Route::get('/billings/reports/export-comprehensive', [BillingReportsController::class, 'exportComprehensive'])->name('billings.reports.export-comprehensive')->middleware('permission:view_billing')->withoutMiddleware([HandleInertiaRequests::class]);
+    Route::get('/billings/reports/export-fee-type', [BillingReportsController::class, 'exportByFeeType'])->name('billings.reports.export-fee-type')->middleware('permission:view_billing')->withoutMiddleware([HandleInertiaRequests::class]);
+    Route::get('/billings/reports/export-payments', [BillingReportsController::class, 'exportPaymentDetails'])->name('billings.reports.export-payments')->middleware('permission:view_billing')->withoutMiddleware([HandleInertiaRequests::class]);
     //Lead Routes
     Route::get('/leads', [LeadController::class, 'index'])->name('leads.index')->middleware('permission:view_leads');
     Route::get('/leads/create', [LeadController::class, 'create'])->name('leads.create')->middleware('permission:create_leads');

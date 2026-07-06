@@ -27,6 +27,10 @@ export const invoiceColumns = [
         header: 'Course',
     },
     {
+        accessorKey: 'feeType',
+        header: 'Fee Type',
+    },
+    {
         accessorKey: 'dateIssued',
         header: 'Date Issued',
     },

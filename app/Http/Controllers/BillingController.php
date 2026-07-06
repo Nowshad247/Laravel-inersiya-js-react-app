@@ -54,6 +54,7 @@ class BillingController extends Controller
                     'student'   => $invoice->student?->name ?? 'Unknown Student',
                     'studentId' => $invoice->student_id,
                     'course'    => $courseName,
+                    'feeType'   => $invoice->fee_type ?? 'General',
                     'dateIssued'=> $invoice->issue_date?->format('Y-m-d') ?? '',
                     'dueDate'   => $invoice->due_date?->format('Y-m-d') ?? '',
                     'amount'    => 'TK' . number_format($invoice->total_amount ?? 0, 2),
@@ -61,7 +62,6 @@ class BillingController extends Controller
                 ];
             })
             ->toArray();
-
         return Inertia::render('billings/index', [
             'invoices' => $invoices,
             'stats' => [
@@ -89,6 +89,7 @@ class BillingController extends Controller
                     'student'    => $invoice->student?->name ?? 'Unknown Student',
                     'studentId'  => $invoice->student_id,
                     'course'     => $courseName,
+                    'feeType'    => $invoice->fee_type ?? 'General',
                     'dateIssued' => $invoice->issue_date?->format('Y-m-d') ?? '',
                     'dueDate'    => $invoice->due_date?->format('Y-m-d') ?? '',
                     'amount'     => 'TK' . number_format($invoice->total_amount ?? 0, 2),
@@ -185,7 +186,7 @@ class BillingController extends Controller
             $fh = fopen('php://output', 'w');
             // UTF-8 BOM so Excel renders Bengali text correctly
             fwrite($fh, "\xEF\xBB\xBF");
-            fputcsv($fh, ['Invoice ID', 'Student', 'Course', 'Due Date', 'Total Amount (BDT)', 'Paid Amount (BDT)', 'Due Amount (BDT)', 'Days Overdue', 'Status']);
+            fputcsv($fh, ['Invoice ID', 'Student', 'Course', 'Fee Type', 'Due Date', 'Total Amount (BDT)', 'Paid Amount (BDT)', 'Due Amount (BDT)', 'Days Overdue', 'Status']);
 
             foreach ($invoices as $invoice) {
                 $dueDate     = $invoice->due_date;
@@ -195,6 +196,7 @@ class BillingController extends Controller
                     $invoice->invoice_number,
                     $invoice->student?->name ?? 'Unknown',
                     $invoice->course?->name ?? 'Unknown',
+                    $invoice->fee_type ?? 'General',
                     $invoice->due_date?->format('Y-m-d') ?? '',
                     number_format($invoice->total_amount ?? 0, 2),
                     number_format($invoice->paid_amount ?? 0, 2),
@@ -507,6 +509,9 @@ class BillingController extends Controller
             fn($i) => max(1, (int)($i['quantity'] ?? 1)) * max(0, (float)($i['unit_price'] ?? 0))
         );
 
+        // Determine primary fee type from first fee item
+        $primaryFeeType = count($feeItems) > 0 ? ($feeItems[0]['fee_type'] ?? 'General') : 'General';
+
         $discountType  = $request->input('discount_type', 'fixed');
         $discountValue = max(0, (float)$request->input('discount_value', 0));
         $discountAmt   = $discountType === 'percentage'
@@ -558,13 +563,14 @@ class BillingController extends Controller
             $request, $action, $feeItems,
             $subtotal, $discountAmt, $taxAmt, $vatAmt, $extras,
             $grandTotal, $paidAmount, $dueAmount, $dbStatus,
-            $resolvedBatchId, $resolvedCourseId
+            $resolvedBatchId, $resolvedCourseId, $primaryFeeType
         ) {
             $inv = Invoice::create([
                 'invoice_number'  => 'TMP',
                 'student_id'      => $request->integer('student_id'),
                 'batch_id'        => $resolvedBatchId,
                 'course_id'       => $resolvedCourseId,
+                'fee_type'        => $primaryFeeType,
                 'status'          => $dbStatus,
                 'issue_date'      => $request->input('invoice_date'),
                 'due_date'        => $request->input('due_date'),
