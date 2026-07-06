@@ -15,6 +15,7 @@ interface PublicAppLayoutProps {
     twitterUrl?: string;
     linkedinUrl?: string;
     instagramUrl?: string;
+    forceLightMode?: boolean;
     children: ReactNode;
 }
 
@@ -32,6 +33,7 @@ export default function PublicAppLayout({
     twitterUrl,
     linkedinUrl,
     instagramUrl,
+    forceLightMode = false,
     children,
 }: PublicAppLayoutProps) {
     return (
@@ -44,9 +46,17 @@ export default function PublicAppLayout({
                 {author ? <meta name="author" content={author} /> : null}
             </Head>
 
-            {children}
+            <div className={forceLightMode ? 'bg-white text-black' : ''}>
+                {children}
+            </div>
 
-            <footer className="border-t bg-white dark:bg-[#0f0f0f]">
+            <footer
+                className={
+                    forceLightMode
+                        ? 'border-t bg-white text-black'
+                        : 'border-t bg-white dark:bg-[#0f0f0f]'
+                }
+            >
                 <div className="mx-auto grid max-w-6xl gap-6 px-6 py-10 md:grid-cols-3">
                     <div className="space-y-3">
                         <div className="flex items-center gap-3">

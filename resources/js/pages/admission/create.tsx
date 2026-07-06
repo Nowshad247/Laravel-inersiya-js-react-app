@@ -73,6 +73,11 @@ export default function AdmissionCreate({ batchs, courses }: Props) {
     }, [errors]);
 
     useEffect(() => {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.style.colorScheme = 'light';
+    }, []);
+
+    useEffect(() => {
         setData('batch_id', null);
     }, [selectedCourseId, setData]);
 
@@ -105,10 +110,11 @@ export default function AdmissionCreate({ batchs, courses }: Props) {
             twitterUrl={settings?.twitter_url}
             linkedinUrl={settings?.linkedin_url}
             instagramUrl={settings?.instagram_url}
+            forceLightMode
         >
             <Head title="Admission Create" />
 
-            <header className="border-b bg-white dark:bg-[#0f0f0f]">
+            <header className="border-b bg-white text-black">
                 <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
                     <div className="flex items-center gap-3">
                         {settings?.site_logo ? (
@@ -147,7 +153,7 @@ export default function AdmissionCreate({ batchs, courses }: Props) {
                 </div>
             </header>
 
-            <div className="m-6 p-6">
+            <div className="m-6 bg-white p-6 text-black">
                 {flash?.success && (
                     <div className="mb-6 flex items-start gap-3 rounded-xl border border-green-200 bg-green-50 px-5 py-4">
                         <CheckCircle2 className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-500" />
