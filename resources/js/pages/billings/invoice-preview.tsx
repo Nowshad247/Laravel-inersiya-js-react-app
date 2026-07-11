@@ -690,6 +690,34 @@ export default function InvoicePreview({
                             </div>
                         )}
 
+                        {/* ── Terms & Conditions ── */}
+                        <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-1">
+                            <p className="mb-2 text-[10px] font-bold tracking-widest text-slate-400 uppercase">
+                                Terms &amp; Conditions
+                            </p>
+                            <ul className="list-disc space-y-1 pl-4 text-xs leading-relaxed text-slate-600">
+                                <li>
+                                    All courses offered by Skills Development
+                                    Centre (SDC) are strictly{' '}
+                                    <strong>Non-Refundable</strong>.
+                                </li>
+                                <li>
+                                    By making payment, you agree to our Terms of
+                                    Service and Privacy Policy.
+                                </li>
+                                <li>
+                                    Privacy Policy:{' '}
+                                    <a
+                                        href="https://sdcbd.net/privacy-policy-2/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-700 hover:underline"
+                                    >
+                                        https://sdcbd.net/privacy-policy-2/
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                         {/* ── Footer ── */}
                         <div className="mt-8 border-t border-slate-200 pt-4 text-center text-xs text-slate-400">
                             <p>
