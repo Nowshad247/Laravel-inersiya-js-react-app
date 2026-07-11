@@ -716,6 +716,17 @@ export default function InvoicePreview({
                                         https://sdcbd.net/privacy-policy-2/
                                     </a>
                                 </li>
+                                <li>
+                                    Terms of Service:{' '}
+                                    <a
+                                        href="https://sdcbd.net/terms-of-service/"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-700 hover:underline"
+                                    >
+                                        https://sdcbd.net/terms/
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                         {/* ── Footer ── */}
