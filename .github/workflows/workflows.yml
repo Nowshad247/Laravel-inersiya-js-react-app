@@ -99,8 +99,15 @@ jobs:
       - name: Generate Wayfinder types
         run: php artisan wayfinder:generate --with-form --no-interaction
 
-      - name: Run database migrations
-        run: php artisan migrate --force
+      - name: Run database migrations (Primary)
+        run: |
+          echo "Running migrations for primary database..."
+          php artisan migrate --force --database=mysql_primary
+
+      - name: Run database migrations (Secondary)
+        run: |
+          echo "Running migrations for secondary database (only pending)..."
+          php artisan migrate:dual --database=secondary
 
       - name: Check PHP code style (Pint)
         run: vendor/bin/pint --dirty

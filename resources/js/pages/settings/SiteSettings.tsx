@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { type BreadcrumbItem } from '@/types';
-import { Form, Head } from '@inertiajs/react';
+import { Form, Head, router } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
 import AppLayout from '@/layouts/app-layout';
@@ -118,8 +118,14 @@ function optionByValue(options: SelectOption[], value: string): SelectOption {
 
 export default function SiteSettings({
     siteSettings,
+    currentDatabase,
+    availableDatabases,
+    connectionStatus,
 }: {
     siteSettings: SiteSettings;
+    currentDatabase: string;
+    availableDatabases: Record<string, string>;
+    connectionStatus: Record<string, boolean>;
 }) {
     const [previews, setPreviews] = useState<{
         site_logo?: string;
@@ -127,6 +133,10 @@ export default function SiteSettings({
         site_cover_image?: string;
         site_favicon?: string;
     }>({});
+
+    const [selectedDatabase, setSelectedDatabase] = useState(currentDatabase);
+    const [databaseSwitching, setDatabaseSwitching] = useState(false);
+    const [databaseMessage, setDatabaseMessage] = useState('');
 
     const [selectedCurrencyCode, setSelectedCurrencyCode] = useState<string>(
         () => normalizeCurrencyCode(siteSettings.currency),
@@ -178,6 +188,40 @@ export default function SiteSettings({
             return next;
         });
     }
+
+    const handleDatabaseSwitch = (dbConnection: string) => {
+        if (!connectionStatus[dbConnection]) {
+            setDatabaseMessage(
+                'Cannot connect to the selected database. Please check your configuration.',
+            );
+            return;
+        }
+
+        setDatabaseSwitching(true);
+        setDatabaseMessage('');
+
+        router.post(
+            `/admin/database/switch`,
+            { database: dbConnection },
+            {
+                onSuccess: () => {
+                    setSelectedDatabase(dbConnection);
+                    setDatabaseMessage('Database switched successfully!');
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1500);
+                },
+                onError: () => {
+                    setDatabaseMessage(
+                        'Error switching database. Please try again.',
+                    );
+                },
+                onFinish: () => {
+                    setDatabaseSwitching(false);
+                },
+            },
+        );
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -1118,6 +1162,106 @@ export default function SiteSettings({
                                             <InputError
                                                 message={errors.SMTP_ENCRYPTION}
                                             />
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section className="space-y-6 rounded-xl border border-muted bg-background p-6">
+                                    <h2 className="text-lg font-semibold">
+                                        Database Management
+                                    </h2>
+                                    <div className="space-y-4">
+                                        <div className="grid gap-2">
+                                            <Label>Current Database</Label>
+                                            <div className="rounded-md border border-input bg-muted px-4 py-2">
+                                                <p className="text-sm font-medium">
+                                                    {availableDatabases[
+                                                        currentDatabase
+                                                    ] || currentDatabase}
+                                                </p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    Status:{' '}
+                                                    {connectionStatus[
+                                                        currentDatabase
+                                                    ]
+                                                        ? '✓ Connected'
+                                                        : '✗ Disconnected'}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="database-switch">
+                                                Switch to Database
+                                            </Label>
+                                            <div className="flex gap-2">
+                                                <select
+                                                    id="database-switch"
+                                                    value={selectedDatabase}
+                                                    onChange={(e) =>
+                                                        setSelectedDatabase(
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                    disabled={databaseSwitching}
+                                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                                                >
+                                                    {Object.entries(
+                                                        availableDatabases,
+                                                    ).map(([key, label]) => (
+                                                        <option
+                                                            key={key}
+                                                            value={key}
+                                                        >
+                                                            {label}{' '}
+                                                            {connectionStatus[
+                                                                key
+                                                            ]
+                                                                ? '(Connected)'
+                                                                : '(Disconnected)'}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <Button
+                                                    type="button"
+                                                    disabled={
+                                                        databaseSwitching ||
+                                                        selectedDatabase ===
+                                                            currentDatabase ||
+                                                        !connectionStatus[
+                                                            selectedDatabase
+                                                        ]
+                                                    }
+                                                    onClick={() =>
+                                                        handleDatabaseSwitch(
+                                                            selectedDatabase,
+                                                        )
+                                                    }
+                                                    className="whitespace-nowrap"
+                                                >
+                                                    {databaseSwitching
+                                                        ? 'Switching...'
+                                                        : 'Switch'}
+                                                </Button>
+                                            </div>
+                                            {databaseMessage && (
+                                                <p
+                                                    className={`text-sm ${databaseMessage.includes('Error') ? 'text-red-600' : 'text-green-600'}`}
+                                                >
+                                                    {databaseMessage}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <div className="rounded-md border border-yellow-200 bg-yellow-50 p-4">
+                                            <p className="text-sm text-yellow-800">
+                                                <strong>Note:</strong> When you
+                                                switch databases, the
+                                                application will display data
+                                                from the selected database. Make
+                                                sure both databases have the
+                                                same schema.
+                                            </p>
                                         </div>
                                     </div>
                                 </section>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UpdateSiteSettingsRequest;
 use App\Models\settings;
+use App\Services\DatabaseSwitcher;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -14,8 +15,21 @@ class SettingsController extends Controller
     {
         $siteConfig = settings::pluck('value', 'key')->toArray();
 
+        // Get database information
+        $currentDatabase = DatabaseSwitcher::getActiveDatabase();
+        $availableDatabases = DatabaseSwitcher::getAvailableDatabases();
+        
+        // Test connections
+        $connectionStatus = [];
+        foreach (array_keys($availableDatabases) as $db) {
+            $connectionStatus[$db] = DatabaseSwitcher::testConnection($db);
+        }
+
         return Inertia::render('settings/SiteSettings', [
             'siteSettings' => $siteConfig,
+            'currentDatabase' => $currentDatabase,
+            'availableDatabases' => $availableDatabases,
+            'connectionStatus' => $connectionStatus,
         ]);
     }
 

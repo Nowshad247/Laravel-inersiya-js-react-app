@@ -18,6 +18,7 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\BillingReportsController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Admin\DatabaseSwitchController;
 use BaconQrCode\Renderer\Module\RoundnessModule;
 
 Route::get('/', [HomePageController::class, 'index'])->name('home');
@@ -145,8 +146,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         HandleInertiaRequests::class,
     ]);
 
-    Route::get('/admin/settings',[SettingsController::class, 'index'])->name('admin.settings');
-    Route::post('/admin/settings',[SettingsController::class, 'update'])->name('admin.settings.update');
+    Route::get('/admin/settings',[SettingsController::class, 'index'])->name('admin.settings')->middleware('role:admin');
+    Route::post('/admin/settings',[SettingsController::class, 'update'])->name('admin.settings.update')->middleware('role:admin');
+
+    // Database Switching Routes
+    Route::get('/admin/database/status', [DatabaseSwitchController::class, 'status'])->name('admin.database.status')->middleware('role:admin');
+    Route::post('/admin/database/switch', [DatabaseSwitchController::class, 'switch'])->name('admin.database.switch')->middleware('role:admin');
 
     Route::get('/download-template', function () {
         $filePath = public_path('lead_import_template.csv');

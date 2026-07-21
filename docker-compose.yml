@@ -14,11 +14,19 @@ services:
       - APP_ENV=production
       - APP_DEBUG=false
       - APP_URL=http://localhost
+      # Primary Database
       - DB_HOST=mysql
       - DB_PORT=3306
       - DB_DATABASE=${DB_DATABASE:-app_db}
       - DB_USERNAME=${DB_USERNAME:-app_user}
       - DB_PASSWORD=${DB_PASSWORD:-app_password}
+      # Secondary Database
+      - DB_HOST_2=mysql_secondary
+      - DB_PORT_2=3306
+      - DB_DATABASE_2=${DB_DATABASE_2:-app_db_secondary}
+      - DB_USERNAME_2=${DB_USERNAME_2:-app_user}
+      - DB_PASSWORD_2=${DB_PASSWORD_2:-app_password}
+      # Cache & Queue
       - REDIS_HOST=redis
       - REDIS_PORT=6379
     volumes:
@@ -26,8 +34,12 @@ services:
       - ./storage:/app/storage
       - ./bootstrap/cache:/app/bootstrap/cache
     depends_on:
-      - mysql
-      - redis
+      mysql:
+        condition: service_healthy
+      mysql_secondary:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     networks:
       - laravel_network
 
@@ -43,6 +55,25 @@ services:
       MYSQL_ALLOW_EMPTY_PASSWORD: 'false'
     volumes:
       - mysql_data:/var/lib/mysql
+    networks:
+      - laravel_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  mysql_secondary:
+    image: mysql:8.0
+    container_name: laravel_mysql_secondary
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE_2:-app_db_secondary}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD_2:-app_password}
+      MYSQL_PASSWORD: ${DB_PASSWORD_2:-app_password}
+      MYSQL_USER: ${DB_USERNAME_2:-app_user}
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'false'
+    volumes:
+      - mysql_secondary_data:/var/lib/mysql
     networks:
       - laravel_network
     healthcheck:
@@ -69,17 +100,41 @@ services:
     image: phpmyadmin:latest
     container_name: laravel_phpmyadmin
     restart: unless-stopped
+    ports:
+      - "8080:80"
     environment:
+      # Primary database
       PMA_HOST: mysql
       PMA_USER: ${DB_USERNAME:-app_user}
       PMA_PASSWORD: ${DB_PASSWORD:-app_password}
     depends_on:
       - mysql
+      - mysql_secondary
+    networks:
+      - laravel_network
+    volumes:
+      - ./docker/phpmyadmin-config.php:/etc/phpmyadmin/config.user.php
+
+  phpmyadmin_secondary:
+    image: phpmyadmin:latest
+    container_name: laravel_phpmyadmin_secondary
+    restart: unless-stopped
+    ports:
+      - "8081:80"
+    environment:
+      # Secondary database
+      PMA_HOST: mysql_secondary
+      PMA_USER: ${DB_USERNAME_2:-app_user}
+      PMA_PASSWORD: ${DB_PASSWORD_2:-app_password}
+    depends_on:
+      - mysql_secondary
     networks:
       - laravel_network
 
 volumes:
   mysql_data:
+    driver: local
+  mysql_secondary_data:
     driver: local
   redis_data:
     driver: local
