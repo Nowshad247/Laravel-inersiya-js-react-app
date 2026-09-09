@@ -47,6 +47,8 @@ import { cn } from '@/lib/utils';
 import { Lead, LeadSource, LeadStatus, User } from '@/types/Leads';
 import { router } from '@inertiajs/react';
 import { format } from 'date-fns';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import {
     ArrowDown,
     ArrowUp,
@@ -70,6 +72,7 @@ import {
     X,
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 type SortDirection = 'asc' | 'desc' | null;
 type SortField =
     | 'id'
@@ -185,7 +188,10 @@ export function LeadsTable({
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(25);
+    const [pageSize, setPageSize] = useState(
+        () =>
+            Number(window.localStorage.getItem('table-page-size:leads')) || 10,
+    );
 
     // Column visibility
     const [columnVisibility, setColumnVisibility] = useState<ColumnVisibility>({
@@ -652,11 +658,77 @@ export function LeadsTable({
     ].filter(Boolean).length;
 
     const toggleSelectAll = () => {
-        if (selectedRows.length === paginatedData.length) {
-            setSelectedRows([]);
+        const filteredIds = filteredData.map((lead) => lead.id);
+        const allFilteredSelected = filteredIds.every((id) =>
+            selectedRows.includes(id),
+        );
+
+        if (allFilteredSelected) {
+            setSelectedRows((current) =>
+                current.filter((id) => !filteredIds.includes(id)),
+            );
         } else {
-            setSelectedRows(paginatedData.map((l) => l.id));
+            setSelectedRows((current) => [
+                ...new Set([...current, ...filteredIds]),
+            ]);
         }
+    };
+
+    useEffect(() => {
+        window.localStorage.setItem('table-page-size:leads', String(pageSize));
+    }, [pageSize]);
+
+    const downloadSelectedPdf = () => {
+        if (selectedRows.length === 0) {
+            toast.info('Select at least one lead before downloading a PDF.');
+            return;
+        }
+
+        const selectedLeads = allLeads.filter((lead) =>
+            selectedRows.includes(lead.id),
+        );
+        const pdf = new jsPDF({
+            orientation: 'landscape',
+            unit: 'pt',
+            format: 'a4',
+        });
+
+        autoTable(pdf, {
+            head: [
+                [
+                    'ID',
+                    'Name',
+                    'Email',
+                    'Phone',
+                    'Status',
+                    'Source',
+                    'Assigned To',
+                    'Town',
+                    'Company',
+                    'Created At',
+                ],
+            ],
+            body: selectedLeads.map((lead) => [
+                lead.id,
+                lead.name,
+                lead.email,
+                lead.phone,
+                lead.status?.name || '-',
+                lead.source?.name || '-',
+                users.find((user) => user.id === lead.assigned_to)?.name || '-',
+                lead.town || '-',
+                lead.profile?.company || '-',
+                format(new Date(lead.created_at), 'yyyy-MM-dd'),
+            ]),
+            margin: { top: 36, right: 24, bottom: 28, left: 24 },
+            styles: { fontSize: 8, cellPadding: 4, overflow: 'linebreak' },
+            headStyles: { fillColor: [30, 41, 59], textColor: 255 },
+            alternateRowStyles: { fillColor: [248, 250, 252] },
+            theme: 'grid',
+        });
+
+        pdf.save(`leads-${format(new Date(), 'yyyy-MM-dd')}.pdf`);
+        toast.success(`${selectedLeads.length} lead(s) exported.`);
     };
 
     const exportToCSV = () => {
@@ -1482,6 +1554,15 @@ export function LeadsTable({
                         <Download className="mr-2 h-4 w-4" />
                         Export
                     </Button>
+                    <Button
+                        variant="outline"
+                        onClick={downloadSelectedPdf}
+                        disabled={selectedRows.length === 0}
+                    >
+                        <Download className="mr-2 h-4 w-4" />
+                        Download PDF
+                        {selectedRows.length > 0 && ` (${selectedRows.length})`}
+                    </Button>
                 </div>
             </div>
 
@@ -1624,9 +1705,18 @@ export function LeadsTable({
                                 <TableHead className="w-12">
                                     <Checkbox
                                         checked={
-                                            selectedRows.length ===
-                                                paginatedData.length &&
-                                            paginatedData.length > 0
+                                            filteredData.length > 0 &&
+                                            filteredData.every((lead) =>
+                                                selectedRows.includes(lead.id),
+                                            )
+                                                ? true
+                                                : filteredData.some((lead) =>
+                                                        selectedRows.includes(
+                                                            lead.id,
+                                                        ),
+                                                    )
+                                                  ? 'indeterminate'
+                                                  : false
                                         }
                                         onCheckedChange={toggleSelectAll}
                                     />
@@ -2474,9 +2564,9 @@ export function LeadsTable({
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="10">10</SelectItem>
-                            <SelectItem value="25">25</SelectItem>
-                            <SelectItem value="50">50</SelectItem>
-                            <SelectItem value="100">100</SelectItem>
+                            <SelectItem value="20">20</SelectItem>
+                            <SelectItem value="30">30</SelectItem>
+                            <SelectItem value="40">40</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
