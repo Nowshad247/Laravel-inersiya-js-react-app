@@ -16,6 +16,10 @@ class SetActiveDatabase
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if (app()->environment('testing')) {
+            return $next($request);
+        }
+
         // Set the active database for this request
         DatabaseSwitcher::setAsDefault();
         

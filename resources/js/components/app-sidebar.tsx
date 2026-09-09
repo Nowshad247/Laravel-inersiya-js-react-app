@@ -15,6 +15,7 @@ import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import {
     BookCheck,
+    CalendarCheck,
     ContactRound,
     LayoutGrid,
     ReceiptText,
@@ -47,6 +48,12 @@ const mainNavItems: NavItem[] = [
 ];
 
 const footerNavItems: NavItem[] = [
+    {
+        title: 'Employees Attendance',
+        href: '/employees-attendance',
+        icon: CalendarCheck,
+        permission: 'view_employees_attendance',
+    },
     {
         title: 'Billings ',
         href: '/billings',

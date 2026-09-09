@@ -54,6 +54,9 @@ class RolePermissionSeeder extends Seeder
             'create_billing',
             'edit_billing',
             'delete_billing',
+
+            'view_employees_attendance',
+            'access_employees_attendance',
         ];
 
         foreach ($permissions as $permission) {

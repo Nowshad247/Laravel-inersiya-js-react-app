@@ -4,9 +4,19 @@ use App\Models\settings;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Role;
+
+function adminUser(): User
+{
+    $user = User::factory()->create();
+
+    $user->assignRole(Role::findOrCreate('admin', 'web'));
+
+    return $user;
+}
 
 test('site settings update only changes submitted keys', function () {
-    $user = User::factory()->create();
+    $user = adminUser();
 
     settings::create(['key' => 'site_name', 'value' => 'LaraCraft']);
     settings::create(['key' => 'site_title', 'value' => 'Old title']);
@@ -26,7 +36,7 @@ test('site settings update only changes submitted keys', function () {
 test('site settings file uploads replace old file and update value', function () {
     Storage::fake('public');
 
-    $user = User::factory()->create();
+    $user = adminUser();
 
     $oldPath = 'site-settings/old-logo.png';
     Storage::disk('public')->put($oldPath, 'old');
@@ -50,7 +60,7 @@ test('site settings file uploads replace old file and update value', function ()
 });
 
 test('site settings currency selection stores code and symbol', function () {
-    $user = User::factory()->create();
+    $user = adminUser();
 
     settings::create(['key' => 'currency', 'value' => 'BDT']);
     settings::create(['key' => 'currency_symbol', 'value' => '৳']);
@@ -69,7 +79,7 @@ test('site settings currency selection stores code and symbol', function () {
 });
 
 test('site settings currency validation rejects unsupported currency code', function () {
-    $user = User::factory()->create();
+    $user = adminUser();
 
     $this
         ->actingAs($user)
@@ -82,7 +92,7 @@ test('site settings currency validation rejects unsupported currency code', func
 });
 
 test('site settings timezone, date format, time format, and language are stored', function () {
-    $user = User::factory()->create();
+    $user = adminUser();
 
     $this
         ->actingAs($user)

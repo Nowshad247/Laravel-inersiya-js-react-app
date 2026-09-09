@@ -4,6 +4,7 @@ use App\Http\Controllers\AdmissionController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BatchController;
 use App\Http\Controllers\BillingController;
+use App\Http\Controllers\EmployeesAttendanceController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FollowUpScheduledController;
@@ -87,6 +88,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/users/edit/{id}', [UserController::class, 'edit'])->name('users.edit')->middleware('permission:edit_users');
     Route::put('/users/edit/{id}', [UserController::class, 'update'])->name('users.update')->middleware('permission:edit_users');
     Route::delete('/users/delete/{id}', [UserController::class, 'destroy'])->name('users.delete')->middleware('permission:delete_users');
+    //Employees Attendance Routes
+    Route::get('/employees-attendance', [EmployeesAttendanceController::class, 'index'])->name('employees-attendance.index')->middleware('permission:view_employees_attendance');
+
     //Billing Routes
     Route::get('/billings', [BillingController::class, 'index'])->name('billings.index')->middleware('permission:view_billing');
     Route::get('/billings/invoices', [BillingController::class, 'invoices'])->name('billings.invoices')->middleware('permission:view_billing');
