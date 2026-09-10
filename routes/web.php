@@ -1,26 +1,27 @@
 <?php
 
+use App\Http\Controllers\Admin\DatabaseSwitchController;
 use App\Http\Controllers\AdmissionController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdmsController;
 use App\Http\Controllers\BatchController;
 use App\Http\Controllers\BillingController;
-use App\Http\Controllers\EmployeesAttendanceController;
+use App\Http\Controllers\BillingReportsController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DevicesController;
+use App\Http\Controllers\EmployeesAttendanceController;
 use App\Http\Controllers\FollowUpScheduledController;
 use App\Http\Controllers\HomePageController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\PdfController;
-use App\Http\Controllers\StudentController;
-use App\Http\Controllers\VarifyCertificate;
-use App\Http\Middleware\HandleInertiaRequests;
-use \App\Http\Controllers\ProfilePictureController;
+use App\Http\Controllers\ProfilePictureController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingsController;
-use App\Http\Controllers\BillingReportsController;
+use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\Admin\DatabaseSwitchController;
-use BaconQrCode\Renderer\Module\RoundnessModule;
+use App\Http\Controllers\VarifyCertificate;
+use App\Http\Middleware\HandleInertiaRequests;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomePageController::class, 'index'])->name('home');
 
@@ -29,18 +30,27 @@ Route::get('/admission/create', [AdmissionController::class, 'create'])->name('a
 Route::post('/admission/create', [AdmissionController::class, 'store'])->name('admission.store');
 Route::get('/admission/{admission}', [AdmissionController::class, 'show'])->name('admission.show')->middleware('permission:create_students');
 
-
-
 Route::post('/admission/{admission}/approve', [AdmissionController::class, 'approve'])->name('admission.approve')->middleware('permission:create_students');
-//public routes
-// Certificate Varificattion 
+// public routes
+// Certificate Varificattion
 Route::get('/certificate', [VarifyCertificate::class, 'index'])->middleware('throttle:10,1');
 Route::post('/certificate', [VarifyCertificate::class, 'show'])->middleware('throttle:10,1');
+
+// ZKTeco ADMS device endpoints — publicly reachable, no auth/CSRF (see
+// bootstrap/app.php validateCsrfTokens except list for the `iclock/*` exemption).
+// Phase 1: connectivity + logging only, no attendance processing.
+Route::match(['get', 'post'], '/iclock/cdata', [AdmsController::class, 'cdata'])
+    ->name('iclock.cdata')
+    ->withoutMiddleware([HandleInertiaRequests::class]);
+Route::match(['get', 'post'], '/iclock/getrequest', [AdmsController::class, 'getrequest'])
+    ->name('iclock.getrequest')
+    ->withoutMiddleware([HandleInertiaRequests::class]);
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     // Profile picture upload
     Route::post('user/profile-picture', [ProfilePictureController::class, '__invoke'])->name('user.profile-picture.upload');
-    //Deshboard options
+    // Deshboard options
     Route::get('/batch', [BatchController::class, 'index'])->name('batch.index')->middleware('permission:view_batches');
     Route::get('/courses', [CourseController::class, 'index'])->name('courses.index')->middleware('permission:view_courses');
     // Batch Route
@@ -50,7 +60,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/batch/{id}/edit', [BatchController::class, 'edit'])->name('batch.edit')->middleware('permission:edit_batches');
     Route::put('/batch/edit/{id}', [BatchController::class, 'update'])->name('batch.update')->middleware('permission:edit_batches');
     Route::delete('/batch/{id}', [BatchController::class, 'destroy'])->name('batch.destroy')->middleware('permission:delete_batches');
-    //Course Route
+    // Course Route
     Route::get('/courses/create', [CourseController::class, 'create'])->name('courses.create')->middleware('permission:create_courses');
     Route::post('/courses/create', [CourseController::class, 'store'])->name('courses.store')->middleware('permission:create_courses');
     Route::get('/courses/{id}/edit', [CourseController::class, 'edit'])->name('courses.edit')->middleware('permission:edit_courses');
@@ -67,18 +77,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::delete('/admission/{admission}/delete', [AdmissionController::class, 'destroy'])->name('admission.destroy')->middleware('permission:delete_students');
 
-    //Student Profile View Route 
+    // Student Profile View Route
     Route::get('/student/profile/{id}', [StudentController::class, 'studentDetails'])->name('student.profile')->middleware('permission:view_students');
 
-
-    //Website settings routes
+    // Website settings routes
     Route::get('/userspermissions', [RoleController::class, 'index'])->name('users.permissions')->middleware('permission:view_roles');
     Route::get('/role/create', [RoleController::class, 'create'])->name('role.create')->middleware('permission:create_roles');
     Route::post('/role/store', [RoleController::class, 'store'])->name('role.store')->middleware('permission:create_roles');
     Route::get('/role/edit/{id}', [RoleController::class, 'edit'])->name('role.edit')->middleware('permission:edit_roles');
     Route::put('/role/update/{id}', [RoleController::class, 'update'])->name('role.update')->middleware('permission:edit_roles');
     Route::delete('/role/delete/{id}', [RoleController::class, 'destroy'])->name('role.delete')->middleware('permission:delete_roles');
-    //Website user Routes
+    // Website user Routes
     Route::get('/users', [UserController::class, 'index'])->name('users.index')->middleware('permission:view_users');
 
     Route::get('/users/create', [UserController::class, 'create'])->name('users.create')->middleware('permission:create_users');
@@ -88,10 +97,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/users/edit/{id}', [UserController::class, 'edit'])->name('users.edit')->middleware('permission:edit_users');
     Route::put('/users/edit/{id}', [UserController::class, 'update'])->name('users.update')->middleware('permission:edit_users');
     Route::delete('/users/delete/{id}', [UserController::class, 'destroy'])->name('users.delete')->middleware('permission:delete_users');
-    //Employees Attendance Routes
+    // Employees Attendance Routes
     Route::get('/employees-attendance', [EmployeesAttendanceController::class, 'index'])->name('employees-attendance.index')->middleware('permission:view_employees_attendance');
+    Route::get('/Devices-Manager', [DevicesController::class, 'index'])->name('devices-manager.index')->middleware('permission:view_employees_attendance');
+    Route::post('/devices-manager/store', [DevicesController::class, 'store'])->name('devices-manager.store')->middleware('permission:access_employees_attendance');
 
-    //Billing Routes
+    // Billing Routes
     Route::get('/billings', [BillingController::class, 'index'])->name('billings.index')->middleware('permission:view_billing');
     Route::get('/billings/invoices', [BillingController::class, 'invoices'])->name('billings.invoices')->middleware('permission:view_billing');
     Route::get('/billings/create-invoice', [BillingController::class, 'create'])->name('billings.create-invoice')->middleware('permission:create_billing');
@@ -110,7 +121,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/billings/reports/export-comprehensive', [BillingReportsController::class, 'exportComprehensive'])->name('billings.reports.export-comprehensive')->middleware('permission:view_billing')->withoutMiddleware([HandleInertiaRequests::class]);
     Route::get('/billings/reports/export-fee-type', [BillingReportsController::class, 'exportByFeeType'])->name('billings.reports.export-fee-type')->middleware('permission:view_billing')->withoutMiddleware([HandleInertiaRequests::class]);
     Route::get('/billings/reports/export-payments', [BillingReportsController::class, 'exportPaymentDetails'])->name('billings.reports.export-payments')->middleware('permission:view_billing')->withoutMiddleware([HandleInertiaRequests::class]);
-    //Lead Routes
+    // Lead Routes
     Route::get('/leads', [LeadController::class, 'index'])->name('leads.index')->middleware('permission:view_leads');
     Route::get('/leads/create', [LeadController::class, 'create'])->name('leads.create')->middleware('permission:create_leads');
     Route::post('/leads/create', [LeadController::class, 'store'])->name('leads.store')->middleware('permission:create_leads');
@@ -132,17 +143,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('/leads/add-reminder/{id}', [LeadController::class, 'addReminder'])->name('leads.add-reminder');
 
-    //Lead Redminder update route
+    // Lead Redminder update route
     Route::post('/leads/update-reminder/', [LeadController::class, 'updateReminder'])->name('leads.update-reminder');
 
-    //FollowUpScheduled Route 
+    // FollowUpScheduled Route
 
     Route::get('/lead/FollowUp', [FollowUpScheduledController::class, 'index'])->name('lead.FollowUpScheduled');
+    Route::post('/lead/FollowUp/{reminder}/note', [FollowUpScheduledController::class, 'addNote'])->name('lead.FollowUp.note');
+    Route::patch('/lead/FollowUp/{reminder}/status', [FollowUpScheduledController::class, 'updateStatus'])->name('lead.FollowUp.status');
+    Route::patch('/lead/FollowUp/{reminder}/reminder', [FollowUpScheduledController::class, 'updateReminder'])->name('lead.FollowUp.reminder');
 
-    //Lead add call Now
+    // Lead add call Now
     Route::post('/leads/add-call-log/{id}', [LeadController::class, 'addCallLog'])->name('leads.add-call-now');
 
-    //PDF Generation Route
+    // PDF Generation Route
     Route::get('/student/pdf', [PdfController::class, 'student'])->name('student.pdf')->withoutMiddleware([
         HandleInertiaRequests::class,
     ]);
@@ -150,8 +164,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         HandleInertiaRequests::class,
     ]);
 
-    Route::get('/admin/settings',[SettingsController::class, 'index'])->name('admin.settings')->middleware('role:admin');
-    Route::post('/admin/settings',[SettingsController::class, 'update'])->name('admin.settings.update')->middleware('role:admin');
+    Route::get('/admin/settings', [SettingsController::class, 'index'])->name('admin.settings')->middleware('role:admin');
+    Route::post('/admin/settings', [SettingsController::class, 'update'])->name('admin.settings.update')->middleware('role:admin');
 
     // Database Switching Routes
     Route::get('/admin/database/status', [DatabaseSwitchController::class, 'status'])->name('admin.database.status')->middleware('role:admin');
@@ -159,7 +173,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('/download-template', function () {
         $filePath = public_path('lead_import_template.csv');
-        return response()->download($filePath, 'lead_import_template.csv', ['Content-Type' => 'text/csv']); })->name('download.template');
+
+        return response()->download($filePath, 'lead_import_template.csv', ['Content-Type' => 'text/csv']);
+    })->name('download.template');
 });
 
-require __DIR__ . '/settings.php';
+require __DIR__.'/settings.php';

@@ -1,3 +1,70 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+Skills Development Center Portal — a Laravel + Inertia (React) admin portal for managing a course/training center: students, courses, batches, leads, billing/invoicing, certificate verification, and role-based user administration.
+
+## Commands
+
+### Environment / dev servers
+- `composer run dev` — runs the full dev stack concurrently: `php artisan serve`, `php artisan queue:listen`, `php artisan pail` (logs), and `npm run dev` (Vite).
+- `composer run dev:ssr` — same, but builds and serves the Inertia SSR bundle instead of Vite dev mode.
+- `npm run dev` — Vite dev server only (frontend).
+- `npm run build` / `npm run build:ssr` — production frontend build (SSR variant also builds `resources/js/ssr.tsx`).
+
+### Backend (PHP)
+- `composer test` (or `php artisan test`) — run the full Pest/PHPUnit suite; clears config cache first.
+- `php artisan test --compact tests/Feature/SomeTest.php` — run a single test file.
+- `php artisan test --compact --filter=testName` — run tests matching a name (preferred after touching a specific feature).
+- `vendor/bin/pint --dirty` — format only changed PHP files to match project style (run before finalizing PHP changes; do not use `pint --test`).
+- `php artisan migrate` — run migrations against the currently active connection (see Multi-database section below). `php run-migrations.php` is a standalone safe migration runner used in some deploy scripts.
+- `php artisan db:seed` — seeds via `database/seeders/DatabaseSeeder.php`, which calls `RolePermissionSeeder`, `UserSeeder`, and lead-related seeders in order.
+
+### Frontend (TypeScript/React)
+- `npm run lint` — ESLint with `--fix`.
+- `npm run format` / `npm run format:check` — Prettier over `resources/`.
+- `npm run types` — `tsc --noEmit` type check.
+
+## Architecture
+
+### Stack
+Laravel 12 (streamlined structure — middleware registered in `bootstrap/app.php`, not `Http/Kernel.php`) + Inertia.js v2 + React 19 + TypeScript, Tailwind CSS v4, Vite, Pest v4 for tests, `spatie/laravel-permission` for roles/permissions, Laravel Fortify for auth, and Laravel Wayfinder for typed route/controller bindings on the frontend.
+
+### Request flow: routes → controllers → Inertia pages
+- All web routes live in a single `routes/web.php`. Authenticated routes sit inside one `Route::middleware(['auth', 'verified'])->group(...)` block; almost every route additionally carries a `->middleware('permission:<name>')` guard from `spatie/laravel-permission` (aliased as `permission` in `bootstrap/app.php`, alongside `role`).
+- Controllers return `Inertia::render('some/page')`, where the string maps to a file under `resources/js/pages/some/page.tsx`. There are no Blade views for the app UI — `resources/views/app.blade.php` is just the Inertia root template.
+- Routes are grouped by feature with comments (`//Billing Routes`, `//Lead Routes`, etc.) rather than route-group prefixes/controllers — follow this comment-block convention when adding a new feature area, and place new routes near their sibling feature block.
+
+### Permissions (Spatie)
+- Permission names follow `<verb>_<resource>` snake_case (e.g. `view_billing`, `create_students`, `edit_roles`). Roles are seeded in `database/seeders/RolePermissionSeeder.php`: `admin` gets `Permission::all()`; other roles (`user`, `student`, `teacher`, `accounts`, `editor`) get explicit subsets.
+- Permissions are created with `Permission::firstOrCreate` (idempotent), but roles use `Role::create` (NOT idempotent — assumes a fresh database). When adding new permissions to an already-seeded environment, don't just edit the seeder and re-run `db:seed`; create the permission(s) directly and attach to the relevant role(s) (e.g. via `php artisan tinker`), in addition to updating the seeder for future fresh installs.
+- `HandleInertiaRequests` (`app/Http/Middleware/HandleInertiaRequests.php`) shares `auth.user` and `auth.permissions` (flat array of permission name strings from `getAllPermissions()`) on every Inertia response.
+- On the frontend, `NavItem` (`resources/js/types/index.d.ts`) has an optional `permission` field and both `mainNavItems`/`footerNavItems` in `resources/js/components/app-sidebar.tsx` set it for gated items — but note `NavMain`/`NavFooter` currently render unconditionally and don't actually filter by this field; access control is enforced server-side by the route's `permission:` middleware, not by hiding the link.
+
+### Multi-database switching
+- The app can run against one of two live MySQL connections, `mysql_primary` or `mysql_secondary` (defined in `config/database.php`, credentials via `DB_*` / `DB_*_2` env vars). `app/Services/DatabaseSwitcher.php` stores the active connection name in cache (`active_database_connection`, ~1 year TTL) and the `SetActiveDatabase` middleware (registered globally in `bootstrap/app.php`) applies it as `database.default` on every web request. `App\Http\Controllers\Admin\DatabaseSwitchController` lets an admin switch which database is active at runtime. Keep this in mind when debugging "missing data" — check which connection is currently active before assuming a migration/seed issue.
+
+### Frontend structure (`resources/js/`)
+- `pages/` — Inertia page components, one directory per feature (e.g. `billings/`, `student/`), matching the string passed to `Inertia::render()`.
+- `components/` — shared React components; `components/ui/` holds shadcn/Radix-based primitives (Card, Sidebar, etc.) — reuse these instead of introducing new UI primitives.
+- `layouts/` — page shells; `app-layout.tsx` (sidebar layout, used by nearly all authenticated pages) wraps `layouts/app/app-sidebar-layout.tsx`. `AppLayout` takes a `breadcrumbs: BreadcrumbItem[]` prop that most pages pass in.
+- `components/app-sidebar.tsx` — the single source of truth for the sidebar nav: `mainNavItems` (top nav) and `footerNavItems` (bottom-pinned nav, e.g. Billings/Leads/Verify Certificate). Add new top-level nav entries here.
+- `routes/`, `actions/`, `wayfinder/` — auto-generated by the `@laravel/vite-plugin-wayfinder` Vite plugin from PHP routes/controllers; don't hand-edit, they regenerate on `npm run dev`/`build` (or `php artisan wayfinder:generate` if the Vite plugin isn't running). Not every page uses these generated helpers — several existing pages (e.g. billing/sidebar links) just use plain string hrefs like `/billings`; follow whichever convention the sibling code you're touching already uses.
+- `types/index.d.ts` — shared TS interfaces (`NavItem`, `User`, `Role`, `Permission`, `SharedData`, etc.) for Inertia shared props and nav config.
+
+### Domain model
+Core Eloquent models live flat in `app/Models/`: `Student`, `Course`, `Batch`/`BatchDetail`, `Admission`, `Lead` (+ `LeadCall`, `LeadNote`, `LeadProfile`, `LeadReminder`, `LeadSource`, `LeadStatus`), and a billing cluster — `Invoice`/`InvoiceItem`, `Payment`, `PaymentMethod`, `InstallmentPlan`/`InstallmentSchedule`, `Discount`, `CourseFeeRule`, `BillingAccount`, `Ledger`, `Receipt`, `Refund`. `User` uses `spatie/laravel-permission`'s roles/permissions traits.
+
+### Testing
+- Pest is configured (`tests/Pest.php`) to bind `Tests\TestCase` and `RefreshDatabase` for everything under `tests/Feature`. Tests use `:memory:` SQLite (see `phpunit.xml`), independent of the dual-MySQL setup used at runtime.
+- Existing tests assume an authenticated user needs the `admin` role for settings-type endpoints (see `tests/Feature/SiteSettingsUpdateTest.php`'s `adminUser()` helper pattern: `User::factory()->create()` then `assignRole(Role::findOrCreate('admin', 'web'))`) — reuse this pattern rather than assuming a bare factory user has access.
+
+## Laravel Boost
+
+This project has Laravel Boost installed (MCP server + generated guidelines below). If Boost's MCP tools (`search-docs`, `tinker`, `database-query`, `browser-logs`, `list-artisan-commands`, `get-absolute-url`) are available in your tool list, prefer them per the guidelines — in particular, use `search-docs` before implementing anything touching Laravel/Inertia/Wayfinder/Tailwind/Pest, since it returns version-pinned docs for the exact package versions this repo uses.
+
 <laravel-boost-guidelines>
 === foundation rules ===
 
